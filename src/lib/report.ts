@@ -3,6 +3,7 @@ import type { LogEvent } from './parse.ts';
 import type { Evidence, AuditEntry } from './evidence.ts';
 import { extractChanges, STATUS_TEXT } from './changes.ts';
 import { MITRE } from './mitre.ts';
+import { buildChains } from './chain.ts';
 
 type Ai = { source: string; verdict: string; hidden_patterns?: { events: number[]; text: string }[]; model?: string; summary: string; indicators: { events: number[]; text: string }[]; confidence: string; next_steps: string[] } | null;
 
@@ -16,6 +17,7 @@ export function buildReport(opts: {
   const { evidence, verify, events, notes, ai, audit, chainBrokenAt, generatedAt } = opts;
   const flagged = events.filter((e) => e.flags.length);
   const changes = extractChanges(events);
+  const chains = buildChains(events);
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>LogLens investigation report</title>
 <style>@media print{h2{break-after:avoid}tr{break-inside:avoid}}body{font-family:system-ui,"Noto Sans Devanagari",sans-serif;max-width:900px;margin:24px auto;padding:0 16px;color:#14161A}
 code,td.m{font-family:ui-monospace,monospace;font-size:12px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:4px;text-align:left;vertical-align:top;font-size:13px}
@@ -29,6 +31,7 @@ ${evidence ? `<p><span class="tag">EVIDENCE</span> ${esc(evidence.name)} · ${ev
 ${evidence.receipt ? `<p>Server receipt #${evidence.receipt.id} · sealed ${esc(evidence.receipt.sealed_at)} (server time, UTC) by ${esc(evidence.receipt.investigator)}<br>Entry hash <code>${esc(evidence.receipt.entry_hash)}</code><br>HMAC-SHA256 signature <code>${esc(evidence.receipt.sig)}</code><br>Check it: GET /api/seal?id=${evidence.receipt.id} on the LogLens server.</p>` : '<p>Server receipt: not available (offline). Local hash only.</p>'}
 <p class="note">This report records hash values to help show the evidence did not change after intake. It is not a legal certificate (for example under BSA 2023 s.63) and does not replace one.</p>
 <p>Integrity check: ${verify ? (verify.match ? '<span class="ok">MATCH: evidence unchanged</span>' : `<span class="bad">TAMPERED: hash mismatch</span><br>Current SHA-256: <code>${esc(verify.current)}</code>`) : 'not run'}</p>` : '<p>No evidence locked.</p>'}
+${chains.length ? `<h2>Attack chain (rules: events linked by shared IP or account)</h2>${chains.slice(0, 3).map((c) => `<p>Actors: ${esc([...c.ips, ...c.users].join(', '))}</p><ol>${c.steps.map((st) => `<li><b>${esc(st.name)}</b> (MITRE tactic ${esc(st.tactic)}) from ${esc(st.from)}: events ${st.events.map((n) => `#${n}`).join(' ')} · ${esc(st.reasons.join(', '))}</li>`).join('')}</ol>`).join('')}` : ''}
 <h2>Changes made (${changes.length}, ${changes.filter((c) => c.status === 'unauthorized').length} unauthorized)</h2>
 <p><small>"Who" is the account that made the change. An account can be stolen, so read the reasons.</small></p>
 <table><tr><th>#</th><th>Time</th><th>Who / IP</th><th>What</th><th>Before → After</th><th>Status and reasons</th></tr>

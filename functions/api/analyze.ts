@@ -8,7 +8,7 @@ type Env = { GEMINI_API_KEY?: string; GEMINI_MODEL?: string; AI?: WorkersAi };
 
 const MAX_EVENTS = 200;
 const TIMEOUT_MS = 8000;
-// Tried in order; Gemini models are sometimes busy, so we keep backups
+// Raced in parallel (step 2); Gemini models are sometimes busy or slow, so we keep three
 const MODELS = ['gemini-flash-lite-latest', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'];
 // Workers AI models with JSON mode (listed in the Workers AI JSON mode docs).
 // Backup only (see step 2). The 70b model was dropped on 22 Oct: it used up the free daily
@@ -35,7 +35,7 @@ function clean(ai: any, events: AiEvent[], lang: string) {
   return ai;
 }
 
-// Gemini: try each model in turn until one gives a usable answer or time runs out
+// Gemini: try the given model(s) in turn until one gives a usable answer or time runs out
 async function gemini(key: string, models: string[], prompt: string, events: AiEvent[], lang: string, deadline: number) {
   let lastError = 'AI unavailable';
   for (const model of models) {
@@ -104,7 +104,8 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   const deadline = Date.now() + TIMEOUT_MS;
   const prompt = investigationPrompt(events, notes, lang);
   const best = env.GEMINI_API_KEY
-    ? gemini(env.GEMINI_API_KEY, env.GEMINI_MODEL ? [env.GEMINI_MODEL] : MODELS, prompt, events, lang, deadline)
+    // All Gemini models at once (each has its own free quota); the first usable answer wins
+    ? Promise.any((env.GEMINI_MODEL ? [env.GEMINI_MODEL] : MODELS).map((m) => gemini(env.GEMINI_API_KEY!, [m], prompt, events, lang, deadline)))
     : Promise.reject(new Error('Gemini not configured'));
   const tries: Promise<any>[] = [best];
   if (env.AI) {

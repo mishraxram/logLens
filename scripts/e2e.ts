@@ -49,6 +49,7 @@ async function main() {
   await js(`document.querySelector('[data-sample]').click()`);
   step(await waitFor(`document.querySelectorAll('#timeline > *').length > 5`, 5000), 'sample -> timeline rows');
   step(await js(`document.documentElement.scrollWidth <= window.innerWidth`), `no horizontal scroll at ${width}px`);
+  step(await js(`!document.getElementById('chainPanel').classList.contains('hidden') && /TA00\\d\\d/.test(document.getElementById('chains').textContent)`), 'attack chain panel with MITRE tactics');
   step(await js(`[...document.querySelectorAll('.mitre-chip')].some((a) => /^T\\d{4}/.test(a.textContent) && a.href.startsWith('https://attack.mitre.org/'))`), 'MITRE ATT&CK chips on flags');
 
   // Server receipt (v2 only). On a site without the ledger (v1) this shows the offline message instead.

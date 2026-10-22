@@ -7,6 +7,7 @@ import { sha256 } from '../src/lib/evidence.ts';
 
 const API = process.argv[2] || 'https://loglens-v2.loglens.workers.dev/api/analyze';
 const S = 'public/samples/', T = 'tests/cases/';
+const GAP_MS = 4000; // pause before each AI call
 
 type Case = {
   id: number; file: string; lang?: 'en' | 'hi';
@@ -59,6 +60,8 @@ for (const c of cases) {
   let got = `${r.events.length} events, ${r.unparsed.length} unparsed, flags: ${[...codes].join(' ') || 'none'} (${ms}ms)`;
 
   if (c.ai) {
+    // Space the AI calls out like real use: back-to-back calls hit the Gemini free per-minute limit (429)
+    await new Promise((ok) => setTimeout(ok, GAP_MS));
     try {
       const res = await fetch(API, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload(r.events, r.notes, c.lang ?? 'en')) });
       const d: any = await res.json();

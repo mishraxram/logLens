@@ -87,6 +87,13 @@ const samples = [
           <p id="stats" class="text-sm text-muted mt-2"></p>
         </div>
 
+        <!-- Attack chain: flagged events linked by shared IP / account, in MITRE ATT&CK tactic stages -->
+        <div id="chainPanel" class="panel p-4 lg:p-5 hidden">
+          <h2 class="font-semibold text-lg">Attack chain</h2>
+          <p class="text-xs text-muted mt-1">Flagged events joined when they share an IP or an account, then put in MITRE ATT&CK tactic order of first appearance. Built by rules, not AI.</p>
+          <div id="chains" class="mt-3 space-y-4"></div>
+        </div>
+
         <!-- Change register: who changed what, when, from where, before -> after -->
         <div class="panel p-4 lg:p-5">
           <div class="flex flex-wrap items-baseline justify-between gap-2">
@@ -135,6 +142,7 @@ const samples = [
   import { lockEvidence, verifyEvidence, getEvidence, getAudit, audit, clearCase, now, verifyAuditChain, lockFile, tamperAuditForDemo, getOriginal, changedLines, setReceipt } from '../lib/evidence.ts';
   import { buildReport } from '../lib/report.ts';
   import { MITRE, mitreUrl } from '../lib/mitre.ts';
+  import { buildChains } from '../lib/chain.ts';
   import { sealOnServer, checkReceipt, getInvestigator, setInvestigator } from '../lib/ledger.ts';
   import { extractChanges, STATUS_TEXT } from '../lib/changes.ts';
 
@@ -458,6 +466,27 @@ const samples = [
       verdict.textContent = `${v.level === 'high' ? 'High' : 'Medium'} risk: ${v.high} high-risk and ${v.medium} medium-risk events flagged by the rules`;
     }
     $('stats').textContent = `${events.length} events, sorted by time. ${parsed.unparsed.length} lines not understood.`;
+
+    // Attack chain(s)
+    const chains = buildChains(events);
+    $('chainPanel').classList.toggle('hidden', !chains.length);
+    const chainBox = $('chains'); chainBox.replaceChildren();
+    for (const c of chains.slice(0, 3)) {
+      const box = el('div', '');
+      box.append(el('p', 'text-sm', `Actors linked: ${[...c.ips.map((i) => `IP ${i}`), ...c.users.map((u) => `account ${u}`)].join(', ')}`));
+      const ol = el('ol', 'chain mt-2');
+      for (const st of c.steps) {
+        const li = el('li', '');
+        const a = el('a', 'mitre-chip', st.tactic) as HTMLAnchorElement;
+        a.href = `https://attack.mitre.org/tactics/${st.tactic}/`; a.target = '_blank'; a.rel = 'noopener'; a.title = `MITRE ATT&CK tactic ${st.tactic}: ${st.name}`;
+        li.append(el('span', 'font-semibold', st.name), ' ', a,
+          el('span', 'block font-mono text-xs text-muted', `from ${st.from} · events ${st.events.map((n) => `#${n}`).join(' ')}`),
+          el('span', 'block text-xs', st.reasons.join(', ')));
+        ol.append(li);
+      }
+      box.append(ol);
+      chainBox.append(box);
+    }
 
     // Change register
     const changes = extractChanges(events);

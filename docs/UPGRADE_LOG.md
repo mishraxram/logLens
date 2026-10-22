@@ -1,7 +1,7 @@
 # UPGRADE LOG (state for docs/UPGRADE_LOOP.md)
 
 Branch `avinya-final` (from `loglens-v2` @ b158675). Backup demo: `main` -> https://loglens-solarflares.pages.dev
-Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iteration 11 = docs truth pass J4: README/PITCH/DEFENSE + TEAM/TECH_STACK skeletons).
+Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iteration 12 = AI vs rules cross-check + file metadata panel, then docs).
 
 ## NEEDS YOU (the loop cannot do these; `bash win.sh` asks for 1-3)
 | # | What | Why | Status |
@@ -23,6 +23,7 @@ Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iterat
 | 10 | 23:20 | B | PS6: `/cases` dashboard (cases grouped by evidence hash, status, investigators, server audit trail table with per-row signature + chain check), case progress strip (6 steps from the audit trail), header link; Astro script inlining turned off (CSP blocked an inlined script, caught by e2e) | done | e2e live 360 + 1280 PASS incl. "cases dashboard loads"; dashboard: "Ledger intact" |
 | 10b | 23:12 | B | Ledger fork found on live (2 receipts in the same ms linked to one prev row) -> new table `receipts` with UNIQUE(prev_hash) + retry; old `seals` table kept unchanged | done | live: rows 5/6 and 8/9 forked before; after: check-seal live SEAL PASS incl. burst of 6 parallel receipts, ledger intact (22 rows) |
 | 10c | 23:16 | B | Workers AI free allowance used up -> 70b dropped, 8b backup starts only after 2.5 s; AI-unavailable now returns 200 + error (a 504 printed a console error) | done | live probes: Gemini 5.2 s / 7.5 s; e2e live 360 + 1280 PASS 0 errors; eval live 16/17 (case 9 Hindi: Gemini >8 s, backup out of quota until 05:30 IST) |
+| 11 | 23:33 | B | PS2 attack chain (`src/lib/chain.ts`: flagged events linked by shared IP/account via union-find, MITRE tactic stages TA0043/TA0006/TA0001/TA0040/TA0005, IDs verified on attack.mitre.org; TA0005 is now named "Stealth") in UI + report; `scripts/check-chain.ts`, `scripts/check-report.ts`; Gemini models now raced in parallel; eval paces AI calls 4 s apart | done | CHAIN PASS (5/5), REPORT PASS (8/8); e2e live 360 + 1280 PASS incl. chain panel; probes 2.9-4.4 s (was 5-7.5 s); eval live 15/17 (cases 2, 9: >8 s; Workers AI backup out of quota until 05:30 IST) |
 | 6 | 22:36 | B | MITRE ATT&CK chips (verified IDs, link to attack.mitre.org) on every flag + in report; e2e checks chips | done | e2e live 360 + 1280 PASS (chips step PASS); eval live 16/17: case 5 AI 8b-fast said incident for a legit late admin (AI flake, not this change) |
 | 7 | 22:52 | B | J1 footer/QR/README -> v2 URL + honest v1 lineage; J2 rule severity (HIGH/MEDIUM) sent to AI + backup 8b capped at suspicious without HIGH evidence (labelled note); `npm run check:worker` (wrangler dry-run bundle) after a build error slipped past astro build | done | eval local + live 16/17 (case 5 now PASS; case 9 Hindi >8 s); e2e live 360 + 1280 PASS; live footer shows v2 URL + अvinya |
 | 8 | 22:58 | B | Hindi inside 8 s: stronger Devanagari instruction (neutral style example, not copied), 504 now lists every provider's reason (`tried`) | done | probe: before = 70b/Gemini timeout + 8b 'wrong language'; after 8b Hindi 6.5-7.7 s with case-specific text; eval **local 17/17, live 17/17**; e2e live 360 PASS |
@@ -35,10 +36,10 @@ Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iterat
 | 2 | Security | Security headers + CSP from the Worker | Prototype, Stack | H | S | done (iter 4) |
 | 3 | Security/AI | Prompt-injection guard + eval case | Stack, PS2 | M | S | done (iter 5) |
 | 4 | PS2 | Verified MITRE ID chips on flags + report | PS2, Domain | H | S | done (iter 6) |
-| 5 | PS2 | Attack-chain panel (stages + event refs) | PS2, Prototype | H | M | todo |
+| 5 | PS2 | Attack-chain panel (stages + event refs) | PS2, Prototype | H | M | done (iter 11) |
 | 6 | PS6 | Investigation dashboard: cases list, status, progress, investigator | PS6, Prototype | H | M | done (iter 10) |
 | 7 | PS4/PS6 | D1 append-only hash-chained audit log + signed receipt /api/seal | PS4, PS6 | H | L | done (iter 9) |
-| 8 | PS5 | Report: event refs per finding, MITRE, hash function field | PS5 | M | S | todo |
+| 8 | PS5 | Report: event refs per finding, MITRE, hash function field | PS5 | M | S | done (iter 9-11, check-report PASS) |
 | 9 | PS1 | File metadata panel | PS1 | M | S | todo |
 | 10 | AI | AI vs rules cross-check | PS2 | M | S | todo |
 | 11 | Coding | Lint + typecheck script | Stack | M | S | todo |
