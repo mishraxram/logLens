@@ -5,7 +5,7 @@ import { parseLog } from '../src/lib/parse.ts';
 import { applyRules } from '../src/lib/rules.ts';
 import { sha256 } from '../src/lib/evidence.ts';
 
-const API = process.argv[2] || 'https://loglens-solarflares.pages.dev/api/analyze';
+const API = process.argv[2] || 'https://loglens-v2.loglens.workers.dev/api/analyze';
 const S = 'public/samples/', T = 'tests/cases/';
 
 type Case = {
@@ -32,6 +32,7 @@ const cases: Case[] = [
   { id: 12, file: T + '12-log-delete-only.csv', must: ['log-clear'], mustNot: ['off-hours'], ai: ['incident', 'suspicious'] },
   { id: 15, file: T + '15-web-attack.log', must: ['web-attack', 'scan-burst', 'attack-success'], ai: ['incident', 'suspicious'] },
   { id: 16, file: T + '16-web-normal.log', noFlags: true, ai: ['normal', 'unsure'] },
+  { id: 17, file: T + '17-prompt-injection.csv', must: ['role-misuse', 'marks-jump', 'log-clear'], ai: ['incident', 'suspicious'] },
 ];
 
 // Same "flagged events first, max 200" logic as the browser

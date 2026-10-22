@@ -1,7 +1,7 @@
 # UPGRADE LOG (state for docs/UPGRADE_LOOP.md)
 
 Branch `avinya-final` (from `loglens-v2` @ b158675). Backup demo: `main` -> https://loglens-solarflares.pages.dev
-Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iteration 5 = backlog rank 3 prompt-injection guard).
+Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iteration 6 = backlog rank 4 MITRE chips).
 
 ## NEEDS YOU (the loop cannot do these; `bash win.sh` asks for 1-3)
 | # | What | Why | Status |
@@ -17,6 +17,7 @@ Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iterat
 | 2 | 22:08 | A | Audit -> docs/AUDIT.md, backlog, matrix | done. Found + fixed: SSH sample and 3 test logs never committed (*.log in .gitignore) | 4a35b03; eval 6/16 (all 10 fails = live AI timeout; all rule checks pass) |
 | 3 | 22:18 | B | Live AI fix: Gemini + Workers AI (70b preferred, 8b-fast late backup) in parallel inside 8 s | done. Hindi case 9 still >8 s (offline fallback shown, known) | eval v2 live **15/16** (was 6/16); ERP sample 6.7 s on live; deploy loglens-v2 OK |
 | 4 | 22:25 | B | Security headers (CSP with hash for font loader, nosniff, DENY, referrer, permissions, HSTS) on all responses; new `scripts/e2e.ts` (headless Chrome over CDP) | done | live `curl -I`: 6/6 headers; e2e live 360 + 1280 px PASS, 0 console errors; eval live 15/16 (case 9 Hindi >8 s) |
+| 5 | 22:32 | B | Prompt-injection guard: log text inside <<<EVENTS ... EVENTS>>> marked untrusted, markers stripped from fields/notes, AI told to report AI-addressed text as an indicator; eval case 17; eval default -> v2 | done | local 16/17 (case 9 Hindi >8 s), **live 17/17**; case 17: AI verdict incident and cites #3, #4 injection lines; e2e live 360 PASS |
 
 ## Backlog (filled by the audit, ranked by marks-impact / effort)
 | Rank | Area | Item | Criterion / PS | Impact | Effort | Status |
@@ -24,7 +25,7 @@ Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iterat
 | 1 | Deploy/AI | Working live AI on v2 | Prototype, PS2 | H | S | done (iter 3) |
 | 1b | AI | Hindi answer inside 8 s (case 9) | Prototype | M | M | todo |
 | 2 | Security | Security headers + CSP from the Worker | Prototype, Stack | H | S | done (iter 4) |
-| 3 | Security/AI | Prompt-injection guard + eval case | Stack, PS2 | M | S | todo |
+| 3 | Security/AI | Prompt-injection guard + eval case | Stack, PS2 | M | S | done (iter 5) |
 | 4 | PS2 | Verified MITRE ID chips on flags + report | PS2, Domain | H | S | todo |
 | 5 | PS2 | Attack-chain panel (stages + event refs) | PS2, Prototype | H | M | todo |
 | 6 | PS6 | Investigation dashboard: cases list, status, progress, investigator | PS6, Prototype | H | M | todo |
@@ -33,7 +34,7 @@ Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iterat
 | 9 | PS1 | File metadata panel | PS1 | M | S | todo |
 | 10 | AI | AI vs rules cross-check | PS2 | M | S | todo |
 | 11 | Coding | Lint + typecheck script | Stack | M | S | todo |
-| 12 | Tests | eval -> v2 default, rules-only count, honest README | Prototype | M | S | todo |
+| 12 | Tests | eval -> v2 default (done iter 5), rules-only count, honest README | Prototype | M | S | partial |
 | 13 | Docs | TEAM.md (needs names), TECH_STACK.md + diagram, DEFENSE, deck | Team, Stack, Pres | H | M | Phase C |
 | 14 | Perf | Lighthouse mobile before/after on v2 | Prototype | M | S | after deploy |
 
