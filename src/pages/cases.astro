@@ -9,17 +9,18 @@ import Base from '../layouts/Base.astro';
     <p class="mt-2 max-w-2xl text-sm text-muted">Demo ledger: shared by everyone who uses this site, no login. A real deployment would put this page behind an access gate for authorised investigators only.</p>
   </header>
 
-  <section class="panel p-4 mb-6" aria-live="polite">
+  <section class="panel p-4 mb-6 min-h-[10rem] sm:min-h-[7rem]" aria-live="polite">
     <div class="flex flex-wrap items-center gap-3">
-      <p id="chainState" class="font-semibold">Checking the ledger…</p>
+      <p id="chainState" class="font-semibold px-2 py-1 rounded">Checking the ledger…</p>
       <button id="reload" type="button" class="btn btn-quiet">Re-check now</button>
     </div>
-    <p id="counts" class="text-sm text-muted mt-2"></p>
+    <p id="counts" class="text-sm text-muted mt-2 min-h-5">Loading…</p>
   </section>
 
   <section class="mb-8">
     <h2 class="font-semibold text-lg mb-2">Cases (one per evidence hash)</h2>
-    <div id="cases" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
+    <!-- min height reserves room so the page does not jump when the cards arrive -->
+    <div id="cases" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 min-h-[60vh] content-start"><p class="text-muted">Loading cases…</p></div>
   </section>
 
   <section>

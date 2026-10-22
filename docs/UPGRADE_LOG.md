@@ -1,7 +1,7 @@
 # UPGRADE LOG (state for docs/UPGRADE_LOOP.md)
 
 Branch `avinya-final` (from `loglens-v2` @ b158675). Backup demo: `main` -> https://loglens-solarflares.pages.dev
-Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iteration 14 = Lighthouse mobile on v2, then Phase C docs).
+Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iteration 15 = judge round 2, then Phase C docs truth pass).
 
 ## NEEDS YOU (the loop cannot do these; `bash win.sh` asks for 1-3)
 | # | What | Why | Status |
@@ -26,6 +26,7 @@ Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iterat
 | 11 | 23:33 | B | PS2 attack chain (`src/lib/chain.ts`: flagged events linked by shared IP/account via union-find, MITRE tactic stages TA0043/TA0006/TA0001/TA0040/TA0005, IDs verified on attack.mitre.org; TA0005 is now named "Stealth") in UI + report; `scripts/check-chain.ts`, `scripts/check-report.ts`; Gemini models now raced in parallel; eval paces AI calls 4 s apart | done | CHAIN PASS (5/5), REPORT PASS (8/8); e2e live 360 + 1280 PASS incl. chain panel; probes 2.9-4.4 s (was 5-7.5 s); eval live 15/17 (cases 2, 9: >8 s; Workers AI backup out of quota until 05:30 IST) |
 | 12 | 23:40 | B | AI vs rules cross-check (`src/lib/crosscheck.ts`: agree/disagree, cited, missed high-risk, AI-only events); PS1 file metadata (type + last modified) kept for uploaded text logs; TEAM.md: Sagar Mishra builder + Krishraj Shukla presenter, stage hand-off | done | e2e live 360 + 1280 PASS incl. "cross-check shown" and "file upload -> metadata" (real file via DevTools setFileInputFiles); eval live 16/17 (case 3 >8 s) |
 | 13 | 23:37 | B | Typecheck: typescript 5.9.3 + @types/node as devDeps, strict tsconfig over src/lib, functions, worker, scripts, tests (`npm run typecheck`); one command `npm run check` = build + typecheck + worker bundle + 5 check scripts | done | `npm run typecheck` 0 errors (only fix: check-seal.ts needed `export {}`); `npm run check` exit 0. Not covered: the inline TS in .astro pages (no `astro check`) |
+| 14 | 23:41 | B | Lighthouse mobile (lighthouse 12.8.2, live v2). `/`: 100/100/100/100. `/cases` was 79 perf (CLS 0.484: cards + status text pushed the page) -> reserved heights -> 98 and 99 (CLS 0.031 / 0.051), A11y/BP/SEO 100 | done | JSON reports in scratchpad; e2e live 360 PASS |
 | 6 | 22:36 | B | MITRE ATT&CK chips (verified IDs, link to attack.mitre.org) on every flag + in report; e2e checks chips | done | e2e live 360 + 1280 PASS (chips step PASS); eval live 16/17: case 5 AI 8b-fast said incident for a legit late admin (AI flake, not this change) |
 | 7 | 22:52 | B | J1 footer/QR/README -> v2 URL + honest v1 lineage; J2 rule severity (HIGH/MEDIUM) sent to AI + backup 8b capped at suspicious without HIGH evidence (labelled note); `npm run check:worker` (wrangler dry-run bundle) after a build error slipped past astro build | done | eval local + live 16/17 (case 5 now PASS; case 9 Hindi >8 s); e2e live 360 + 1280 PASS; live footer shows v2 URL + अvinya |
 | 8 | 22:58 | B | Hindi inside 8 s: stronger Devanagari instruction (neutral style example, not copied), 504 now lists every provider's reason (`tried`) | done | probe: before = 70b/Gemini timeout + 8b 'wrong language'; after 8b Hindi 6.5-7.7 s with case-specific text; eval **local 17/17, live 17/17**; e2e live 360 PASS |
@@ -51,7 +52,7 @@ Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iterat
 | J2 | AI | 8b-fast backup over-calls incident (eval case 5) | Prototype | M | S | done (iter 7) |
 | J3 | PS4 | Audit chain forgeable (unkeyed SHA-256 in localStorage): HMAC signed receipt /api/seal + /api/verify-seal | PS4, PS6 | H | M | done (iter 9) |
 | J4 | Docs | README/PITCH/DEFENSE stale numbers (16/16, 14/14, 10 rules, v1 URL, no Workers AI) | Pres, Proto | H | S | Phase C |
-| 14 | Perf | Lighthouse mobile before/after on v2 | Prototype | M | S | after deploy |
+| 14 | Perf | Lighthouse mobile before/after on v2 | Prototype | M | S | done (iter 14) |
 
 ## Judge score trend
 | Round | Time | Pres /20 | Domain /20 | Solution /20 | Team /20 | Stack /20 | Prototype /100 | Total /200 |
