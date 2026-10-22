@@ -1,7 +1,7 @@
 # UPGRADE LOG (state for docs/UPGRADE_LOOP.md)
 
 Branch `avinya-final` (from `loglens-v2` @ b158675). Backup demo: `main` -> https://loglens-solarflares.pages.dev
-Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iteration 16 = DEMO_SCRIPT + PITCH + DEFENSE rewrite for v2).
+Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iteration 17 = new slide deck for v2, then coverage matrix refresh + morning handoff).
 
 ## NEEDS YOU (the loop cannot do these; `bash win.sh` asks for 1-3)
 | # | What | Why | Status |
@@ -28,6 +28,7 @@ Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iterat
 | 13 | 23:37 | B | Typecheck: typescript 5.9.3 + @types/node as devDeps, strict tsconfig over src/lib, functions, worker, scripts, tests (`npm run typecheck`); one command `npm run check` = build + typecheck + worker bundle + 5 check scripts | done | `npm run typecheck` 0 errors (only fix: check-seal.ts needed `export {}`); `npm run check` exit 0. Not covered: the inline TS in .astro pages (no `astro check`) |
 | 14 | 23:41 | B | Lighthouse mobile (lighthouse 12.8.2, live v2). `/`: 100/100/100/100. `/cases` was 79 perf (CLS 0.484: cards + status text pushed the page) -> reserved heights -> 98 and 99 (CLS 0.031 / 0.051), A11y/BP/SEO 100 | done | JSON reports in scratchpad; e2e live 360 PASS |
 | 15 | 23:47 | B/C | Judge round 2 (139/200). Docs: README rewritten to v2 truth (PS table, Worker not Pages, 17 cases, real results, limits), TECH_STACK.md (diagram, why each tool, vs suggested stack), .env.example + `npm start`; clean clone from GitHub -> `npm install`, `cp .env.example .dev.vars`, `npm start` -> page 200, health OK, ledger/AI offline messages as documented. Dashboard: automated test rows labelled TEST and hidden by default (toggle), ledger head hash shown, window 50 -> 200 rows | done | check-seal live SEAL PASS; e2e live 360 + 1280 PASS ("27 automated test rows hidden") |
+| 16 | 23:52 | C | DEMO_SCRIPT (v2 URL, 7 steps incl. receipt + dashboard, Krishraj presenter, failure table), PITCH (one slide per rubric point, 15 honest Q&A incl. ledger limits), DEFENSE (v2 architecture, file map, 8-step flow, limits), TESTSET + README list every eval run 13/17-17/17 (an earlier draft listed only the best runs; corrected) | done | e7cfe1a |
 | 6 | 22:36 | B | MITRE ATT&CK chips (verified IDs, link to attack.mitre.org) on every flag + in report; e2e checks chips | done | e2e live 360 + 1280 PASS (chips step PASS); eval live 16/17: case 5 AI 8b-fast said incident for a legit late admin (AI flake, not this change) |
 | 7 | 22:52 | B | J1 footer/QR/README -> v2 URL + honest v1 lineage; J2 rule severity (HIGH/MEDIUM) sent to AI + backup 8b capped at suspicious without HIGH evidence (labelled note); `npm run check:worker` (wrangler dry-run bundle) after a build error slipped past astro build | done | eval local + live 16/17 (case 5 now PASS; case 9 Hindi >8 s); e2e live 360 + 1280 PASS; live footer shows v2 URL + अvinya |
 | 8 | 22:58 | B | Hindi inside 8 s: stronger Devanagari instruction (neutral style example, not copied), 504 now lists every provider's reason (`tried`) | done | probe: before = 70b/Gemini timeout + 8b 'wrong language'; after 8b Hindi 6.5-7.7 s with case-specific text; eval **local 17/17, live 17/17**; e2e live 360 PASS |
@@ -48,11 +49,11 @@ Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iterat
 | 10 | AI | AI vs rules cross-check | PS2 | M | S | done (iter 12) |
 | 11 | Coding | Lint + typecheck script | Stack | M | S | done (iter 13, typecheck; no separate linter) |
 | 12 | Tests | eval -> v2 default (done iter 5), rules-only count, honest README | Prototype | M | S | partial |
-| 13 | Docs | TEAM.md (needs names), TECH_STACK.md + diagram, DEFENSE, deck | Team, Stack, Pres | H | M | Phase C |
+| 13 | Docs | TEAM.md, TECH_STACK.md + diagram, DEFENSE (done); slide deck for v2 (todo) | Team, Stack, Pres | H | M | partial |
 | J1 | Presentation | Footer/QR point to v1 + say CHAKRAVYUH 1.0 (Base.astro:7,38): looks like a resubmission. Point to v2, declare v1 lineage honestly | Pres, originality | H | S | done (iter 7) |
 | J2 | AI | 8b-fast backup over-calls incident (eval case 5) | Prototype | M | S | done (iter 7) |
 | J3 | PS4 | Audit chain forgeable (unkeyed SHA-256 in localStorage): HMAC signed receipt /api/seal + /api/verify-seal | PS4, PS6 | H | M | done (iter 9) |
-| J4 | Docs | README/PITCH/DEFENSE stale numbers (16/16, 14/14, 10 rules, v1 URL, no Workers AI) | Pres, Proto | H | S | Phase C |
+| J4 | Docs | README/PITCH/DEFENSE stale numbers (16/16, 14/14, 10 rules, v1 URL, no Workers AI) | Pres, Proto | H | S | done (iter 15-16) |
 | 14 | Perf | Lighthouse mobile before/after on v2 | Prototype | M | S | done (iter 14) |
 
 ## Judge score trend
