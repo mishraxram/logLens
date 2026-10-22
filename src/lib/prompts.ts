@@ -10,7 +10,7 @@ const untrusted = (line: string) => line.replace(/<<<EVENTS|EVENTS>>>/g, '[marke
 
 export function investigationPrompt(events: AiEvent[], notes: string[], lang: 'en' | 'hi') {
   const language = lang === 'hi'
-    ? 'Write all text values in simple Hindi (Devanagari script). Keep usernames, IPs and event numbers as they are.'
+    ? 'LANGUAGE: Hindi. Keep the JSON keys and the verdict/confidence words in English, but write EVERY other text value (summary, indicator text, next_steps, hidden_patterns text) in simple Hindi using Devanagari script, for example a sentence like "एक IP से कई बार गलत पासवर्ड डाला गया।" (style only, do not copy it). Do not answer in English. Keep usernames, IPs and event numbers as they are.'
     : 'Write all text values in simple English.';
   return `You are a digital forensics assistant helping a college IT investigator.
 Below are log events (already parsed and sorted by time). Some have rule-based flags; each flag starts with its rule severity (HIGH or MEDIUM).

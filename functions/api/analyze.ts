@@ -119,8 +119,10 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     return Response.json({ source: 'ai', sent: events.length, ...ai });
   } catch (err) {
     // All providers failed: report the first reason (the page then shows the offline rule-based result)
-    let first: unknown = err;
-    while (first instanceof AggregateError) first = first.errors[0]; // "best" is itself a Promise.any
-    return Response.json({ error: first instanceof Error ? first.message : 'AI unavailable' }, { status: 504 });
+    // Flatten nested Promise.any errors ("best" is itself one) into one reason per provider
+    const reasons: string[] = [];
+    const walk = (e: unknown) => e instanceof AggregateError ? e.errors.forEach(walk) : reasons.push(e instanceof Error ? e.message : 'AI unavailable');
+    walk(err);
+    return Response.json({ error: reasons[0] ?? 'AI unavailable', tried: reasons }, { status: 504 });
   }
 };
