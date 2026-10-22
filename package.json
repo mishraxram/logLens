@@ -8,7 +8,9 @@
     "build": "astro build",
     "preview": "wrangler pages dev dist",
     "deploy": "astro build && wrangler pages deploy dist",
-    "check:worker": "wrangler deploy --dry-run --outdir .wrangler/dry"
+    "check:worker": "wrangler deploy --dry-run --outdir .wrangler/dry",
+    "typecheck": "tsc -p tsconfig.json",
+    "check": "npm run build && npm run typecheck && npm run check:worker && node scripts/check-rules.ts && node scripts/check-hash.ts && node scripts/check-changes.ts && node scripts/check-chain.ts && node scripts/check-report.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
@@ -17,6 +19,8 @@
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
+    "@types/node": "^24.19.2",
+    "typescript": "^5.9.3",
     "wrangler": "^4.151.0"
   },
   "allowScripts": {

@@ -1,0 +1,11 @@
+{
+  // Type check only (npm run typecheck). Astro and wrangler do the real builds.
+  "extends": "astro/tsconfigs/strict",
+  "compilerOptions": {
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node"]
+  },
+  "include": ["src/lib/**/*.ts", "functions/**/*.ts", "worker/**/*.ts", "scripts/**/*.ts", "tests/**/*.ts"]
+}

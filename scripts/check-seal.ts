@@ -1,6 +1,7 @@
 // Checks the server evidence ledger: seal -> receipt valid -> ledger intact.
 // Usage: node scripts/check-seal.ts [base-url]   (default: local wrangler dev on port 8813)
 // The "edited row is caught" test is run separately on the LOCAL database only, see docs/UPGRADE_LOG.md.
+export {}; // makes this file a module, so top-level await is allowed
 const base = (process.argv[2] || 'http://localhost:8813').replace(/\/$/, '');
 let fails = 0;
 const ok = (cond: boolean, name: string) => { console.log(`${cond ? 'PASS' : 'FAIL'} ${name}`); if (!cond) fails++; };

@@ -1,7 +1,7 @@
 # UPGRADE LOG (state for docs/UPGRADE_LOOP.md)
 
 Branch `avinya-final` (from `loglens-v2` @ b158675). Backup demo: `main` -> https://loglens-solarflares.pages.dev
-Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iteration 13 = lint/typecheck, then Lighthouse, then Phase C docs at 03:30).
+Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iteration 14 = Lighthouse mobile on v2, then Phase C docs).
 
 ## NEEDS YOU (the loop cannot do these; `bash win.sh` asks for 1-3)
 | # | What | Why | Status |
@@ -25,6 +25,7 @@ Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iterat
 | 10c | 23:16 | B | Workers AI free allowance used up -> 70b dropped, 8b backup starts only after 2.5 s; AI-unavailable now returns 200 + error (a 504 printed a console error) | done | live probes: Gemini 5.2 s / 7.5 s; e2e live 360 + 1280 PASS 0 errors; eval live 16/17 (case 9 Hindi: Gemini >8 s, backup out of quota until 05:30 IST) |
 | 11 | 23:33 | B | PS2 attack chain (`src/lib/chain.ts`: flagged events linked by shared IP/account via union-find, MITRE tactic stages TA0043/TA0006/TA0001/TA0040/TA0005, IDs verified on attack.mitre.org; TA0005 is now named "Stealth") in UI + report; `scripts/check-chain.ts`, `scripts/check-report.ts`; Gemini models now raced in parallel; eval paces AI calls 4 s apart | done | CHAIN PASS (5/5), REPORT PASS (8/8); e2e live 360 + 1280 PASS incl. chain panel; probes 2.9-4.4 s (was 5-7.5 s); eval live 15/17 (cases 2, 9: >8 s; Workers AI backup out of quota until 05:30 IST) |
 | 12 | 23:40 | B | AI vs rules cross-check (`src/lib/crosscheck.ts`: agree/disagree, cited, missed high-risk, AI-only events); PS1 file metadata (type + last modified) kept for uploaded text logs; TEAM.md: Sagar Mishra builder + Krishraj Shukla presenter, stage hand-off | done | e2e live 360 + 1280 PASS incl. "cross-check shown" and "file upload -> metadata" (real file via DevTools setFileInputFiles); eval live 16/17 (case 3 >8 s) |
+| 13 | 23:37 | B | Typecheck: typescript 5.9.3 + @types/node as devDeps, strict tsconfig over src/lib, functions, worker, scripts, tests (`npm run typecheck`); one command `npm run check` = build + typecheck + worker bundle + 5 check scripts | done | `npm run typecheck` 0 errors (only fix: check-seal.ts needed `export {}`); `npm run check` exit 0. Not covered: the inline TS in .astro pages (no `astro check`) |
 | 6 | 22:36 | B | MITRE ATT&CK chips (verified IDs, link to attack.mitre.org) on every flag + in report; e2e checks chips | done | e2e live 360 + 1280 PASS (chips step PASS); eval live 16/17: case 5 AI 8b-fast said incident for a legit late admin (AI flake, not this change) |
 | 7 | 22:52 | B | J1 footer/QR/README -> v2 URL + honest v1 lineage; J2 rule severity (HIGH/MEDIUM) sent to AI + backup 8b capped at suspicious without HIGH evidence (labelled note); `npm run check:worker` (wrangler dry-run bundle) after a build error slipped past astro build | done | eval local + live 16/17 (case 5 now PASS; case 9 Hindi >8 s); e2e live 360 + 1280 PASS; live footer shows v2 URL + अvinya |
 | 8 | 22:58 | B | Hindi inside 8 s: stronger Devanagari instruction (neutral style example, not copied), 504 now lists every provider's reason (`tried`) | done | probe: before = 70b/Gemini timeout + 8b 'wrong language'; after 8b Hindi 6.5-7.7 s with case-specific text; eval **local 17/17, live 17/17**; e2e live 360 PASS |
@@ -43,7 +44,7 @@ Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iterat
 | 8 | PS5 | Report: event refs per finding, MITRE, hash function field | PS5 | M | S | done (iter 9-11, check-report PASS) |
 | 9 | PS1 | File metadata panel | PS1 | M | S | done (iter 12) |
 | 10 | AI | AI vs rules cross-check | PS2 | M | S | done (iter 12) |
-| 11 | Coding | Lint + typecheck script | Stack | M | S | todo |
+| 11 | Coding | Lint + typecheck script | Stack | M | S | done (iter 13, typecheck; no separate linter) |
 | 12 | Tests | eval -> v2 default (done iter 5), rules-only count, honest README | Prototype | M | S | partial |
 | 13 | Docs | TEAM.md (needs names), TECH_STACK.md + diagram, DEFENSE, deck | Team, Stack, Pres | H | M | Phase C |
 | J1 | Presentation | Footer/QR point to v1 + say CHAKRAVYUH 1.0 (Base.astro:7,38): looks like a resubmission. Point to v2, declare v1 lineage honestly | Pres, originality | H | S | done (iter 7) |
