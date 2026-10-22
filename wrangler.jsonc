@@ -11,6 +11,8 @@
     "run_worker_first": ["/api/*"],
     "not_found_handling": "404-page"
   },
+  // Cloudflare Workers AI (second AI provider, runs next to Gemini)
+  "ai": { "binding": "AI" },
   // 20 AI calls per IP per minute (period must be 10 or 60 seconds)
   "ratelimits": [
     { "name": "AI_LIMITER", "namespace_id": "1001", "simple": { "limit": 20, "period": 60 } }

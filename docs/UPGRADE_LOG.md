@@ -1,12 +1,12 @@
 # UPGRADE LOG (state for docs/UPGRADE_LOOP.md)
 
 Branch `avinya-final` (from `loglens-v2` @ b158675). Backup demo: `main` -> https://loglens-solarflares.pages.dev
-Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iteration 3 = backlog rank 2).
+Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iteration 4 = backlog rank 2 security headers).
 
 ## NEEDS YOU (the loop cannot do these; `bash win.sh` asks for 1-3)
 | # | What | Why | Status |
 |---|---|---|---|
-| 1 | (checked 21:53: GEMINI_API_KEY empty in .env and .dev.vars) Put a Gemini key in `.env` + `.dev.vars`, then `npx wrangler secret put GEMINI_API_KEY` (Worker `loglens-v2`) | **URGENT**: 22:00 probes: v1 AI `took longer than 8s` (2/2), v2 AI `AI error 400`. Demo AI shows only the offline fallback until a working key is set | open |
+| 1 | (checked 21:53: GEMINI_API_KEY empty in .env and .dev.vars) Put a Gemini key in `.env` + `.dev.vars`, then `npx wrangler secret put GEMINI_API_KEY` (Worker `loglens-v2`) | Key set 22:08 (piped from .env, never printed). Gemini itself is slow (simple call 9.5 s), so Workers AI was added | done |
 | 2 | `npx wrangler login` | Needed to deploy v2 | done (user logged in 22:0x, whoami checked) |
 | 3 | Team member names + who does what | Team Delegation = 20 marks; the loop must not invent names | open |
 
@@ -15,11 +15,13 @@ Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iterat
 |---|---|---|---|---|---|
 | 1 | 22:05 | R | Deep research -> docs/RESEARCH-DEEP.md | done (deep-research skill blocked by permissions; 4 web searches + curl of attack.mitre.org instead) | 10 MITRE IDs verified by page title; see commit |
 | 2 | 22:08 | A | Audit -> docs/AUDIT.md, backlog, matrix | done. Found + fixed: SSH sample and 3 test logs never committed (*.log in .gitignore) | 4a35b03; eval 6/16 (all 10 fails = live AI timeout; all rule checks pass) |
+| 3 | 22:18 | B | Live AI fix: Gemini + Workers AI (70b preferred, 8b-fast late backup) in parallel inside 8 s | done. Hindi case 9 still >8 s (offline fallback shown, known) | eval v2 live **15/16** (was 6/16); ERP sample 6.7 s on live; deploy loglens-v2 OK |
 
 ## Backlog (filled by the audit, ranked by marks-impact / effort)
 | Rank | Area | Item | Criterion / PS | Impact | Effort | Status |
 |---|---|---|---|---|---|---|
-| 1 | Deploy/AI | Working Gemini key on v2 (NEEDS YOU 1) | Prototype, PS2 | H | S | blocked (user) |
+| 1 | Deploy/AI | Working live AI on v2 | Prototype, PS2 | H | S | done (iter 3) |
+| 1b | AI | Hindi answer inside 8 s (case 9) | Prototype | M | M | todo |
 | 2 | Security | Security headers + CSP from the Worker | Prototype, Stack | H | S | todo |
 | 3 | Security/AI | Prompt-injection guard + eval case | Stack, PS2 | M | S | todo |
 | 4 | PS2 | Verified MITRE ID chips on flags + report | PS2, Domain | H | S | todo |

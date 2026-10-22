@@ -9,6 +9,7 @@ type Env = {
   AI_LIMITER?: RateLimiter; // Cloudflare rate limit binding (wrangler.jsonc "ratelimits")
   GEMINI_API_KEY?: string;
   GEMINI_MODEL?: string;
+  AI?: { run: (model: string, input: object) => Promise<any> }; // Workers AI binding (wrangler.jsonc "ai")
 };
 
 const MAX_BODY_BYTES = 256 * 1024; // 200 events of short fields fit easily in this
