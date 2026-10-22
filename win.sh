@@ -5,6 +5,14 @@
 set -uo pipefail
 cd "$(dirname "$0")" || exit 1
 
+# Run inside tmux so the loop keeps going when the screen locks or VS Code is closed,
+# and block sleep / lid-close suspend only while it runs (nothing permanent changes).
+# Re-running attaches to the same session. Detach: Ctrl+b then d.
+if [ -z "${TMUX:-}" ]; then
+  exec tmux new-session -A -s loglens \
+    "systemd-inhibit --what=sleep:idle:handle-lid-switch --who='LogLens loop' --why='Upgrade loop running' bash '$PWD/win.sh'; exec bash"
+fi
+
 say() { printf '\n\033[1;36m==> %s\033[0m\n' "$*"; }
 
 # 1. Branch + dependencies
