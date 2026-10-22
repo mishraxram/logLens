@@ -9,15 +9,10 @@ const samples = [
 ];
 ---
 <Base>
-  <header class="mb-6 lg:mb-10">
-    <p class="flex items-center gap-2 mb-3">
-      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#E3A72F"/><circle cx="14" cy="14" r="7" fill="none" stroke="#1B1F24" stroke-width="3"/><path d="M19 19l7 7" stroke="#1B1F24" stroke-width="3" stroke-linecap="round"/></svg>
-      <span class="font-semibold">LogLens</span>
-      <span class="text-muted">digital forensics desk</span>
-      <a href="/cases" class="ml-auto text-sm underline min-h-11 inline-flex items-center">Cases dashboard</a>
-    </p>
-    <h1 class="font-cond font-bold text-3xl sm:text-4xl lg:text-5xl leading-[1.08] max-w-3xl">Find who changed what. Prove the log was not touched.</h1>
-    <p class="mt-3 max-w-2xl text-ink/80">Rules flag suspicious events, AI (Gemini or Cloudflare Workers AI) explains them, and a SHA-256 hash seals the evidence.</p>
+  <header class="mb-6 lg:mb-8">
+    <p class="kicker mb-2">ABCS-02 · AI-assisted digital forensics</p>
+    <h1 class="font-cond font-bold text-3xl sm:text-4xl lg:text-[2.75rem] leading-[1.08] max-w-3xl">Find who changed what. Prove the log was not touched.</h1>
+    <p class="mt-3 max-w-2xl text-ink/80">Rules flag suspicious events, AI (Gemini or Cloudflare Workers AI) explains them, and a SHA-256 hash with a signed server receipt seals the evidence.</p>
   </header>
 
   <div class="grid gap-6 lg:grid-cols-[380px_1fr] items-start">
@@ -84,6 +79,7 @@ const samples = [
         <div id="notes"></div>
         <div>
           <div id="verdict"></div>
+          <dl id="kpis" class="kpis mt-3"></dl>
           <p id="stats" class="text-sm text-muted mt-2"></p>
         </div>
 
@@ -92,16 +88,6 @@ const samples = [
           <h2 class="font-semibold text-lg">Attack chain</h2>
           <p class="text-xs text-muted mt-1">Flagged events joined when they share an IP or an account, then put in MITRE ATT&CK tactic order of first appearance. Built by rules, not AI.</p>
           <div id="chains" class="mt-3 space-y-4"></div>
-        </div>
-
-        <!-- Change register: who changed what, when, from where, before -> after -->
-        <div class="panel p-4 lg:p-5">
-          <div class="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 class="font-semibold text-lg">Changes made</h2>
-            <p id="changeCount" class="text-sm text-muted"></p>
-          </div>
-          <p class="text-xs text-muted mt-1">Every update, delete or admin form post in the log. "Who" is the account that made it; an account can be stolen, so check the reasons.</p>
-          <ol id="changes" class="mt-3 space-y-2"></ol>
         </div>
 
         <!-- AI investigation summary -->
@@ -119,6 +105,17 @@ const samples = [
           <div id="aiOut" class="mt-3"></div>
         </div>
 
+        <!-- Change register: who changed what, when, from where, before -> after -->
+        <div class="panel p-4 lg:p-5">
+          <div class="flex flex-wrap items-baseline justify-between gap-2">
+            <h2 class="font-semibold text-lg">Changes made</h2>
+            <p id="changeCount" class="text-sm text-muted"></p>
+          </div>
+          <p class="text-xs text-muted mt-1">Every update, delete or admin form post in the log. "Who" is the account that made it; an account can be stolen, so check the reasons.</p>
+          <ol id="changes" class="mt-3 space-y-2"></ol>
+        </div>
+
+        <!-- Timeline: every event in time order -->
         <div class="panel p-4 lg:p-5">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <h2 class="font-semibold text-lg">Timeline</h2>
@@ -489,11 +486,14 @@ const samples = [
       const ol = el('ol', 'chain mt-2');
       for (const st of c.steps) {
         const li = el('li', '');
-        const a = el('a', 'mitre-chip', st.tactic) as HTMLAnchorElement;
+        const a = el('a', 'mitre-chip !ml-0', st.tactic) as HTMLAnchorElement;
         a.href = `https://attack.mitre.org/tactics/${st.tactic}/`; a.target = '_blank'; a.rel = 'noopener'; a.title = `MITRE ATT&CK tactic ${st.tactic}: ${st.name}`;
-        li.append(el('span', 'font-semibold', st.name), ' ', a,
-          el('span', 'block font-mono text-xs text-muted', `from ${st.from} · events ${st.events.map((n) => `#${n}`).join(' ')}`),
-          el('span', 'block text-xs', st.reasons.join(', ')));
+        const head = el('span', 'flex flex-wrap items-center gap-x-2 gap-y-1');
+        head.append(el('span', 'font-semibold', st.name), a);
+        li.append(head,
+          el('span', 'block font-mono text-xs text-muted mt-1', `from ${st.from.slice(11) || st.from}`),
+          el('span', 'block font-mono text-xs font-semibold mt-0.5', st.events.map((n) => `#${n}`).join(' ')),
+          el('span', 'block text-xs text-ink/75 mt-0.5', st.reasons.join(', ')));
         ol.append(li);
       }
       box.append(ol);
@@ -503,6 +503,15 @@ const samples = [
     // Change register
     const changes = extractChanges(events);
     const bad = changes.filter((c) => c.status === 'unauthorized').length;
+    // Key numbers at a glance (all computed above from this log)
+    const kpis = $('kpis'); kpis.replaceChildren();
+    const kpi = (label: string, value: number, tone = '') => {
+      const d = el('div', `kpi ${tone}`); d.append(el('dt', '', label), el('dd', '', String(value))); kpis.append(d);
+    };
+    kpi('Events', events.length);
+    kpi('High-risk events', v.high, v.high ? 'is-bad' : '');
+    kpi('Unauthorized changes', bad, bad ? 'is-bad' : '');
+    kpi('Attack chain stages', chains[0]?.steps.length ?? 0, chains.length ? 'is-warn' : '');
     $('changeCount').textContent = changes.length ? `${changes.length} change${changes.length === 1 ? '' : 's'}, ${bad} unauthorized` : 'No data changes in this log';
     const chList = $('changes'); chList.replaceChildren();
     const chip: Record<string, string> = { unauthorized: 'bg-flag text-white', suspicious: 'bg-tag', blocked: 'bg-ink/10', normal: 'bg-match text-white' };

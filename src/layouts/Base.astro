@@ -7,7 +7,7 @@ import QRCode from 'qrcode';
 const LIVE_URL = 'https://loglens-v2.loglens.workers.dev';
 const FONTS_URL = 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Sans+Condensed:wght@600;700&family=Noto+Sans+Devanagari:wght@400;600&display=swap';
 const qrSvg = await QRCode.toString(LIVE_URL, { type: 'svg', margin: 1, color: { dark: '#14161A', light: '#F4F1EA' } });
-const { title = 'LogLens', description = 'AI-assisted digital forensics: log timeline, AI summary and SHA-256 evidence check.' } = Astro.props;
+const { title = 'LogLens', current = 'desk', description = 'AI-assisted digital forensics: log timeline, AI summary and SHA-256 evidence check.' } = Astro.props;
 ---
 <!doctype html>
 <html lang="en">
@@ -27,7 +27,21 @@ const { title = 'LogLens', description = 'AI-assisted digital forensics: log tim
     <noscript><link rel="stylesheet" href={FONTS_URL} /></noscript>
   </head>
   <body class="font-sans min-h-screen flex flex-col">
-    <main class="flex-1 w-full max-w-6xl mx-auto px-4 py-6 lg:py-10">
+    <!-- App bar: same on every page -->
+    <header class="appbar">
+      <div class="max-w-6xl mx-auto px-4 flex items-center gap-3 min-h-14">
+        <a href="/" class="flex items-center gap-2 font-semibold text-sheet no-underline">
+          <svg aria-hidden="true" width="24" height="24" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#E3A72F"/><circle cx="14" cy="14" r="7" fill="none" stroke="#1B1F24" stroke-width="3"/><path d="M19 19l7 7" stroke="#1B1F24" stroke-width="3" stroke-linecap="round"/></svg>
+          LogLens
+        </a>
+        <span class="hidden sm:inline text-sheet/60 text-sm">digital forensics desk</span>
+        <nav class="ml-auto flex items-center gap-1" aria-label="Main">
+          <a href="/" class="navlink" aria-current={current === 'desk' ? 'page' : undefined}>Desk</a>
+          <a href="/cases" class="navlink" aria-current={current === 'cases' ? 'page' : undefined}>Cases</a>
+        </nav>
+      </div>
+    </header>
+    <main class="flex-1 w-full max-w-6xl mx-auto px-4 py-6 lg:py-8">
       <slot />
     </main>
     <footer class="border-t border-line text-sm text-muted px-4 py-6">

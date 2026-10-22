@@ -1,9 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
 ---
-<Base title="Cases dashboard · LogLens" description="Investigation dashboard: every evidence item sealed on the LogLens server, its status, investigator and a re-check of the signed, hash-chained ledger.">
+<Base current="cases" title="Cases dashboard · LogLens" description="Investigation dashboard: every evidence item sealed on the LogLens server, its status, investigator and a re-check of the signed, hash-chained ledger.">
   <header class="mb-6">
-    <p class="mb-2"><a class="underline text-sm" href="/">← Back to the forensics desk</a></p>
+    <p class="kicker mb-2">PS6 · investigation dashboard</p>
     <h1 class="font-cond font-bold text-3xl sm:text-4xl leading-tight">Cases dashboard</h1>
     <p class="mt-2 max-w-2xl text-ink/80">Every evidence item sealed on the server, who handled it and its latest status. Each row is re-checked now: signature and chain link.</p>
     <p class="mt-2 max-w-2xl text-sm text-muted">Demo ledger: shared by everyone who uses this site, no login. A real deployment would put this page behind an access gate for authorised investigators only.</p>
@@ -16,6 +16,7 @@ import Base from '../layouts/Base.astro';
       <label class="text-sm flex items-center gap-2 min-h-11 cursor-pointer"><input id="showTests" type="checkbox" class="w-5 h-5 accent-ink" /> Show automated test rows</label>
     </div>
     <p id="head" class="font-mono text-xs break-all mt-2"></p>
+    <dl id="dkpis" class="kpis mt-3 min-h-[4.5rem]"></dl>
     <p id="counts" class="text-sm text-muted mt-2 min-h-5">Loading…</p>
   </section>
 
@@ -41,6 +42,8 @@ import Base from '../layouts/Base.astro';
 <script>
   type Row = { id: number; sealed_at: string; sha256: string; name: string; size: number; investigator: string; action: string; valid: boolean; linkOk: boolean };
   const $ = (id: string) => document.getElementById(id)!;
+  // "2026-10-22T18:02:07.228Z" -> "2026-10-22 18:02 UTC"
+  const when = (iso: string) => `${iso.slice(0, 10)} ${iso.slice(11, 16)} UTC`;
   function el(tag: string, cls: string, text = '') {
     const n = document.createElement(tag); n.className = cls; n.textContent = text; return n;
   }
@@ -84,6 +87,13 @@ import Base from '../layouts/Base.astro';
     const byHash = new Map<string, Row[]>();
     for (const r of shown) byHash.set(r.sha256, [...(byHash.get(r.sha256) ?? []), r]);
     const tampered = [...byHash.values()].filter((list) => list[0].action === 'VERIFIED_TAMPERED').length;
+    // Key numbers at a glance
+    const dk = $('dkpis'); dk.replaceChildren();
+    const kpi = (label: string, value: number, tone = '') => { const d = el('div', `kpi ${tone}`); d.append(el('dt', '', label), el('dd', '', String(value))); dk.append(d); };
+    kpi('Cases', byHash.size);
+    kpi('Tampering seen', tampered, tampered ? 'is-bad' : '');
+    kpi('Ledger entries checked', data.rows.length);
+    kpi('Failed checks', bad, bad ? 'is-bad' : '');
     $('counts').textContent = `${byHash.size} case(s) · ${tampered} with tampering seen · ${data.rows.length} ledger entries checked${hiddenCount ? ` · ${hiddenCount} automated test rows hidden` : ''}`;
     if (!byHash.size) cases.append(el('p', 'text-muted', 'No evidence sealed yet. Open a case on the main page to create the first receipt.'));
 
@@ -94,10 +104,13 @@ import Base from '../layouts/Base.astro';
       card.append(el('p', 'font-semibold break-all', first.name),
         el('p', `inline-block text-sm font-semibold rounded px-2 py-0.5 my-1 ${cls}`, label),
         el('p', 'text-sm', `Investigator: ${[...new Set(list.map((r) => r.investigator))].join(', ')}`),
-        el('p', 'text-xs text-muted', `Sealed ${first.sealed_at} · ${list.length} action(s) · last ${latest.sealed_at}`),
+        el('p', 'text-xs text-muted', `Sealed ${when(first.sealed_at)} · ${list.length} action(s) · last ${when(latest.sealed_at)}`),
         el('p', 'font-mono text-xs break-all mt-1', `SHA-256 ${hash}`));
       cases.append(card);
     }
+
+    // Room was reserved only while loading (avoids a jump); give it back now that the cards are in
+    cases.classList.remove('min-h-[60vh]');
 
     for (const r of shown) {
       const tr = document.createElement('tr');
