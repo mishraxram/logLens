@@ -1,50 +1,62 @@
-# SOLAR FLARES
+# LogLens · team SOLAR FLARES
 
-**Team:** SOLAR FLARES | **Registration ID:** HK26-0014 | **Event:** अvinya '26 Hackathon 4.0, BIET Lucknow (problem ABCS-02). v1 was first built at CHAKRAVYUH 1.0; v2 is the upgrade for अvinya '26 (see `git log pre-upgrade-v1..avinya-final`).
+**Team:** SOLAR FLARES | **Registration ID:** HK26-0014 | **Event:** अvinya '26 Hackathon 4.0, BIET Lucknow (problem ABCS-02).
+v1 was first built at CHAKRAVYUH 1.0; v2 is the upgrade for अvinya '26 (diff: `git log pre-upgrade-v1..avinya-final`).
 
 > **Problem Statement ABCS-02: AI-Assisted Digital Forensics** (Domain 3: AI-Based Cybersecurity)
-> An AI-assisted platform that analyzes digital artifacts, correlates events, reconstructs incident timelines and maintains evidence integrity with SHA-256 hashing and an audit trail. [Full statement](docs/PROBLEM.md)
+> An AI-assisted platform that analyzes digital artifacts, correlates events, reconstructs incident timelines and maintains evidence integrity with SHA-256 hashing and auditable records. [Full statement](docs/PROBLEM.md)
 
-**Live (v2):** https://loglens-v2.loglens.workers.dev · **Backup (v1):** https://loglens-solarflares.pages.dev
+**Live (v2):** https://loglens-v2.loglens.workers.dev · **Cases dashboard:** https://loglens-v2.loglens.workers.dev/cases · **Backup (v1):** https://loglens-solarflares.pages.dev
 
 ## Problem
-After an incident (example: college ERP marks changed at 2 AM), an investigator has thousands of log lines. They must find who did what and when, and prove the logs were not edited afterwards.
+After an incident (example: college ERP marks changed at 2 AM), a college IT or cyber-cell investigator has thousands of log lines. They must find who did what and when, and show that the logs were not edited afterwards.
 
-## Solution: LogLens
-1. **Timeline + red flags.** Paste or upload an ERP audit CSV, a Linux `auth.log` or an Apache/Nginx access log. Events are sorted by time and 13 explainable rules flag them: failed-login bursts, login right after a burst, new IP, shared IP, impossible travel, off-hours activity, student role changing records, big marks jumps, deleted logs, direct root login, attack patterns in URLs (SQL injection, path traversal, XSS, secret-file probes, command injection), page-scanning bursts, and an attacking IP later getting into an admin page.
-2. **AI investigation summary (Gemini).** Gives a verdict (incident / suspicious / normal / unsure), a confidence level, indicators that cite event numbers, "AI found beyond the rules" patterns, and next steps. Works in English and Hindi.
-3. **Change register.** Every update, delete or admin form post: who (account), when, from which IP, before → after, and a status (Unauthorized / Suspicious / Blocked attempt / Looks normal) with reasons.
-4. **Evidence locker.** SHA-256 hash of the log, or of any file (PDF, image...) as raw bytes with its metadata. Verify shows MATCH or TAMPERED. The audit trail is hash-chained: if any entry is edited, the chain shows where it broke. Download the investigation report as HTML or save it as PDF. If the evidence was changed, the app shows which lines changed (before vs after) from a sealed copy kept at lock time, and can restore the original.
+## Solution: LogLens (what each PS point maps to)
+| PS | What LogLens does |
+|---|---|
+| PS1 evidence analysis | Parses ERP audit CSV, Linux `auth.log`, Apache/Nginx access logs. Any other file (PDF, image) is hashed as raw bytes; name, size, type and last-modified time are kept |
+| PS2 pattern discovery | 13 explainable rules, each with a verified MITRE ATT&CK technique ID. **Attack chain**: flagged events linked by shared IP or account, in MITRE tactic stages. AI summary (Gemini, Workers AI backup) with indicators that must cite real event numbers, plus "AI found beyond the rules" and an **AI vs rules cross-check** |
+| PS3 timeline | Every event sorted by time, flagged rows marked, change register (who changed what, before → after) |
+| PS4 integrity | SHA-256 in the browser (Web Crypto), MATCH / TAMPERED, changed-lines diff and restore. **Signed server receipt**: HMAC-SHA256, hash-chained, stored in Cloudflare D1 (SQLite) |
+| PS5 reports | HTML / PDF report: hash function + value, server receipt, findings with event numbers, MITRE IDs, attack chain, AI summary, audit trail, full raw timeline |
+| PS6 dashboard | `/cases`: every sealed evidence item, status, investigator, server audit trail with each row re-checked. Case progress strip and investigator name on the main page |
 
-**Failure path:** if Gemini is slow (over 8 s) or down, the app shows an offline summary built from the rules, clearly labelled "Not AI generated". If evidence is thin, it says "Not enough evidence" and what to collect next. Lines it cannot read are counted and shown, never dropped.
+**Failure path:** if AI is slow (over 8 s) or down, the app shows an offline summary built from the rules, clearly labelled. If evidence is thin, it says "Not enough evidence" and what to collect next. Lines it cannot read are counted and shown, never dropped. If the server ledger is unreachable, the local hash still works and the app says so.
 
-## How to run (3 commands)
+## How to run (3 commands, from a clean clone)
 ```bash
 npm install
-cp .env.example .dev.vars        # then put your GEMINI_API_KEY in .dev.vars
-npm run build && npx wrangler pages dev dist
+cp .env.example .dev.vars        # put GEMINI_API_KEY and SEAL_SECRET in .dev.vars (both optional)
+npm start                        # build + local D1 table + local Worker
 ```
-Open http://localhost:8788. Without a key, everything works except the AI summary, which falls back to the offline rules summary.
+Open http://localhost:8787. Without keys everything works except the AI summary (offline rules summary instead) and server receipts (local hash only).
 
-## Tests
-- `node tests/eval.ts`: runs 16 cases from [docs/TESTSET.md](docs/TESTSET.md) through the real parser, rules, hashing and the live AI API.
-- Latest result: 16/16, 16/16, 15/16 on 16 cases (the one fail: Hindi answer took over 8 s, offline summary shown). Before fixes on the first 14 cases: 11/14, 13/14, 11/14. It is a small set we wrote ourselves, so it shows the demo path is stable. It does not prove accuracy on all real-world logs.
-- `node scripts/check-rules.ts` prints the flags for the 3 sample logs. `node scripts/check-hash.ts` shows a 1-character edit changing the SHA-256.
+## Tests (run them yourself)
+- `npm run check`: build, strict typecheck, Worker bundle, and 5 check scripts (rules, hash, change register, attack chain, report content).
+- `node tests/eval.ts [api-url]`: 17 cases from [docs/TESTSET.md](docs/TESTSET.md) through the real parser, rules, hashing and the live AI API (default: v2), 4 s apart.
+  Results on 22 Oct night: 17/17, 17/17, then 15-16/17 after the free Workers AI daily allowance ran out (fails = AI over 8 s, offline summary shown). Case 17 is a prompt-injection log: the AI must not obey text inside the log.
+  It is a small set we wrote ourselves: it shows the demo path is stable, not accuracy on all real-world logs.
+- `node scripts/e2e.ts <url> 360`: headless Chrome walks the demo path (sample → timeline → MITRE + attack chain → server receipt → AI → cross-check → MATCH → TAMPERED → file upload → dashboard) and fails on any console error.
+- `node scripts/check-seal.ts <url>`: server receipts, bad input, and 6 parallel receipts keep one unbroken chain.
+- Lighthouse mobile on the live site (22 Oct): `/` 100/100/100/100, `/cases` 98-99/100/100/100.
 
 ## AI usage and data
-- **In the product:** Google Gemini (flash-lite models, with backups if one is busy) is called from a Cloudflare Pages Function (`functions/api/analyze.ts`). The key stays on the server. The prompt is in `src/lib/prompts.ts`.
-- **What is sent:** only the parsed event lines (max 200, flagged ones first) and the case notes. Raw uploaded files and hashes stay in the browser. The audit trail and evidence record are kept in the browser's localStorage.
-- **Checks on AI output:** indicators that cite event numbers not in the log are removed. If Hindi is asked and the reply is not in Hindi, the next model is tried.
-- **Building it:** Built with Claude Code (code, UI, rules and test cases, written under our direction and reviewed by us) and Google Gemini API (analysis inside the app). Problem choice, story, scope, demo design and testing decisions are ours.
+- **In the product:** Google Gemini flash-lite models (raced, first valid answer wins) and, if Gemini is slow, Cloudflare Workers AI `llama-3.1-8b-instruct-fast` as a backup. Called only from the server (`functions/api/analyze.ts`); keys never reach the browser. Prompt in `src/lib/prompts.ts`.
+- **What is sent to the AI:** only parsed event lines (max 200, flagged first) and case notes. Raw files stay in the browser.
+- **Checks on AI output:** indicators citing events that do not exist are removed; wrong language is rejected; the backup model may not say "incident" without a high-risk rule flag (shown as a note); log text is marked as untrusted data so instructions hidden in a log are not followed.
+- **Server ledger:** stores evidence hash, file name, size, investigator name and server time. It is a shared demo ledger with no login.
+- **Building it:** built with Claude Code (code, UI, rules, tests and docs, written under our direction and checked by us). Problem choice, scope, rules design, test cases and the demo are ours. See [docs/TEAM.md](docs/TEAM.md).
 
 ## Limits (honest)
-- Supports 3 log formats (ERP audit CSV, Linux auth.log, Apache/Nginx access log). Other formats show "Not a supported log".
-- The audit trail lives in one browser. The hash chain shows edits, but someone who deletes the whole trail can start fresh. A server copy of the hashes is the next step.
-- The report supports an investigation. It is not a legal certificate.
-- All logs in the app's "Try sample" buttons and in `tests/cases/` are made-up sample data.
+- 3 log formats only. Other formats show "Not a supported log".
+- No login: the dashboard is a shared demo ledger. A real deployment needs an access gate for authorised investigators.
+- The server receipt proves the hash was recorded at that server time by this server. The Cloudflare account owner could still change the database; the signature check would show it unless the secret also leaked.
+- AI depends on free tiers (Gemini, Workers AI 10,000 neurons/day). When both are slow the offline summary is shown.
+- The report supports an investigation. It is not a legal certificate (for example under BSA 2023 s.63).
+- All sample and test logs are made-up sample data.
 
 ## Tech
-Astro + Tailwind, TypeScript, Cloudflare Pages + Pages Functions, Google Gemini API, Web Crypto (SHA-256), `qrcode` (QR code made at build time).
+Astro 5 + Tailwind 4 + TypeScript (pages) · one Cloudflare Worker (static assets + API, CSP and security headers, rate limit) · Cloudflare D1 (SQLite) evidence ledger · Google Gemini API + Cloudflare Workers AI · Web Crypto (SHA-256, HMAC-SHA256) · `qrcode` (QR made at build time). Why each was chosen: [docs/TECH_STACK.md](docs/TECH_STACK.md).
 
 ## Team
 SOLAR FLARES (HK26-0014): **Sagar Mishra** (builder, B.Tech CSE) and **Krishraj Shukla** (presenter). Roles, stage hand-off and the human vs AI-tool split: [docs/TEAM.md](docs/TEAM.md).
