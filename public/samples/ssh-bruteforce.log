@@ -1,0 +1,12 @@
+# SAMPLE DATA (made up for demo): Linux /var/log/auth.log from the ERP server
+Oct 14 03:10:01 erp-srv sshd[2201]: Accepted publickey for deploy from 10.0.4.5 port 50122 ssh2
+Oct 14 03:41:02 erp-srv sshd[2310]: Failed password for root from 185.220.101.4 port 51122 ssh2
+Oct 14 03:41:06 erp-srv sshd[2310]: Failed password for root from 185.220.101.4 port 51130 ssh2
+Oct 14 03:41:11 erp-srv sshd[2311]: Failed password for invalid user admin from 185.220.101.4 port 51140 ssh2
+Oct 14 03:41:15 erp-srv sshd[2311]: Failed password for root from 185.220.101.4 port 51152 ssh2
+Oct 14 03:41:20 erp-srv sshd[2312]: Failed password for root from 185.220.101.4 port 51160 ssh2
+Oct 14 03:41:26 erp-srv sshd[2312]: Failed password for root from 185.220.101.4 port 51171 ssh2
+Oct 14 03:41:31 erp-srv sshd[2313]: Failed password for invalid user oracle from 185.220.101.4 port 51180 ssh2
+Oct 14 03:42:48 erp-srv sshd[2320]: Accepted password for root from 185.220.101.4 port 51210 ssh2
+Oct 14 03:42:49 erp-srv sshd[2320]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Oct 14 03:47:55 erp-srv sshd[2320]: pam_unix(sshd:session): session closed for user root

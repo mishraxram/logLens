@@ -1,0 +1,8 @@
+# SAMPLE DATA (test case 04, rewritten 2026-10-22 after the original was lost to *.log in .gitignore): failed SSH logins only, no success
+Oct 14 14:20:01 erp-srv sshd[3101]: Failed password for root from 45.83.64.9 port 40110 ssh2
+Oct 14 14:20:09 erp-srv sshd[3101]: Failed password for root from 45.83.64.9 port 40118 ssh2
+Oct 14 14:20:17 erp-srv sshd[3102]: Failed password for invalid user admin from 45.83.64.9 port 40126 ssh2
+Oct 14 14:20:26 erp-srv sshd[3102]: Failed password for invalid user test from 45.83.64.9 port 40134 ssh2
+Oct 14 14:20:34 erp-srv sshd[3103]: Failed password for root from 45.83.64.9 port 40142 ssh2
+Oct 14 14:20:43 erp-srv sshd[3103]: Failed password for invalid user oracle from 45.83.64.9 port 40150 ssh2
+Oct 14 14:21:02 erp-srv sshd[3104]: Connection closed by 45.83.64.9 port 40160 [preauth]

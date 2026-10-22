@@ -12,3 +12,7 @@ _trash/
 build/
 .dart_tool/
 .claude/settings.local.json
+
+# Our own sample and test logs must be committed (*.log above hid them from git)
+!public/samples/*.log
+!tests/cases/*.log

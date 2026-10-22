@@ -1,0 +1,9 @@
+# SAMPLE DATA (test case 16, rewritten 2026-10-22): normal college website traffic, no attack
+10.0.4.21 - - [14/Oct/2026:10:01:10 +0530] "GET / HTTP/1.1" 200 5120 "-" "Mozilla/5.0"
+10.0.4.21 - - [14/Oct/2026:10:01:12 +0530] "GET /css/site.css HTTP/1.1" 200 2210 "-" "Mozilla/5.0"
+10.0.4.33 - - [14/Oct/2026:10:05:44 +0530] "GET /notices/exam-schedule.pdf HTTP/1.1" 200 88120 "-" "Mozilla/5.0"
+10.0.4.33 - - [14/Oct/2026:10:06:02 +0530] "GET /favicon.ico HTTP/1.1" 404 196 "-" "Mozilla/5.0"
+10.0.5.12 - - [14/Oct/2026:10:12:31 +0530] "GET /results.php?roll=21cs045 HTTP/1.1" 200 8830 "-" "Mozilla/5.0"
+10.0.5.12 - - [14/Oct/2026:10:13:05 +0530] "POST /login.php HTTP/1.1" 302 0 "-" "Mozilla/5.0"
+10.0.5.12 - - [14/Oct/2026:10:13:07 +0530] "GET /student/home.php HTTP/1.1" 200 6400 "-" "Mozilla/5.0"
+10.0.6.40 - - [14/Oct/2026:11:20:18 +0530] "GET /about HTTP/1.1" 200 4100 "-" "Mozilla/5.0"

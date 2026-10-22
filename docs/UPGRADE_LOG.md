@@ -7,7 +7,7 @@ Loop file: `LOOP.md` (project root). Next phase: **A Audit** (iteration 2).
 | # | What | Why | Status |
 |---|---|---|---|
 | 1 | (checked 21:53: GEMINI_API_KEY empty in .env and .dev.vars) Put a Gemini key in `.env` + `.dev.vars`, then `npx wrangler secret put GEMINI_API_KEY` (Worker `loglens-v2`) | Live AI on v2 says "AI not configured" without it | open |
-| 2 | `npx wrangler login` (checked 21:53: **still not logged in**) | Needed to deploy v2 | open |
+| 2 | `npx wrangler login` | Needed to deploy v2 | done (user logged in 22:0x, whoami checked) |
 | 3 | Team member names + who does what | Team Delegation = 20 marks; the loop must not invent names | open |
 
 ## Iterations
