@@ -1,7 +1,7 @@
 # UPGRADE LOG (state for docs/UPGRADE_LOOP.md)
 
 Branch `avinya-final` (from `loglens-v2` @ b158675). Backup demo: `main` -> https://loglens-solarflares.pages.dev
-Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iteration 7 = judge round 1 fixes: v1 links/footer, 8b over-calling, HMAC seal).
+Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iteration 8 = Hindi inside 8 s, then J3 HMAC seal).
 
 ## NEEDS YOU (the loop cannot do these; `bash win.sh` asks for 1-3)
 | # | What | Why | Status |
@@ -19,6 +19,7 @@ Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iterat
 | 4 | 22:25 | B | Security headers (CSP with hash for font loader, nosniff, DENY, referrer, permissions, HSTS) on all responses; new `scripts/e2e.ts` (headless Chrome over CDP) | done | live `curl -I`: 6/6 headers; e2e live 360 + 1280 px PASS, 0 console errors; eval live 15/16 (case 9 Hindi >8 s) |
 | 5 | 22:32 | B | Prompt-injection guard: log text inside <<<EVENTS ... EVENTS>>> marked untrusted, markers stripped from fields/notes, AI told to report AI-addressed text as an indicator; eval case 17; eval default -> v2 | done | local 16/17 (case 9 Hindi >8 s), **live 17/17**; case 17: AI verdict incident and cites #3, #4 injection lines; e2e live 360 PASS |
 | 6 | 22:36 | B | MITRE ATT&CK chips (verified IDs, link to attack.mitre.org) on every flag + in report; e2e checks chips | done | e2e live 360 + 1280 PASS (chips step PASS); eval live 16/17: case 5 AI 8b-fast said incident for a legit late admin (AI flake, not this change) |
+| 7 | 22:52 | B | J1 footer/QR/README -> v2 URL + honest v1 lineage; J2 rule severity (HIGH/MEDIUM) sent to AI + backup 8b capped at suspicious without HIGH evidence (labelled note); `npm run check:worker` (wrangler dry-run bundle) after a build error slipped past astro build | done | eval local + live 16/17 (case 5 now PASS; case 9 Hindi >8 s); e2e live 360 + 1280 PASS; live footer shows v2 URL + अvinya |
 
 ## Backlog (filled by the audit, ranked by marks-impact / effort)
 | Rank | Area | Item | Criterion / PS | Impact | Effort | Status |
@@ -37,8 +38,8 @@ Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iterat
 | 11 | Coding | Lint + typecheck script | Stack | M | S | todo |
 | 12 | Tests | eval -> v2 default (done iter 5), rules-only count, honest README | Prototype | M | S | partial |
 | 13 | Docs | TEAM.md (needs names), TECH_STACK.md + diagram, DEFENSE, deck | Team, Stack, Pres | H | M | Phase C |
-| J1 | Presentation | Footer/QR point to v1 + say CHAKRAVYUH 1.0 (Base.astro:7,38): looks like a resubmission. Point to v2, declare v1 lineage honestly | Pres, originality | H | S | todo (next) |
-| J2 | AI | 8b-fast backup over-calls incident (eval case 5) | Prototype | M | S | todo (next) |
+| J1 | Presentation | Footer/QR point to v1 + say CHAKRAVYUH 1.0 (Base.astro:7,38): looks like a resubmission. Point to v2, declare v1 lineage honestly | Pres, originality | H | S | done (iter 7) |
+| J2 | AI | 8b-fast backup over-calls incident (eval case 5) | Prototype | M | S | done (iter 7) |
 | J3 | PS4 | Audit chain forgeable (unkeyed SHA-256 in localStorage): HMAC signed receipt /api/seal + /api/verify-seal | PS4, PS6 | H | M | todo |
 | J4 | Docs | README/PITCH/DEFENSE stale numbers (16/16, 14/14, 10 rules, v1 URL, no Workers AI) | Pres, Proto | H | S | Phase C |
 | 14 | Perf | Lighthouse mobile before/after on v2 | Prototype | M | S | after deploy |

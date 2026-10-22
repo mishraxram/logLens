@@ -72,7 +72,13 @@ async function workersAi(ai: WorkersAi, model: string, prompt: string, events: A
   const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('AI took longer than 8s')), deadline - Date.now()));
   const out: any = await Promise.race([call, timeout]);
   const reply = typeof out?.response === 'string' ? JSON.parse(out.response) : out?.response;
-  return { model, ...clean(reply, events, lang) };
+  const result = clean(reply, events, lang);
+  // The small backup model over-calls "incident" (eval case 5). Without any HIGH rule flag it may say at most "suspicious".
+  if (model === CF_FAST && result.verdict === 'incident' && !events.some((e) => e.flags.some((f) => f.startsWith('HIGH:')))) {
+    result.verdict = 'suspicious'; result.confidence = 'low';
+    result.adjusted = 'Backup model said "incident" without any high-risk rule flag, so it is shown as "suspicious".';
+  }
+  return { model, ...result };
 }
 
 export const onRequestPost = async ({ request, env }: { request: Request; env: Env }) => {

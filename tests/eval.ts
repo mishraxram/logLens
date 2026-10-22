@@ -38,7 +38,7 @@ const cases: Case[] = [
 // Same "flagged events first, max 200" logic as the browser
 function payload(events: ReturnType<typeof parseLog>['events'], notes: string[], lang: string) {
   const picked = [...events].sort((a, b) => Number(b.flags.length > 0) - Number(a.flags.length > 0)).slice(0, 200).sort((a, b) => a.n - b.n);
-  return { events: picked.map(({ time, raw, flags, ...e }) => ({ ...e, flags: flags.map((f) => f.reason) })), notes, lang };
+  return { events: picked.map(({ time, raw, flags, ...e }) => ({ ...e, flags: flags.map((f) => `${f.severity.toUpperCase()}: ${f.reason}`) })), notes, lang };
 }
 
 let pass = 0;

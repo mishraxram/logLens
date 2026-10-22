@@ -13,7 +13,8 @@ export function investigationPrompt(events: AiEvent[], notes: string[], lang: 'e
     ? 'Write all text values in simple Hindi (Devanagari script). Keep usernames, IPs and event numbers as they are.'
     : 'Write all text values in simple English.';
   return `You are a digital forensics assistant helping a college IT investigator.
-Below are log events (already parsed and sorted by time). Some have rule-based flags.
+Below are log events (already parsed and sorted by time). Some have rule-based flags; each flag starts with its rule severity (HIGH or MEDIUM).
+A MEDIUM flag alone (for example only off-hours work) is not an incident: use "incident" only when HIGH evidence supports it.
 Investigator case notes (may be Hinglish): ${notes.length ? untrusted(notes.join(' | ')) : 'none'}
 
 Task:

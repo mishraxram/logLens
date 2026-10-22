@@ -1,11 +1,11 @@
 # SOLAR FLARES
 
-**Team:** SOLAR FLARES | **Registration ID:** HK26-0014 | **Event:** CHAKRAVYUH 1.0, BIET Lucknow
+**Team:** SOLAR FLARES | **Registration ID:** HK26-0014 | **Event:** अvinya '26 Hackathon 4.0, BIET Lucknow (problem ABCS-02). v1 was first built at CHAKRAVYUH 1.0; v2 is the upgrade for अvinya '26 (see `git log pre-upgrade-v1..avinya-final`).
 
 > **Problem Statement ABCS-02: AI-Assisted Digital Forensics** (Domain 3: AI-Based Cybersecurity)
 > An AI-assisted platform that analyzes digital artifacts, correlates events, reconstructs incident timelines and maintains evidence integrity with SHA-256 hashing and an audit trail. [Full statement](docs/PROBLEM.md)
 
-**Live:** https://loglens-solarflares.pages.dev
+**Live (v2):** https://loglens-v2.loglens.workers.dev · **Backup (v1):** https://loglens-solarflares.pages.dev
 
 ## Problem
 After an incident (example: college ERP marks changed at 2 AM), an investigator has thousands of log lines. They must find who did what and when, and prove the logs were not edited afterwards.

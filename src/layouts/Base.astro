@@ -4,7 +4,7 @@ import '../styles/global.css';
 import QRCode from 'qrcode';
 
 // QR code of the live URL, made at build time (no extra script in the browser)
-const LIVE_URL = 'https://loglens-solarflares.pages.dev';
+const LIVE_URL = 'https://loglens-v2.loglens.workers.dev';
 const FONTS_URL = 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Sans+Condensed:wght@600;700&family=Noto+Sans+Devanagari:wght@400;600&display=swap';
 const qrSvg = await QRCode.toString(LIVE_URL, { type: 'svg', margin: 1, color: { dark: '#14161A', light: '#F4F1EA' } });
 const { title = 'LogLens', description = 'AI-assisted digital forensics: log timeline, AI summary and SHA-256 evidence check.' } = Astro.props;
@@ -35,7 +35,7 @@ const { title = 'LogLens', description = 'AI-assisted digital forensics: log tim
         <div class="w-24 h-24 shrink-0" set:html={qrSvg} aria-label={`QR code for ${LIVE_URL}`} role="img"></div>
         <div>
           <p>Try it on your phone: <a class="underline" href={LIVE_URL}>{LIVE_URL.replace('https://', '')}</a></p>
-          <p>Built by team SOLAR FLARES (HK26-0014) for CHAKRAVYUH 1.0, BIET Lucknow.</p>
+          <p>Built by team SOLAR FLARES (HK26-0014) for अvinya '26 Hackathon 4.0, BIET Lucknow. v1 was first built at CHAKRAVYUH 1.0; this is the upgraded v2.</p>
           <p>AI summaries come from Google Gemini and can be wrong. All sample cases are made-up data.</p>
         </div>
       </div>

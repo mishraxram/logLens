@@ -277,7 +277,7 @@ const samples = [
   // Last parsed result, reused by the AI step
   let last: ReturnType<typeof parseLog> | null = null;
 
-  type AiResult = { source: string; verdict: string; hidden_patterns?: { events: number[]; text: string }[]; model?: string; summary: string; indicators: { events: number[]; text: string }[]; confidence: string; next_steps: string[] };
+  type AiResult = { source: string; verdict: string; hidden_patterns?: { events: number[]; text: string }[]; model?: string; adjusted?: string; summary: string; indicators: { events: number[]; text: string }[]; confidence: string; next_steps: string[] };
 
   // Ask the server (which asks Gemini and Workers AI). On any failure, fall back to a summary built from the rules.
   async function analyze() {
@@ -287,7 +287,7 @@ const samples = [
     btn.disabled = true; $('aiMsg').textContent = 'Asking AI… (up to 8s)'; $('aiOut').replaceChildren();
     // Send flagged events first so they survive the 200-event limit
     const sorted = [...last.events].sort((a, b) => Number(b.flags.length > 0) - Number(a.flags.length > 0)).slice(0, 200).sort((a, b) => a.n - b.n);
-    const events = sorted.map(({ time, raw, flags, ...e }) => ({ ...e, flags: flags.map((f) => f.reason) }));
+    const events = sorted.map(({ time, raw, flags, ...e }) => ({ ...e, flags: flags.map((f) => `${f.severity.toUpperCase()}: ${f.reason}`) }));
     let result: AiResult;
     try {
       const res = await fetch('/api/analyze', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ events, notes: last.notes, lang }) });
@@ -338,6 +338,7 @@ const samples = [
     // Verdict chip: status colours only (red incident, amber suspicious, green normal, grey unsure)
     const vc: Record<string, string> = { incident: 'bg-flag text-white', suspicious: 'bg-tag', normal: 'bg-match text-white', unsure: 'bg-ink/10' };
     out.append(el('p', `block w-fit font-cond font-bold text-xl rounded-lg px-3 py-1 mb-3 ${vc[r.verdict] ?? vc.unsure}`, `Verdict: ${r.verdict} (${r.confidence} confidence)`));
+    if (r.adjusted) out.append(el('p', 'mb-3 p-2 rounded bg-ink/10 text-sm', r.adjusted));
     out.append(el('p', 'mb-4 text-[17px] leading-relaxed max-w-prose', r.summary));
     const ul = el('ul', 'space-y-2 mb-4');
     r.indicators.forEach((i) => {
