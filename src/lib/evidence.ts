@@ -64,11 +64,13 @@ export function tamperAuditForDemo() {
   write(KEY_AUDIT, memAudit);
 }
 
-export async function lockEvidence(name: string, text: string): Promise<Evidence> {
+// file = the uploaded log file, if any, so its metadata (type, last modified) is kept as evidence too
+export async function lockEvidence(name: string, text: string, file?: File): Promise<Evidence> {
   memEvidence = { name, size: new TextEncoder().encode(text).length, hash: await sha256(text), lockedAt: now(), kind: 'text' };
+  if (file) memEvidence = { ...memEvidence, type: file.type || 'text/plain', lastModified: new Date(file.lastModified).toLocaleString('en-IN', { hour12: false }) };
   write(KEY_ORIGINAL, text.length <= 2_000_000 ? text : null);
   write(KEY_EVIDENCE, memEvidence);
-  await audit('EVIDENCE_LOCKED', `${name} · ${memEvidence.size} bytes · SHA-256 ${memEvidence.hash}`);
+  await audit('EVIDENCE_LOCKED', `${name} · ${memEvidence.size} bytes${file ? ` · ${memEvidence.type} · modified ${memEvidence.lastModified}` : ''} · SHA-256 ${memEvidence.hash}`);
   return memEvidence;
 }
 

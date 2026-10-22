@@ -143,6 +143,7 @@ const samples = [
   import { buildReport } from '../lib/report.ts';
   import { MITRE, mitreUrl } from '../lib/mitre.ts';
   import { buildChains } from '../lib/chain.ts';
+  import { crossCheck } from '../lib/crosscheck.ts';
   import { sealOnServer, checkReceipt, getInvestigator, setInvestigator } from '../lib/ledger.ts';
   import { extractChanges, STATUS_TEXT } from '../lib/changes.ts';
 
@@ -188,7 +189,7 @@ const samples = [
     }
     if (f.size > 2_000_000) { msg.textContent = 'Log too big (max 2 MB).'; return; }
     logBox.value = await f.text();
-    await lockEvidence(f.name, logBox.value);
+    await lockEvidence(f.name, logBox.value, f);
     void sealNow('SEALED');
     run(true);
   });
@@ -257,7 +258,7 @@ const samples = [
     const ev = getEvidence();
     $('locker').classList.toggle('hidden', !ev);
     if (!ev) return;
-    $('evName').textContent = `${ev.name} (${ev.size} bytes)${ev.kind === 'file' ? `\n${ev.type}, modified ${ev.lastModified}` : ''}\nLocked ${ev.lockedAt}`;
+    $('evName').textContent = `${ev.name} (${ev.size} bytes)${ev.type ? `\nType ${ev.type} · file last modified ${ev.lastModified}` : ''}\nLocked ${ev.lockedAt} (this device)`;
     $('evHash').textContent = ev.hash;
     showReceipt();
     showProgress();
@@ -429,6 +430,17 @@ const samples = [
       const box = el('div', 'mb-4 p-3 rounded-lg border-2 border-dashed border-tag bg-tag/10');
       box.append(el('p', 'font-semibold mb-1', 'AI found beyond the rules'));
       r.hidden_patterns.forEach((h) => { const p = el('p', 'text-sm mt-1'); p.append(el('span', 'font-mono font-semibold mr-2', h.events.map((n) => `#${n}`).join(' ')), document.createTextNode(h.text)); box.append(p); });
+      out.append(box);
+    }
+    // AI vs rules cross-check (only for a real AI answer; the offline summary IS the rules)
+    if (r.source === 'ai' && last) {
+      const x = crossCheck(last.events, r); // events already carry the rule flags from run()
+      const box = el('div', `mb-4 p-3 rounded-lg border ${x.agree ? 'border-match/50 bg-match/5' : 'border-flag/60 bg-flag/5'}`);
+      box.append(el('p', 'font-semibold', 'Cross-check: AI vs rules'), el('p', 'text-sm', x.note));
+      const list = (label: string, ns: number[]) => ns.length && box.append(el('p', 'text-sm mt-1', `${label}: ${ns.map((n) => `#${n}`).join(' ')}`));
+      list('Rule-flagged events the AI also cited', x.cited);
+      list('High-risk events the AI did not mention', x.missed);
+      list('Events only the AI pointed to (no rule flag)', x.aiOnly);
       out.append(box);
     }
     out.append(el('p', 'font-semibold', 'Next steps'));

@@ -61,6 +61,8 @@ async function main() {
 
   await js(`document.getElementById('ai').click()`);
   step(await waitFor(`document.getElementById('aiOut').textContent.trim().length > 40`, 12000), 'AI summary (live or labelled offline) shown');
+  if (await js(`/AI generated/.test(document.getElementById('aiOut').textContent)`))
+    step(await js(`/Cross-check: AI vs rules/.test(document.getElementById('aiOut').textContent)`), 'AI vs rules cross-check shown');
   steps.push('     AI label: ' + (await js(`(document.getElementById('aiOut').textContent.match(/AI generated \\([^)]*\\)|offline[^.]*/i) || ['?'])[0]`)));
 
   await js(`document.getElementById('verify').click()`);
@@ -69,6 +71,14 @@ async function main() {
   await js(`document.getElementById('verify').click()`);
   step(await waitFor(`/TAMPERED/.test(document.getElementById('verifyOut').textContent)`, 4000), 'one char changed -> TAMPERED');
   step(await js(`!!document.getElementById('report') && !document.getElementById('report').disabled`), 'report button ready');
+
+  // PS1: upload a real log file -> its metadata (type, last modified) is shown on the evidence tag
+  await send('DOM.enable');
+  const { root } = await send('DOM.getDocument');
+  const { nodeId } = await send('DOM.querySelector', { nodeId: root.nodeId, selector: '#file' });
+  await js(`document.getElementById('newCase').click()`);
+  await send('DOM.setFileInputFiles', { nodeId, files: [join(process.cwd(), 'tests/cases/15-web-attack.log')] });
+  step(await waitFor(`/15-web-attack\\.log/.test(document.getElementById('evName').textContent) && /file last modified/.test(document.getElementById('evName').textContent)`, 5000), 'file upload -> metadata on evidence tag');
 
   // PS6 dashboard page: cases from the server ledger, chain re-checked
   await send('Page.navigate', { url: new URL('/cases', url).href });

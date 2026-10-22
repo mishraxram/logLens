@@ -47,4 +47,4 @@ Open http://localhost:8788. Without a key, everything works except the AI summar
 Astro + Tailwind, TypeScript, Cloudflare Pages + Pages Functions, Google Gemini API, Web Crypto (SHA-256), `qrcode` (QR code made at build time).
 
 ## Team
-SOLAR FLARES (HK26-0014): solo team, **Sagar Mishra** (B.Tech CSE). Roles and the human vs AI-tool split: [docs/TEAM.md](docs/TEAM.md).
+SOLAR FLARES (HK26-0014): **Sagar Mishra** (builder, B.Tech CSE) and **Krishraj Shukla** (presenter). Roles, stage hand-off and the human vs AI-tool split: [docs/TEAM.md](docs/TEAM.md).

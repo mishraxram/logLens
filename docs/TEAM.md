@@ -1,8 +1,17 @@
 # Team SOLAR FLARES (HK26-0014): who does what
 
-**Solo team: Sagar Mishra** (B.Tech CSE). One person owns every part, so there is no hand-off on stage.
+**Sagar Mishra** (B.Tech CSE): builder, owns every technical part.
+**Krishraj Shukla**: presenter, gives the talk and the live demo.
 
-## Roles (all Sagar)
+## On stage (hand-off order)
+1. Krishraj: problem, users, why existing tools do not fit (Presentation, Domain Knowledge).
+2. Krishraj: live demo on https://loglens-v2.loglens.workers.dev following docs/DEMO_SCRIPT.md.
+3. Sagar: how it works (architecture, rules, AI checks, signed receipts) and every technical question.
+4. Both: limitations and what comes next. Rule: Krishraj takes product questions, Sagar takes code questions;
+   if unsure, hand over instead of guessing.
+Both must be able to explain the 8-step flow in docs/DEFENSE.md and say the honest limits.
+
+## Technical roles (Sagar)
 | Role | What it covers | Files to know |
 |---|---|---|
 | Problem + research | ABCS-02 needs, existing tools, Indian law (BSA s.63, CERT-In), MITRE mapping | docs/PROBLEM.md, docs/RESEARCH-DEEP.md |
@@ -12,7 +21,7 @@
 | Backend + security | Worker routes, CSP, rate limit, size limits | worker/index.ts, wrangler.jsonc |
 | UI | Main desk, cases dashboard | src/pages/index.astro, src/pages/cases.astro |
 | Testing | eval (17 cases), rules / hash / chain / report / seal / browser checks | tests/eval.ts, scripts/*.ts |
-| Demo + pitch | 3-minute script, Q&A | docs/DEMO_SCRIPT.md, docs/PITCH.md, docs/DEFENSE.md |
+| Demo + pitch | 3-minute script, Q&A (with Krishraj, the presenter) | docs/DEMO_SCRIPT.md, docs/PITCH.md, docs/DEFENSE.md |
 
 ## How the work was split between me and AI tools (say this honestly if asked)
 - **Me:** chose the problem and the users, decided scope and features, designed the rules and the test cases,
@@ -21,6 +30,7 @@
   checked with the build, the eval and the browser test before it was kept.
 - **Gemini / Workers AI:** only inside the app, to write the investigation summary.
 
-## Judge question: "You are one person. How is Team Delegation shown?"
-"I am a solo team, so I delegated to tools instead of people: rules for fast triage, AI for explanation,
-automated tests for checking. I own every part, so I can answer any question on any part."
+## Judge question: "Who did what?"
+"Sagar built it and answers the technical side; Krishraj presents and owns the story and the demo. On the
+build side, Sagar delegated to tools: rules for fast triage, AI for explanation, automated tests for checking."
+
