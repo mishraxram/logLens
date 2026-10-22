@@ -49,6 +49,7 @@ async function main() {
   await js(`document.querySelector('[data-sample]').click()`);
   step(await waitFor(`document.querySelectorAll('#timeline > *').length > 5`, 5000), 'sample -> timeline rows');
   step(await js(`document.documentElement.scrollWidth <= window.innerWidth`), `no horizontal scroll at ${width}px`);
+  step(await js(`[...document.querySelectorAll('.mitre-chip')].some((a) => /^T\\d{4}/.test(a.textContent) && a.href.startsWith('https://attack.mitre.org/'))`), 'MITRE ATT&CK chips on flags');
 
   await js(`document.getElementById('ai').click()`);
   step(await waitFor(`document.getElementById('aiOut').textContent.trim().length > 40`, 12000), 'AI summary (live or labelled offline) shown');

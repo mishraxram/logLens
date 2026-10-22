@@ -2,6 +2,7 @@
 import type { LogEvent } from './parse.ts';
 import type { Evidence, AuditEntry } from './evidence.ts';
 import { extractChanges, STATUS_TEXT } from './changes.ts';
+import { MITRE } from './mitre.ts';
 
 type Ai = { source: string; verdict: string; hidden_patterns?: { events: number[]; text: string }[]; model?: string; summary: string; indicators: { events: number[]; text: string }[]; confidence: string; next_steps: string[] } | null;
 
@@ -33,7 +34,7 @@ ${changes.map((c) => `<tr><td>${c.n}</td><td class="m">${esc(c.timeText)}</td><t
 </table>
 <h2>Flagged events (${flagged.length} of ${events.length})</h2>
 <table><tr><th>#</th><th>Time</th><th>User / IP</th><th>Action</th><th>Why flagged</th></tr>
-${flagged.map((e) => `<tr><td>${e.n}</td><td class="m">${esc(e.timeText)}</td><td class="m">${esc(e.user)}<br>${esc(e.ip)}</td><td class="m">${esc(e.action)} ${esc(e.target)} ${esc(e.detail)}</td><td>${e.flags.map((f) => `<div class="${f.severity === 'high' ? 'bad' : ''}">${esc(f.reason)}</div>`).join('')}</td></tr>`).join('')}
+${flagged.map((e) => `<tr><td>${e.n}</td><td class="m">${esc(e.timeText)}</td><td class="m">${esc(e.user)}<br>${esc(e.ip)}</td><td class="m">${esc(e.action)} ${esc(e.target)} ${esc(e.detail)}</td><td>${e.flags.map((f) => `<div class="${f.severity === 'high' ? 'bad' : ''}">${esc(f.reason)}${(MITRE[f.code] ?? []).map((t) => ` <span class="tag">${esc(t.id)} ${esc(t.name)}</span>`).join('')}</div>`).join('')}</td></tr>`).join('')}
 </table>
 <h2>Summary</h2>
 ${ai ? `<p><em>${ai.source === 'ai' ? `AI generated (Gemini ${esc(ai.model)}). Verify against cited events.` : 'Offline summary from rules (not AI).'}</em></p>

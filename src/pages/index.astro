@@ -128,6 +128,7 @@ const samples = [
   import { applyRules, ruleVerdict } from '../lib/rules.ts';
   import { lockEvidence, verifyEvidence, getEvidence, getAudit, audit, clearCase, now, verifyAuditChain, lockFile, tamperAuditForDemo, getOriginal, changedLines } from '../lib/evidence.ts';
   import { buildReport } from '../lib/report.ts';
+  import { MITRE, mitreUrl } from '../lib/mitre.ts';
   import { extractChanges, STATUS_TEXT } from '../lib/changes.ts';
 
   const $ = (id: string) => document.getElementById(id)!;
@@ -420,7 +421,16 @@ const samples = [
         el('span', 'font-semibold', e.user || '-'), el('span', 'text-sm text-muted', e.role), el('span', 'font-mono text-sm', e.ip),
         el('span', 'font-mono text-sm font-semibold', e.action));
       li.append(top, el('p', 'font-mono text-xs text-ink/70 break-all mt-0.5', `${e.target} ${e.detail}`));
-      for (const f of e.flags) li.append(el('p', `mt-1 text-sm ${f.severity === 'high' ? 'text-flag font-semibold' : 'text-ink'}`, f.reason));
+      for (const f of e.flags) {
+        const p = el('p', `mt-1 text-sm ${f.severity === 'high' ? 'text-flag font-semibold' : 'text-ink'}`, f.reason);
+        // MITRE ATT&CK chip(s): standard name for the technique this flag points to
+        for (const t of MITRE[f.code] ?? []) {
+          const a = el('a', 'mitre-chip', t.id) as HTMLAnchorElement;
+          a.href = mitreUrl(t.id); a.target = '_blank'; a.rel = 'noopener'; a.title = `MITRE ATT&CK ${t.id}: ${t.name}`;
+          p.append(' ', a);
+        }
+        li.append(p);
+      }
       list.append(li);
     }
     if (parsed.unparsed.length) {
