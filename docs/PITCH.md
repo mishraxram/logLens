@@ -15,7 +15,7 @@ Every number below was measured on 22 Oct 2026 (see docs/UPGRADE_LOG.md). Do not
 ## 1b. Thirty-second version (Stall Expo, 15:00)
 "LogLens turns a raw server or ERP log into a timeline with MITRE-tagged red flags and an attack chain, an AI summary that must cite real events and is cross-checked against the rules, and a SHA-256 fingerprint with a signed server receipt. Change one digit and it says TAMPERED. Runs in the browser, no install."
 
-## 2. Slides (one slide = one rubric point)
+## 2. Slides (one slide = one rubric point). Deck: https://claude.ai/artifact/HZyzrxjWbVLiYbLf1LmsGc
 1. **Problem + users** (Presentation, Domain): the 2 AM marks case; users = college IT / cyber cell investigators.
 2. **Existing tools vs LogLens** (Domain): Plaso/Timesketch, Hayabusa (Windows EVTX), Splunk/ELK. Limits: setup, skills, no plain-language summary. LogLens: browser triage step, not a replacement. (docs/RESEARCH-DEEP.md s.1)
 3. **PS1-PS6 map** (Proposed Solution): the table in README.

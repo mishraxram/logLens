@@ -3,6 +3,7 @@
 **Presenter:** Krishraj Shukla · **Technical answers:** Sagar Mishra
 **App:** https://loglens-v2.loglens.workers.dev · **Dashboard:** https://loglens-v2.loglens.workers.dev/cases
 **Backup app (v1, agar v2 na khule):** https://loglens-solarflares.pages.dev
+**Slides (v2):** https://claude.ai/artifact/HZyzrxjWbVLiYbLf1LmsGc (10 slides + speaker notes; private until you share it)
 **Backup ka backup:** recorded demo video (phone + laptop dono mein rakho)
 
 "Bolo" wali lines apne shabdon mein bolo, ratna nahi hai. English lines `docs/PITCH.md` mein hain.
