@@ -23,8 +23,9 @@ const samples = [
         <p class="text-sm text-muted mb-3">Pick a sample case (made-up data) or paste your own log.</p>
         <label for="investigator" class="text-sm font-semibold">Investigator name</label>
         <input id="investigator" type="text" maxlength="60" autocomplete="name" placeholder="e.g. IT cell, Dr. Sharma"
-          class="mt-1 mb-4 w-full min-h-11 border border-line rounded-lg px-2 bg-paper/40" />
-        <div class="space-y-2 mb-4">
+          class="field mt-1 mb-4" />
+        <p class="group-label">Sample cases</p>
+        <div class="case-list mb-4">
           {samples.map((s) => (
             <button type="button" data-sample={s.file} class="sample-btn case-btn font-semibold">
               {s.label}<span>{s.desc}</span>
@@ -33,7 +34,7 @@ const samples = [
         </div>
         <label for="log" class="text-sm font-semibold">Log text</label>
         <textarea id="log" rows="7" spellcheck="false"
-          class="mt-1 w-full font-mono text-sm border border-line rounded-lg p-2 bg-paper/40"
+          class="field mt-1 font-mono text-sm"
           placeholder="Paste ERP audit CSV (time,user,role,ip,action,target,detail), Linux auth.log or Apache/Nginx access log lines here. Lines starting with # are case notes."></textarea>
         <div class="flex flex-wrap gap-2 mt-3">
           <button id="run" type="button" class="btn btn-primary">Build timeline</button>
@@ -463,7 +464,7 @@ const samples = [
 
     // Verdict banner: the first thing a judge reads
     const verdict = $('verdict');
-    const banner = 'rounded-xl px-4 py-4 lg:px-5 font-cond font-bold text-2xl lg:text-3xl leading-tight';
+    const banner = 'rounded-2xl px-5 py-5 lg:px-6 font-cond font-bold text-2xl lg:text-3xl leading-tight';
     if (events.length === 0) {
       verdict.className = `${banner} bg-ink/10`;
       verdict.textContent = 'Not a supported log. Use ERP audit CSV, Linux auth.log or Apache/Nginx access log, or try a sample.';

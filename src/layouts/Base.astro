@@ -27,15 +27,15 @@ const { title = 'LogLens', current = 'desk', description = 'AI-assisted digital 
     <noscript><link rel="stylesheet" href={FONTS_URL} /></noscript>
   </head>
   <body class="font-sans min-h-screen flex flex-col">
-    <!-- App bar: same on every page -->
+    <!-- App bar: frosted, sticky, the same on every page; Desk | Cases is a segmented control -->
     <header class="appbar">
       <div class="max-w-6xl mx-auto px-4 flex items-center gap-3 min-h-14">
-        <a href="/" class="flex items-center gap-2 font-semibold text-sheet no-underline">
-          <svg aria-hidden="true" width="24" height="24" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#E3A72F"/><circle cx="14" cy="14" r="7" fill="none" stroke="#1B1F24" stroke-width="3"/><path d="M19 19l7 7" stroke="#1B1F24" stroke-width="3" stroke-linecap="round"/></svg>
+        <a href="/" class="flex items-center gap-2 font-semibold no-underline">
+          <svg aria-hidden="true" width="26" height="26" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#E3A72F"/><circle cx="14" cy="14" r="7" fill="none" stroke="#1B1F24" stroke-width="3"/><path d="M19 19l7 7" stroke="#1B1F24" stroke-width="3" stroke-linecap="round"/></svg>
           LogLens
         </a>
-        <span class="hidden sm:inline text-sheet/60 text-sm">digital forensics desk</span>
-        <nav class="ml-auto flex items-center gap-1" aria-label="Main">
+        <span class="hidden sm:inline text-muted text-sm">digital forensics desk</span>
+        <nav class="segnav ml-auto" aria-label="Main">
           <a href="/" class="navlink" aria-current={current === 'desk' ? 'page' : undefined}>Desk</a>
           <a href="/cases" class="navlink" aria-current={current === 'cases' ? 'page' : undefined}>Cases</a>
         </nav>

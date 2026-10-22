@@ -24,15 +24,29 @@ label:has(input.sr-only:focus-visible) { outline: 3px solid var(--color-tag); ou
 
 @layer components {
   /* Panels: sheet of paper on the desk. One soft shadow, same everywhere */
-  .panel { background: var(--color-sheet); border: 1px solid var(--color-line); border-radius: 12px;
-    box-shadow: 0 1px 2px rgba(27,31,36,.05), 0 10px 24px -18px rgba(27,31,36,.35); }
+  .panel { background: var(--color-sheet); border: 1px solid rgba(27,31,36,.08); border-radius: 18px;
+    box-shadow: 0 1px 2px rgba(27,31,36,.04), 0 12px 32px -20px rgba(27,31,36,.30); }
   .panel > h2, .panel > div > h2, .panel h2.font-semibold { font-family: var(--font-cond); font-weight: 700; font-size: 1.25rem; letter-spacing: .005em; }
 
-  /* App bar: graphite strip, the same on every page */
-  .appbar { background: var(--color-ink); color: var(--color-sheet); border-bottom: 3px solid var(--color-tag); }
-  .navlink { display: inline-flex; align-items: center; min-height: 44px; padding: 0 .85rem; border-radius: 8px; color: rgba(251,251,248,.75); font-weight: 600; font-size: .95rem; text-decoration: none; }
-  .navlink:hover { color: var(--color-sheet); background: rgba(251,251,248,.08); }
-  .navlink[aria-current="page"] { color: var(--color-ink); background: var(--color-tag); }
+  /* App bar: frosted glass like an iOS navigation bar; sticks to the top */
+  .appbar { position: sticky; top: 0; z-index: 20; background: rgba(232,235,230,.78); -webkit-backdrop-filter: saturate(180%) blur(16px); backdrop-filter: saturate(180%) blur(16px); border-bottom: 1px solid rgba(27,31,36,.08); }
+  /* Segmented control: Desk | Cases */
+  .segnav { display: inline-flex; padding: 3px; gap: 2px; background: rgba(27,31,36,.07); border-radius: 12px; }
+  .navlink { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 76px; padding: 0 .9rem; border-radius: 9px; color: #3F474F; font-weight: 600; font-size: .95rem; text-decoration: none; }
+  .navlink:hover { color: var(--color-ink); }
+  .navlink[aria-current="page"] { color: var(--color-ink); background: var(--color-sheet); box-shadow: 0 1px 3px rgba(27,31,36,.16), 0 1px 1px rgba(27,31,36,.06); }
+
+  /* iOS-style grouped list for the sample cases: one card, hairline dividers, chevrons */
+  .group-label { font-size: .8rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--color-muted); margin: 0 0 .35rem .25rem; }
+  .case-list { background: var(--color-sheet); border: 1px solid var(--color-line); border-radius: 14px; overflow: hidden; }
+  .case-list .case-btn { border: 0; border-radius: 0; padding: .75rem 2.25rem .75rem 1rem; position: relative; background: transparent; }
+  .case-list .case-btn + .case-btn { box-shadow: inset 0 1px 0 var(--color-line); }
+  .case-list .case-btn::after { content: '›'; position: absolute; right: 1rem; top: 50%; transform: translateY(-55%); font-size: 1.5rem; font-weight: 400; color: var(--color-muted); }
+  .case-list .case-btn:hover { background: rgba(27,31,36,.04); }
+
+  /* Filled inputs like iOS text fields */
+  .field { display: block; width: 100%; min-height: 44px; padding: .6rem .8rem; border: 1px solid transparent; border-radius: 12px; background: rgba(27,31,36,.06); }
+  .field:focus { background: var(--color-sheet); border-color: var(--color-ink); outline: none; box-shadow: 0 0 0 3px rgba(227,167,47,.45); }
 
   /* Small label above a heading */
   .kicker { font-family: var(--font-mono); font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--color-muted); }
@@ -40,17 +54,18 @@ label:has(input.sr-only:focus-visible) { outline: 3px solid var(--color-tag); ou
   /* Key numbers under the verdict */
   .kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; }
   @media (min-width: 640px) { .kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-  .kpi { background: var(--color-sheet); border: 1px solid var(--color-line); border-radius: 10px; padding: .6rem .8rem; }
+  .kpi { background: var(--color-sheet); border: 1px solid rgba(27,31,36,.08); border-radius: 14px; padding: .7rem .9rem; box-shadow: 0 1px 2px rgba(27,31,36,.04); }
   .kpi dt { font-size: .8rem; color: var(--color-muted); }
   .kpi dd { font-family: var(--font-cond); font-weight: 700; font-size: 1.75rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
   .kpi.is-bad { border-color: rgba(180,35,24,.45); } .kpi.is-bad dd { color: var(--color-flag); }
   .kpi.is-warn { border-color: rgba(227,167,47,.7); }
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border-radius: 8px; padding: .55rem 1rem; font-weight: 600; cursor: pointer; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; border-radius: 12px; padding: .6rem 1.1rem; font-weight: 600; cursor: pointer; transition: transform .12s ease, background-color .12s ease, box-shadow .12s ease; }
+  .btn:active { transform: scale(.97); }
   .btn-primary { background: var(--color-ink); color: var(--color-sheet); box-shadow: inset 0 -2px 0 rgba(0,0,0,.35); }
   .btn-primary:hover { background: #000; }
   .btn-primary:disabled { opacity: .6; cursor: wait; }
-  .btn-quiet { border: 1px solid var(--color-line); background: var(--color-sheet); }
-  .btn-quiet:hover { border-color: var(--color-ink); }
+  .btn-quiet { border: 1px solid transparent; background: rgba(27,31,36,.07); }
+  .btn-quiet:hover { background: rgba(27,31,36,.11); }
 
   /* Sample case cards: a title and what the case shows */
   .case-btn { display: block; width: 100%; text-align: left; padding: .6rem .8rem; border: 1px solid var(--color-line); border-radius: 8px; background: var(--color-sheet); }
@@ -90,14 +105,18 @@ label:has(input.sr-only:focus-visible) { outline: 3px solid var(--color-tag); ou
   .row.is-med { background: rgba(227,167,47,.12); border-color: rgba(227,167,47,.5); }
   .row.is-med::before { background: var(--color-tag); }
 
-  .seg { display: inline-flex; border: 1px solid var(--color-line); border-radius: 8px; overflow: hidden; }
-  .seg label { display: inline-flex; align-items: center; min-height: 44px; padding: 0 .9rem; cursor: pointer; }
-  .seg label:has(input:checked) { background: var(--color-ink); color: var(--color-sheet); }
+  .seg { display: inline-flex; padding: 3px; gap: 2px; background: rgba(27,31,36,.07); border-radius: 12px; }
+  .seg label { display: inline-flex; align-items: center; min-height: 44px; padding: 0 .9rem; cursor: pointer; border-radius: 9px; font-weight: 600; color: #3F474F; }
+  .seg label:has(input:checked) { background: var(--color-sheet); color: var(--color-ink); box-shadow: 0 1px 3px rgba(27,31,36,.16); }
   .seg input { position: absolute; opacity: 0; width: 1px; height: 1px; }
   .seg label:has(input:focus-visible) { outline: 3px solid var(--color-tag); outline-offset: -3px; }
 }
 
+/* A case result slides in once, like a sheet (skipped when the user asks for less motion) */
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+#result:not(.hidden) > * { animation: rise .28s ease both; }
+
 /* Empty state shows until the first result appears */
 #result:not(.hidden) ~ #empty { display: none; }
 
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }

@@ -63,7 +63,7 @@ async function main() {
 
   await js(`document.getElementById('ai').click()`);
   step(await waitFor(`document.getElementById('aiOut').textContent.trim().length > 40`, 12000), 'AI summary (live or labelled offline) shown');
-  if (await js(`/AI generated/.test(document.getElementById('aiOut').textContent)`))
+  if (await js(`/AI generated \\(/.test(document.getElementById('aiOut').textContent)`)) // offline label says "Not AI generated"
     step(await js(`/Cross-check: AI vs rules/.test(document.getElementById('aiOut').textContent)`), 'AI vs rules cross-check shown');
   steps.push('     AI label: ' + (await js(`(document.getElementById('aiOut').textContent.match(/AI generated \\([^)]*\\)|offline[^.]*/i) || ['?'])[0]`)));
 
