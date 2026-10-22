@@ -3,7 +3,7 @@
 Branch `avinya-final` (from `loglens-v2` @ b158675). Backup demo: `main` -> https://loglens-solarflares.pages.dev
 Loop file: `LOOP.md` (project root). Next phase: **R Research** (no iterations run yet).
 
-## NEEDS YOU (the loop cannot do these)
+## NEEDS YOU (the loop cannot do these; `bash win.sh` asks for 1-3)
 | # | What | Why | Status |
 |---|---|---|---|
 | 1 | Put a Gemini key in `.env` + `.dev.vars`, then `npx wrangler secret put GEMINI_API_KEY` (Worker `loglens-v2`) | Live AI on v2 says "AI not configured" without it | open |

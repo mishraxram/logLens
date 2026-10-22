@@ -6,6 +6,11 @@ Nobody can guarantee a result. This loop makes sure no mark is lost through a mi
 unanswered question.
 
 ## How to run (VS Code terminal)
+Master command (setup + key + Cloudflare login + team + deep research + loop, all in one):
+```bash
+bash ~/Projects/logLens/win.sh
+```
+Loop only (if setup is already done):
 ```bash
 cd ~/Projects/logLens && claude "/loop Run ONE iteration of LOOP.md, then schedule the next."
 ```
