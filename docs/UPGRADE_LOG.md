@@ -8,7 +8,7 @@ Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iterat
 |---|---|---|---|
 | 1 | (checked 21:53: GEMINI_API_KEY empty in .env and .dev.vars) Put a Gemini key in `.env` + `.dev.vars`, then `npx wrangler secret put GEMINI_API_KEY` (Worker `loglens-v2`) | Key set 22:08 (piped from .env, never printed). Gemini itself is slow (simple call 9.5 s), so Workers AI was added | done |
 | 2 | `npx wrangler login` | Needed to deploy v2 | done (user logged in 22:0x, whoami checked) |
-| 3 | Team member names + who does what | Team Delegation = 20 marks; the loop must not invent names | open |
+| 3 | Team member names + who does what | Team Delegation = 20 marks | done 23:30: solo team, Sagar Mishra -> docs/TEAM.md |
 | 4 | Decide: keep Workers AI on the free plan (10,000 neurons/day, resets 05:30 IST) or upgrade to Workers Paid ($5/month) | 23:12: free allowance used up by testing (`4006: daily free allocation`). Fixed by dropping the 70b model and starting the 8b backup only after 2.5 s. Free should be enough for the demo if we do not run the full eval many times in the morning | open (money: user decides) |
 
 ## Iterations
