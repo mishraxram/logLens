@@ -69,7 +69,7 @@ Taaki asli file computer se bahar na jaye. Browser ka Web Crypto standard hai, a
 Prompt chhota rahe, jawab jaldi aaye aur kharcha kam ho. Flagged events pehle bhejte hain, to zaroori wale kabhi nahi chhoot-te.
 
 **7. Gemini ke itne models kyun?**
-Build ke time kuch models busy the ya 5-9 second le rahe the. Isliye fast "flash-lite" models ek ke baad ek try karte hain, sab 8 second ke andar.
+Build ke time kuch models busy the ya 5-9 second le rahe the. Isliye 3 "flash-lite" models ek saath race karte hain, pehla sahi jawab jeet-ta hai; 2.5 s tak koi na aaye to Workers AI backup bhi chalta hai. Sab 8 second ke andar, warna labelled offline summary.
 
 **8. API key kahan hai?**
 Sirf Cloudflare ke secret mein aur local `.dev.vars` file mein, jo GitHub pe nahi jaati. Browser ko key kabhi nahi dikhti.
@@ -88,6 +88,11 @@ Hum account aur IP batate hain. Insaan ka naam nahi bolte, kyunki account chori 
 
 **13. Restore kaise hota hai?**
 Lock karte waqt hum ek sealed copy browser mein rakhte hain. Baad mein hash alag aaye to line-by-line compare karke badli lines dikhate hain, aur ek click mein original wapas daal dete hain. Limit: ye usi browser mein chalta hai jahan lock kiya tha. Database ke asli data ke liye system ka backup chahiye.
+
+---
+
+**Extra sawaal: "impossible-travel" rule asli geo-distance check karta hai?**
+Nahi. Naam thoda loose hai: ye flag karta hai jab ek hi account 10 minute ke andar do alag IPs se login kare. Matlab password share hua ya chori hua (MITRE T1078). Location/GeoIP hum use nahi karte.
 
 ---
 

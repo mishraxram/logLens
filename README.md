@@ -38,7 +38,7 @@ Open http://localhost:8787. Without keys everything works except the AI summary 
   It is a small set we wrote ourselves: it shows the demo path is stable, not accuracy on all real-world logs.
 - `node scripts/e2e.ts <url> 360`: headless Chrome walks the demo path (sample → timeline → MITRE + attack chain → server receipt → AI → cross-check → MATCH → TAMPERED → file upload → dashboard) and fails on any console error.
 - `node scripts/check-seal.ts <url>`: server receipts, bad input, and 6 parallel receipts keep one unbroken chain.
-- Lighthouse mobile on the live site (22 Oct): `/` 100/100/100/100, `/cases` 98-99/100/100/100.
+- Lighthouse mobile on the live site (22 Oct): `/` 100/100/100/100, `/cases` 96-99/100/100/100 (several runs).
 
 ## AI usage and data
 - **In the product:** Google Gemini flash-lite models (raced, first valid answer wins) and, if Gemini is slow, Cloudflare Workers AI `llama-3.1-8b-instruct-fast` as a backup. Called only from the server (`functions/api/analyze.ts`); keys never reach the browser. Prompt in `src/lib/prompts.ts`.

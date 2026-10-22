@@ -1,4 +1,4 @@
-// Change register: every event that CHANGED data (update, delete, admin form post),
+// Change register: every event that CHANGED data or accounts (update, delete, admin form post, new account),
 // with who, when, from where, before -> after, and whether it looks authorized.
 import type { LogEvent } from './parse.ts';
 
@@ -9,7 +9,8 @@ export type Change = {
   reasons: string[];
 };
 
-const CHANGE_ACTIONS = /^(UPDATE|DELETE|INSERT|CLEAR|TRUNCATE|DROP)$/;
+// USER_ADD / GROUP_ADD (Linux useradd / usermod) are account changes, so they belong in the register too
+const CHANGE_ACTIONS = /^(UPDATE|DELETE|INSERT|CLEAR|TRUNCATE|DROP|USER_ADD|GROUP_ADD)$/;
 
 function isChange(e: LogEvent) {
   if (CHANGE_ACTIONS.test(e.action)) return true;

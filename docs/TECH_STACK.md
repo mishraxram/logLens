@@ -6,7 +6,7 @@
  ┌──────────────────────────────────┐   HTTPS    ┌───────────────────────────────────────────────┐
  │ Astro pages: / and /cases         │──────────▶│ worker/index.ts                                │
  │ parse.ts   -> events (3 formats)  │           │  - serves the built pages (static assets)      │
- │ rules.ts   -> 13 flags + MITRE    │           │  - CSP + security headers on every response    │
+ │ rules.ts   -> 16 flags + MITRE    │           │  - CSP + security headers on every response    │
  │ chain.ts   -> attack chain        │           │  - rate limit, 413 / 415 checks                │
  │ evidence.ts-> SHA-256 (Web Crypto)│           │                                                │
  │            local hash-chained log │ /api/analyze│ functions/api/analyze.ts                     │

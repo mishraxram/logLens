@@ -29,7 +29,7 @@ Splunk ya Timesketch jaise tools ke liye server aur training chahiye. College IT
 **Karo:** **ERP marks tampering** dabao.
 **Dikhao:** laal "High risk" banner → **Attack chain** box → timeline ki laal lines aur unke **T1110.001** jaise chips.
 **Bolo:** "Ek click mein timeline ban gayi. 16 rules ne gadbad pakdi, aur har flag ke saath MITRE ATT&CK ka standard ID hai.
-Attack chain dikhata hai ki ek hi IP aur account ke events jud ke ek kahani banate hain:
+Attack chain dikhata hai ki ek IP aur do accounts (21cs045, prof.verma) ke events jud ke ek kahani banate hain:
 password guessing → naye IP se login → marks badle → audit log delete. Ye sab rules hain, AI nahi."
 
 ## Step 3: Kisne kya badla (0:55 - 1:10)
@@ -37,7 +37,7 @@ password guessing → naye IP se login → marks badle → audit log delete. Ye 
 **Bolo:** "Har badlav: kisne, kab, kis IP se, pehle kya, baad mein kya. 5 galat password ke baad naye IP se login, phir marks 42 se 92: account chori hua tha."
 
 ## Step 4: AI summary + cross-check (1:10 - 1:45)
-**Karo:** **Analyze with AI** dabao (5-8 second). Phir **हिंदी** chuno aur dobara dabao (agar time ho).
+**Karo:** **Analyze with AI** dabao (3-8 second). Hindi stage pe mat dikhao (kabhi 8 s se zyada leta hai); koi pooche to bolo "Hindi bhi hai" aur Q&A mein dikhao.
 **Dikhao:** verdict, event numbers wale indicators, "AI found beyond the rules", aur **Cross-check: AI vs rules** box.
 **Bolo:** "AI ne summary di aur har point ke saath event number diya. Jo point kisi asli event pe nahi tika, wo hum hata dete hain.
 Aur hum AI pe aankh band karke bharosa nahi karte: cross-check batata hai ki AI aur rules sahmat hain ya nahi.
