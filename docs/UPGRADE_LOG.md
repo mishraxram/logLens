@@ -1,6 +1,6 @@
 # UPGRADE LOG (state for docs/UPGRADE_LOOP.md)
 
-Branch `avinya-final` (from `loglens-v2` @ b158675). Backup demo: `main` -> https://loglens-solarflares.pages.dev
+Branch `avinya-final` (from `loglens-v2` @ b158675). 23 Oct 00:08: `main` on GitHub fast-forwarded to avinya-final at f67f31f on the user's request (v1 stays at tag `pre-upgrade-v1` and on the Pages site, which is not linked to GitHub). Backup demo: `main` -> https://loglens-solarflares.pages.dev
 Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iteration 19 = Phase D checks after 05:30 when the Workers AI quota resets).
 
 ## SUBAH KA HANDOFF (23 Oct, padho sabse pehle)
