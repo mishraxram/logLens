@@ -2,7 +2,7 @@
 // Table "receipts" in schema/audit.sql.
 //   POST /api/seal        -> adds a signed, hash-chained receipt for an evidence hash. Returns the receipt.
 //   GET  /api/seal?id=N   -> re-checks one receipt: signature valid? chain link to the row before intact?
-//   GET  /api/ledger      -> last 50 rows, each re-checked, plus whether the whole chain is intact.
+//   GET  /api/ledger      -> last 200 rows, each re-checked, plus whether the whole chain is intact.
 // Why: the browser audit trail lives in localStorage, so a user with devtools could rewrite it.
 // A receipt here is signed with a key the browser never sees, and rows are only ever added.
 // Honest limit: the Cloudflare account owner can still edit D1 directly; the signature check would catch
@@ -83,10 +83,10 @@ export async function sealGet(request: Request, env: SealEnv): Promise<Response>
 
 export async function ledgerGet(env: SealEnv): Promise<Response> {
   if (notReady(env)) return offline();
-  const { results } = await env.DB!.prepare('SELECT * FROM receipts ORDER BY id DESC LIMIT 51').all<Row>();
-  const rows = results.slice(0, 50);
+  const { results } = await env.DB!.prepare('SELECT * FROM receipts ORDER BY id DESC LIMIT 201').all<Row>();
+  const rows = results.slice(0, 200);
   // Newest first: each row's prev_hash must equal the entry_hash of the next (older) row
-  // (we read 51 rows so the 50th row can still be checked against the one before it)
+  // (we read 201 rows so the 200th row can still be checked against the one before it)
   const checked = await Promise.all(rows.map(async (r, i) => {
     const older = results[i + 1];
     const linkOk = older ? r.prev_hash === older.entry_hash : r.prev_hash === GENESIS;

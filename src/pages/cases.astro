@@ -13,7 +13,9 @@ import Base from '../layouts/Base.astro';
     <div class="flex flex-wrap items-center gap-3">
       <p id="chainState" class="font-semibold px-2 py-1 rounded">Checking the ledger…</p>
       <button id="reload" type="button" class="btn btn-quiet">Re-check now</button>
+      <label class="text-sm flex items-center gap-2 min-h-11 cursor-pointer"><input id="showTests" type="checkbox" class="w-5 h-5 accent-ink" /> Show automated test rows</label>
     </div>
+    <p id="head" class="font-mono text-xs break-all mt-2"></p>
     <p id="counts" class="text-sm text-muted mt-2 min-h-5">Loading…</p>
   </section>
 
@@ -24,7 +26,7 @@ import Base from '../layouts/Base.astro';
   </section>
 
   <section>
-    <h2 class="font-semibold text-lg mb-2">Server audit trail (newest first, last 50)</h2>
+    <h2 class="font-semibold text-lg mb-2">Server audit trail (newest first, last 200)</h2>
     <div class="panel overflow-x-auto">
       <table class="w-full text-sm">
         <thead class="text-left text-muted">
@@ -67,11 +69,22 @@ import Base from '../layouts/Base.astro';
     $('chainState').textContent = data.intact ? `Ledger intact: all ${data.rows.length} rows signed and chained correctly.` : `LEDGER PROBLEM: ${bad} row(s) failed the signature or chain check.`;
     $('chainState').className = `font-semibold px-2 py-1 rounded ${data.intact ? 'bg-match text-white' : 'bg-flag text-white'}`;
 
+    // Ledger head = newest entry hash. Write it down (case notes, screenshot): if newest rows are ever deleted,
+    // the head written down earlier will no longer be in the ledger. Row links alone cannot show a cut-off end.
+    const top = data.rows[0];
+    $('head').textContent = top ? `Ledger head now: #${top.id} · ${top.entry_hash}` : '';
+
+    // Rows from our automated checks (investigator "TEST ..." or the old "check script") are hidden by default.
+    // They are still signed, chained and checked above; hiding only affects what is listed.
+    const isTest = (r: Row) => /^TEST\b|^check script$/.test(r.investigator);
+    const shown = ($('showTests') as HTMLInputElement).checked ? data.rows : data.rows.filter((r) => !isTest(r));
+    const hiddenCount = data.rows.length - shown.length;
+
     // Group rows by evidence hash: first row seen = newest action for that case
     const byHash = new Map<string, Row[]>();
-    for (const r of data.rows) byHash.set(r.sha256, [...(byHash.get(r.sha256) ?? []), r]);
+    for (const r of shown) byHash.set(r.sha256, [...(byHash.get(r.sha256) ?? []), r]);
     const tampered = [...byHash.values()].filter((list) => list[0].action === 'VERIFIED_TAMPERED').length;
-    $('counts').textContent = `${byHash.size} case(s) · ${tampered} with tampering seen · ${data.rows.length} ledger entries`;
+    $('counts').textContent = `${byHash.size} case(s) · ${tampered} with tampering seen · ${data.rows.length} ledger entries checked${hiddenCount ? ` · ${hiddenCount} automated test rows hidden` : ''}`;
     if (!byHash.size) cases.append(el('p', 'text-muted', 'No evidence sealed yet. Open a case on the main page to create the first receipt.'));
 
     for (const [hash, list] of byHash) {
@@ -86,7 +99,7 @@ import Base from '../layouts/Base.astro';
       cases.append(card);
     }
 
-    for (const r of data.rows) {
+    for (const r of shown) {
       const tr = document.createElement('tr');
       tr.className = 'border-t border-line align-top';
       const ok = r.valid && r.linkOk;
@@ -98,5 +111,6 @@ import Base from '../layouts/Base.astro';
   }
 
   $('reload').addEventListener('click', load);
+  $('showTests').addEventListener('change', load);
   load();
 </script>

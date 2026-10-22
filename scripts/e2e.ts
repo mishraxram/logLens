@@ -46,6 +46,8 @@ async function main() {
   await send('Page.navigate', { url });
   step(await waitFor(`document.readyState === 'complete' && !!document.querySelector('[data-sample]')`, 10000), 'page loads with sample buttons');
 
+  // Automated runs are labelled so the cases dashboard can hide them
+  await js(`(() => { const i = document.getElementById('investigator'); i.value = 'TEST e2e'; i.dispatchEvent(new Event('change')); })()`);
   await js(`document.querySelector('[data-sample]').click()`);
   step(await waitFor(`document.querySelectorAll('#timeline > *').length > 5`, 5000), 'sample -> timeline rows');
   step(await js(`document.documentElement.scrollWidth <= window.innerWidth`), `no horizontal scroll at ${width}px`);

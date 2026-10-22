@@ -1,7 +1,7 @@
 # UPGRADE LOG (state for docs/UPGRADE_LOOP.md)
 
 Branch `avinya-final` (from `loglens-v2` @ b158675). Backup demo: `main` -> https://loglens-solarflares.pages.dev
-Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iteration 15 = judge round 2, then Phase C docs truth pass).
+Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iteration 16 = DEMO_SCRIPT + PITCH + DEFENSE rewrite for v2).
 
 ## NEEDS YOU (the loop cannot do these; `bash win.sh` asks for 1-3)
 | # | What | Why | Status |
@@ -27,6 +27,7 @@ Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iterat
 | 12 | 23:40 | B | AI vs rules cross-check (`src/lib/crosscheck.ts`: agree/disagree, cited, missed high-risk, AI-only events); PS1 file metadata (type + last modified) kept for uploaded text logs; TEAM.md: Sagar Mishra builder + Krishraj Shukla presenter, stage hand-off | done | e2e live 360 + 1280 PASS incl. "cross-check shown" and "file upload -> metadata" (real file via DevTools setFileInputFiles); eval live 16/17 (case 3 >8 s) |
 | 13 | 23:37 | B | Typecheck: typescript 5.9.3 + @types/node as devDeps, strict tsconfig over src/lib, functions, worker, scripts, tests (`npm run typecheck`); one command `npm run check` = build + typecheck + worker bundle + 5 check scripts | done | `npm run typecheck` 0 errors (only fix: check-seal.ts needed `export {}`); `npm run check` exit 0. Not covered: the inline TS in .astro pages (no `astro check`) |
 | 14 | 23:41 | B | Lighthouse mobile (lighthouse 12.8.2, live v2). `/`: 100/100/100/100. `/cases` was 79 perf (CLS 0.484: cards + status text pushed the page) -> reserved heights -> 98 and 99 (CLS 0.031 / 0.051), A11y/BP/SEO 100 | done | JSON reports in scratchpad; e2e live 360 PASS |
+| 15 | 23:47 | B/C | Judge round 2 (139/200). Docs: README rewritten to v2 truth (PS table, Worker not Pages, 17 cases, real results, limits), TECH_STACK.md (diagram, why each tool, vs suggested stack), .env.example + `npm start`; clean clone from GitHub -> `npm install`, `cp .env.example .dev.vars`, `npm start` -> page 200, health OK, ledger/AI offline messages as documented. Dashboard: automated test rows labelled TEST and hidden by default (toggle), ledger head hash shown, window 50 -> 200 rows | done | check-seal live SEAL PASS; e2e live 360 + 1280 PASS ("27 automated test rows hidden") |
 | 6 | 22:36 | B | MITRE ATT&CK chips (verified IDs, link to attack.mitre.org) on every flag + in report; e2e checks chips | done | e2e live 360 + 1280 PASS (chips step PASS); eval live 16/17: case 5 AI 8b-fast said incident for a legit late admin (AI flake, not this change) |
 | 7 | 22:52 | B | J1 footer/QR/README -> v2 URL + honest v1 lineage; J2 rule severity (HIGH/MEDIUM) sent to AI + backup 8b capped at suspicious without HIGH evidence (labelled note); `npm run check:worker` (wrangler dry-run bundle) after a build error slipped past astro build | done | eval local + live 16/17 (case 5 now PASS; case 9 Hindi >8 s); e2e live 360 + 1280 PASS; live footer shows v2 URL + अvinya |
 | 8 | 22:58 | B | Hindi inside 8 s: stronger Devanagari instruction (neutral style example, not copied), 504 now lists every provider's reason (`tried`) | done | probe: before = 70b/Gemini timeout + 8b 'wrong language'; after 8b Hindi 6.5-7.7 s with case-specific text; eval **local 17/17, live 17/17**; e2e live 360 PASS |
@@ -58,6 +59,7 @@ Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iterat
 | Round | Time | Pres /20 | Domain /20 | Solution /20 | Team /20 | Stack /20 | Prototype /100 | Total /200 |
 |---|---|---|---|---|---|---|---|---|
 | 1 (skeptical-judge) | 22:35 | 12 | 13 | 13 | 6 | 12 | 62 | 118 |
+| 2 (skeptical-judge) | 23:41 | 11 | 14 | 15 | 8 | 13 | 78 | 139 (README/TECH_STACK rewritten right after; demo/pitch docs still stale) |
 
 ## Coverage matrix (LOOP.md section 6; filled by the audit)
 | Req | Requirement | What LogLens shows | Evidence | Status | Slice |
