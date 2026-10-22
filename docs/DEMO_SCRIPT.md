@@ -1,114 +1,71 @@
-# DEMO SCRIPT (3 minute) — simple Hinglish
+# DEMO SCRIPT (3 minute, v2) — simple Hinglish
 
-**App ka link:** https://loglens-solarflares.pages.dev
-**Slides ka link:** https://claude.ai/artifact/C3p7eQ1CCxardURKkz7Mu3
+**Presenter:** Krishraj Shukla · **Technical answers:** Sagar Mishra
+**App:** https://loglens-v2.loglens.workers.dev · **Dashboard:** https://loglens-v2.loglens.workers.dev/cases
+**Backup app (v1, agar v2 na khule):** https://loglens-solarflares.pages.dev
+**Backup ka backup:** recorded demo video (phone + laptop dono mein rakho)
 
-Judges English pasand karein to English lines `docs/PITCH.md` mein hain. Neeche **"Bolo"** wali lines ko apne shabdon mein bolo, ratna nahi hai.
-
----
-
-## Shuru karne se 5 minute pehle
-1. App ka link kholo.
-2. Left side neeche **"New case"** dabao, taaki sab saaf ho jaye.
-3. Ek baar **"ERP marks tampering"** dabao, phir **"Analyze with AI"** dabao. Isse AI "jaag" jata hai aur demo mein slow nahi hoga.
-4. Phir se **"New case"** dabao.
-5. Browser zoom 110-125% rakho, taaki judges padh sakein.
+"Bolo" wali lines apne shabdon mein bolo, ratna nahi hai. English lines `docs/PITCH.md` mein hain.
 
 ---
 
-## Step 1: Problem batao (0:00 - 0:30)
-**Screen:** Slide 1, 2, 3 aur 4 (cover, problem, "Today vs with LogLens", 3 steps).
-
-**Bolo:**
-"Result week hai. Ek subah student ke DBMS marks 42 se 92 ho gaye. Professor bolte hain: maine raat ko login hi nahi kiya. IT team ke paas hazaron log lines hain. Sawaal ye hai: kisne kiya, aur kya hum in logs pe bharosa kar sakte hain?"
-
-"Isliye humne LogLens banaya. Rules gadbad dhoondhte hain, AI samjhata hai, aur SHA-256 prove karta hai ki log ke saath chhed-chhaad hui ya nahi."
-
----
-
-## Step 2: Sample kholo (0:30 - 0:55)
-**Screen:** Slide 5 (Live demo, QR wala) pe aao, phir app wale tab pe jao.
-
-**Karo:** left side **"ERP marks tampering"** dabao.
-
-**Kya dikhega:**
-- Upar bada **laal box: "High risk"**.
-- Neeche **Timeline** mein events ki list. Laal wale gadbad wale events hain.
-
-**Bolo:**
-"Ek click mein log ki timeline ban gayi. Laal lines gadbad hain: raat 2 baje 5 baar galat password, phir naye IP se login, phir marks 42 se 92, phir audit log delete. Har laal line ke saath reason likha hai. Ye rules ka kaam hai, AI ka nahi."
+## Stage se 10 minute pehle (warm-up)
+1. App kholo. "Investigator name" mein likho: `Krishraj (IT cell)`.
+2. **ERP marks tampering** dabao → **Analyze with AI** dabao. Isse AI jaag jata hai.
+3. **New case** dabao (sab saaf). Browser zoom 110-125%.
+4. Dashboard wala tab alag se khula rakho.
+5. Wi-Fi na chale to phone ka hotspot. AI na chale to bhi rules + hash + receipt chalte hain.
+6. Subah `node tests/eval.ts` mat chalao (free AI quota bachao). Ek `node scripts/e2e.ts <url> 360` kaafi hai.
 
 ---
 
-## Step 3: Kisne kya badla (0:55 - 1:15)
-**Karo:** **"Changes made"** box dikhao. Likha hoga "6 changes, 3 unauthorized".
+## Step 1: Problem (0:00 - 0:25) — Krishraj
+**Bolo:** "Result week. Student ke DBMS marks raat 2 baje 42 se 92 ho gaye. Professor kehte hain maine login nahi kiya.
+IT cell ke paas hazaron log lines hain. Do sawaal: kisne kiya, aur kya hum in logs pe bharosa kar sakte hain?
+Splunk ya Timesketch jaise tools ke liye server aur training chahiye. College IT cell ke paas wo nahi hota."
 
-**Ek laal "Unauthorized" card pe ungli rakho aur bolo:**
-"Yahan har badlav ki list hai: kisne, kab, kis IP se, pehle kya tha aur baad mein kya hua. Raat 2:09 baje prof.verma ke account se, IP 49.36.112.7 se, marks 42 se 92. Ye Unauthorized hai, kyunki login 5 galat password ke baad naye IP se hua tha. Matlab account chori hua tha."
+## Step 2: Sample case (0:25 - 0:55)
+**Karo:** **ERP marks tampering** dabao.
+**Dikhao:** laal "High risk" banner → **Attack chain** box → timeline ki laal lines aur unke **T1110.001** jaise chips.
+**Bolo:** "Ek click mein timeline ban gayi. 13 rules ne gadbad pakdi, aur har flag ke saath MITRE ATT&CK ka standard ID hai.
+Attack chain dikhata hai ki ek hi IP aur account ke events jud ke ek kahani banate hain:
+password guessing → naye IP se login → marks badle → audit log delete. Ye sab rules hain, AI nahi."
 
----
+## Step 3: Kisne kya badla (0:55 - 1:10)
+**Karo:** **Changes made** box mein ek laal "Unauthorized" card dikhao.
+**Bolo:** "Har badlav: kisne, kab, kis IP se, pehle kya, baad mein kya. 5 galat password ke baad naye IP se login, phir marks 42 se 92: account chori hua tha."
 
-## Step 4: AI se poochho (1:15 - 1:45)
-**Karo:** **"What happened"** box mein **"Analyze with AI"** dabao, 5-10 second ruko.
+## Step 4: AI summary + cross-check (1:10 - 1:45)
+**Karo:** **Analyze with AI** dabao (5-8 second). Phir **हिंदी** chuno aur dobara dabao (agar time ho).
+**Dikhao:** verdict, event numbers wale indicators, "AI found beyond the rules", aur **Cross-check: AI vs rules** box.
+**Bolo:** "AI ne summary di aur har point ke saath event number diya. Jo point kisi asli event pe nahi tika, wo hum hata dete hain.
+Aur hum AI pe aankh band karke bharosa nahi karte: cross-check batata hai ki AI aur rules sahmat hain ya nahi.
+Agar AI slow ho to saaf label ke saath rules wala offline summary aata hai."
 
-**Kya dikhega:**
-- **"Verdict: incident"**, aur thoda text ki kya hua.
-- Har point ke saath **#14, #15** jaise number.
-- Dotted box: **"AI found beyond the rules"**.
-
-**Bolo:**
-"AI ne poori kahani bata di. Har point ke saath event number hai, to hum khud check kar sakte hain ki AI sahi bol raha hai. Is dotted box mein woh baatein hain jo rules ne nahi pakdi, sirf AI ne jodi."
-
-**Optional:** **हिंदी** dabao aur phir "Analyze with AI". Bolo: "Committee ke liye Hindi mein bhi."
-
-**Agar grey "Offline summary" box aaye:** ghabrao mat. Bolo "AI abhi slow hai, ye rules wala backup hai", aur ek baar phir dabao.
-
----
-
-## Step 5: Chhed-chhaad pakdo aur wapas lao (1:45 - 2:30)
+## Step 5: Saboot ki suraksha (1:45 - 2:25) — the wow
 **Karo:**
-1. Left side **"Log text"** box mein `42->92` dhoondho.
-2. `92` ko `93` kar do. Bas ek number.
-3. Left side **"Verify integrity"** dabao.
+1. Evidence box mein **SHA-256** aur **Server receipt #...** dikhao → **Check server receipt** → hara "RECEIPT VALID".
+2. **Verify integrity** → hara MATCH.
+3. Log box mein ek number badlo (42 ko 43) → **Verify integrity** → laal **TAMPERED** + kaun si line badli.
+**Bolo:** "Log aate hi uska SHA-256 fingerprint banta hai, aur server ek signed receipt deta hai: server ka time, secret key se HMAC signature,
+aur pichhli receipt se chain. Browser ke devtools se bhi ye receipt nakli nahi ban sakti.
+Ab main sirf ek number badalta hoon... TAMPERED. Aur ye bhi dikhta hai ki kaun si line badli."
 
-**Kya dikhega:** laal **"TAMPERED: hash mismatch"**, aur neeche **"1 line changed after locking"**, jisme **Before** aur **After** dono dikhenge.
+## Step 6: Dashboard (2:25 - 2:45)
+**Karo:** dashboard tab kholo. **Re-check now** dabao.
+**Bolo:** "Har case, uska status, investigator ka naam, aur poora server audit trail. Har row ka signature aur chain abhi dobara check hua: Ledger intact."
 
-**Bolo:**
-"Maine sirf ek number badla, aur poora hash badal gaya. App ne turant pakad liya, aur bata bhi diya kaunsi line badli."
-
-4. **"Restore original"** dabao. Hara **MATCH** aayega.
-
-**Bolo:**
-"Aur ek click mein original wapas aa gaya, kyunki lock karte waqt humne ek sealed copy rakhi thi."
-
-**Optional (time ho to):** "Audit trail" kholo aur **"Tamper test"** dabao. **"CHAIN BROKEN"** aayega. Bolo: "Hamari apni history bhi koi chupke se edit kare, to woh bhi pakda jata hai."
-
----
-
-## Step 6: PDF report (2:30 - 2:45)
-**Karo:** left side **"Save report as PDF"** dabao. Print window khulegi, wahan **"Save as PDF"** chuno.
-
-**Bolo:**
-"Poori report PDF mein: kisne kya badla, pehle aur baad, hash, AI summary aur history. Ye committee ko de sakte hain."
+## Step 7: Report + close (2:45 - 3:00)
+**Karo:** wapas app → **Save report as PDF** (ya Download report) dikhao.
+**Bolo:** "Report mein hash function aur value, server receipt, MITRE IDs, attack chain, AI summary aur har event ki asli line hai.
+Ye legal certificate nahi hai, investigation ki madad hai. LogLens: rules dhoondhte hain, AI samjhata hai, hash aur signed receipt saboot bachate hain."
 
 ---
 
-## Step 7: Khatam karo (2:45 - 3:00)
-**Screen:** wapas slides pe jao: slide 6 (kisne kya badla), 7 (kaise kaam karta hai), 8 (testing), 9 (thank you).
-
-**Bolo:**
-"Humne 16 test cases banaye. 3 baar chalaye: 16, 16 aur 15 sahi aaye. Ek baar Hindi jawab slow tha, tab backup ne kaam kiya. Ye sirf college ke liye nahi hai: kisi bhi office, server ya website ka log chalega. QR scan karo aur apna log daal ke try karo. Thank you!"
-
----
-
-## Agar kuch galat ho jaye
-| Problem | Kya karo |
+## Agar kuch toote
+| Kya hua | Kya karo, kya bolo |
 |---|---|
-| Internet nahi chal raha | Phone ka hotspot on karo. Na chale to recorded video chalao. |
-| AI ka grey "Offline summary" aaya | "AI slow hai, ye backup hai" bolo, ek baar phir dabao. |
-| PDF window nahi khuli | "Download report (HTML)" dabao aur woh file kholo. |
-| Page ajeeb dikh raha hai | "New case" dabao, phir sample dobara dabao. |
-
-**Yaad rakhne wali ek line:** "Rules dhundhte hain, AI samjhata hai, SHA-256 prove karta hai."
-
-**Note:** demo ke saare logs made-up sample data hain. Judge pooche to seedha yahi bolo.
+| AI 8 s se zyada | "Ye hamara offline mode hai" → offline summary dikhao, aage badho |
+| Receipt "not available" | "Server ledger tak nahi pahunch paye, local SHA-256 phir bhi kaam karta hai" → Verify / TAMPERED dikhao |
+| v2 khule hi nahi | v1 backup URL kholo (receipt aur dashboard v1 mein nahi hain, ye bata do) |
+| Internet hi nahi | recorded video chalao |

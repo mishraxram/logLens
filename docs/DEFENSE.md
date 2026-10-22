@@ -4,12 +4,13 @@ Is file ko judging se pehle 2 baar padho. Jawab ratne nahi hain, matlab samajhna
 
 ---
 
-## 1. Project kaise bana hai (5 points mein)
-1. **Ek hi webpage poora tool hai** (`src/pages/index.astro`). Ye browser mein chalta hai.
-2. **Browser khud kaam karta hai:** log padhta hai, 13 rules chalata hai, aur SHA-256 seal banata hai. Asli file computer se bahar nahi jaati.
-3. **AI ke liye** browser sirf events ki lines hamare server (`/api/analyze`, Cloudflare pe) ko bhejta hai.
-4. **Server** secret Gemini key lagata hai, Gemini se poochta hai, jawab check karta hai, aur wapas bhejta hai. Gemini fail ho to browser rules se khud summary bana deta hai.
-5. **Evidence ka record aur audit trail** browser ke localStorage mein save hote hain. Report (HTML/PDF) bhi browser hi banata hai.
+## 1. Project kaise bana hai (6 points mein)
+1. **Do pages:** `/` (forensics desk) aur `/cases` (dashboard). Dono browser mein chalte hain.
+2. **Browser khud kaam karta hai:** log padhta hai, 13 rules chalata hai (har ek ke saath MITRE ID), attack chain banata hai, aur SHA-256 banata hai. Asli file computer se bahar nahi jaati.
+3. **Ek Cloudflare Worker** (`worker/index.ts`) pages bhi deta hai aur API bhi. Har response pe security headers (CSP) lagata hai, rate limit aur size limit rakhta hai.
+4. **AI ke liye** browser sirf events ki lines `/api/analyze` ko bhejta hai. Server 3 Gemini models ek saath chalata hai; Gemini 2.5 s mein na aaye to Cloudflare Workers AI backup. 8 s mein kuch na aaye to rules wala offline summary.
+5. **Signed receipt:** lock hote hi browser hash `/api/seal` ko bhejta hai. Server time + secret key se HMAC signature + pichhli receipt se chain, sab D1 (SQLite) mein. Browser ke paas key nahi hai, isliye receipt nakli nahi ban sakti.
+6. **Report (HTML/PDF)** browser banata hai: hash, receipt, MITRE, attack chain, AI summary, audit trail, poori timeline.
 
 ---
 
@@ -20,24 +21,30 @@ Is file ko judging se pehle 2 baar padho. Jawab ratne nahi hain, matlab samajhna
 | `src/lib/rules.ts` | 13 rules jo laal/amber flag lagate hain, reason ke saath (galat password ki burst, naya IP, marks jump, log delete, SQL injection...). |
 | `src/lib/changes.ts` | "Changes made" list: har update/delete ka kaun, kab, IP, pehle → baad, aur status (Unauthorized / Suspicious / Blocked / Normal). |
 | `src/lib/evidence.ts` | SHA-256 banata hai, evidence lock karta hai, sealed copy rakhta hai, verify karta hai, badli lines dhoondhta hai, aur hash-chained audit trail rakhta hai. |
-| `src/lib/prompts.ts` | Gemini ko jaane wala prompt: kya likhna hai aur JSON ka exact format. |
-| `functions/api/analyze.ts` | Server: input check, Gemini call (8 second limit, 3 backup models), galat event number wale AI points hatana, Hindi na aaye to dobara try. |
-| `src/lib/report.ts` | Download/PDF wali report banata hai. Har text ko safe (escape) karta hai. |
-| `src/pages/index.astro` | Page aur uske saare buttons ka code. |
-| `tests/eval.ts` | 16 test cases ko asli code aur live AI pe chala ke score batata hai. |
+| `src/lib/mitre.ts` | Har rule ka verified MITRE ATT&CK technique ID (attack.mitre.org pe check kiye). |
+| `src/lib/chain.ts` | Attack chain: jo flagged events ek IP ya account share karte hain unhe jodta hai (union-find), aur MITRE tactic stages mein rakhta hai. |
+| `src/lib/crosscheck.ts` | AI vs rules: dono sahmat hain ya nahi, AI ne kaun se high-risk events miss kiye, kaun se sirf AI ne bataye. |
+| `src/lib/prompts.ts` | AI ko jaane wala prompt. Log text ko "untrusted data" mark karta hai (prompt injection se bachav). |
+| `functions/api/analyze.ts` | Server: input check, Gemini x3 race + Workers AI backup (8 s limit), galat event number wale points hatana, galat bhasha reject, backup model ka "incident" bina HIGH flag ke "suspicious". |
+| `functions/api/seal.ts` | Signed receipts: HMAC-SHA256, hash chain, D1 table `receipts` (prev_hash UNIQUE, taaki do receipts ek saath aayein to chain na toote). `/api/ledger` har row dobara check karta hai. |
+| `src/lib/ledger.ts` | Browser se receipt maangna aur check karna; investigator ka naam. |
+| `worker/index.ts` | Routes, CSP + security headers, rate limit, 413/415. |
+| `src/lib/report.ts` | Report banata hai. Har text escape hota hai. |
+| `src/pages/index.astro`, `src/pages/cases.astro` | Dono pages aur buttons ka code. |
+| `tests/eval.ts`, `scripts/*.ts` | 17 eval cases; rules, hash, chain, report, seal aur browser (e2e) checks. `npm run check` sab ek saath. |
 | `public/samples/*` | 3 made-up sample logs, "Try sample" buttons ke liye. |
 
 ---
 
-## 3. Demo ke time andar kya hota hai
-1. **"ERP marks tampering" dabaya** → page sample file laata hai → `evidence.ts` uska SHA-256 banata hai aur sealed copy rakhta hai → audit trail mein entry 1.
-2. **Timeline bani** → `parse.ts` 19 events banata hai → `rules.ts` flag lagata hai → `changes.ts` "Changes made" list banata hai → page laal/amber rows dikhata hai.
-3. **"Analyze with AI" dabaya** → browser 200 tak events (flagged wale pehle) server ko bhejta hai.
-4. **Server** prompt banata hai, Gemini se poochta hai, galat citation hatata hai, aur verdict, summary, points, "beyond the rules" aur next steps wapas bhejta hai. Fail ho to rules wala offline summary.
-5. **92 ko 93 kiya, "Verify" dabaya** → naya hash bana → purane se alag → TAMPERED → sealed copy se compare karke badli line dikhayi.
-6. **"Restore original"** → sealed copy wapas box mein → hash phir same → MATCH.
-7. **"Tamper test"** → audit ki entry 1 chupke se badli → chain check fail → "CHAIN BROKEN at entry 1".
-8. **"Save report as PDF"** → `report.ts` report banata hai → print window → Save as PDF.
+## 3. Demo ke time andar kya hota hai (8 steps, dono ko aana chahiye)
+1. **Sample dabaya** → SHA-256 bana → sealed copy rakhi → `/api/seal` se signed receipt aayi → audit trail mein entries.
+2. **Timeline bani** → `parse.ts` 19 events → `rules.ts` flags + MITRE chips → `chain.ts` attack chain → `changes.ts` "Changes made".
+3. **"Analyze with AI"** → 200 tak events server ko → Gemini x3 + (2.5 s baad) Workers AI → jawab check → verdict, indicators, "beyond the rules", next steps → browser mein cross-check box.
+4. **"Check server receipt"** → `/api/seal?id=` → server signature dobara banata hai aur chain link check karta hai → RECEIPT VALID.
+5. **Ek digit badla, "Verify"** → naya hash alag → TAMPERED → badli line dikhi → server pe bhi VERIFIED_TAMPERED entry.
+6. **"Restore original"** → sealed copy wapas → MATCH.
+7. **Dashboard** → `/api/ledger` → har row ka signature + chain check → "Ledger intact", cases ki list.
+8. **"Save report as PDF"** → `report.ts` → print window → PDF.
 
 ---
 
@@ -87,26 +94,28 @@ Lock karte waqt hum ek sealed copy browser mein rakhte hain. Baad mein hash alag
 ## 5. Kamzoriyan (honest jawab)
 Judge kamzori pooche to chhupao mat. Seedha bolo "ye limitation hai, aage hum ye karenge":
 
-1. **Sirf 3 log format chalte hain.** "Aage Windows event logs aur firewall logs jodenge. Naya format jodna ek function ka kaam hai."
-2. **Audit trail ek hi browser mein hai.** "Edit pakda jata hai, par koi poori history hi mita de to nahi. Aage har entry ka hash server pe bhi rakhenge."
-3. **Rules ke numbers fixed hain** (2 minute mein 5 galat password, 6 se 23 baje working hours). "Ye hamari college story ke liye set hain. Aage har organisation apne hisaab se set kar payega."
-4. **Test set chhota hai aur humne khud banaya.** "16 cases dikhate hain ki demo stable hai, ye real-world accuracy nahi hai. Aage public log datasets pe test karenge."
-5. **AI ka jawab har baar thoda alag hota hai.** "Isliye har point event number se juda hai, label laga hai, temperature kam (0.2) rakha hai aur JSON check hota hai."
+1. **Sirf 3 log format.** "Aage Windows event logs aur firewall logs. Naya format = ek parse function."
+2. **Login nahi hai.** "Dashboard ek shared demo ledger hai. Asli use mein authorised investigators ke liye access gate lagega."
+3. **Ledger ki aakhri rows.** "Har row ka signature aur link check hota hai, par Cloudflare account ka owner sabse nayi rows delete kar de to bachi hui chain theek dikhegi. Isliye dashboard 'ledger head' hash dikhata hai: use case notes mein likh lo. Aage ye head bahar publish karenge."
+4. **Receipt kya prove karti hai.** "Sirf itna ki ye hash is server pe is time pe record hua. File kisne banayi, ye nahi."
+5. **Rules ke numbers fixed** (2 min mein 5 galat password, 06-23 working hours). "Aage organisation apne hisaab se set karegi."
+6. **Test set chhota, khud banaya.** "17 cases stability dikhate hain, real-world accuracy nahi."
+7. **Free AI quotas.** "Gemini aur Workers AI free tier pe hain. Dono slow hon to labelled offline summary."
 
 ---
 
 ## 6. AI tools ka sach (koi pooche to seedha bolo)
-"Code, rules aur test cases Claude Code ne hamare direction mein likhe. Problem, story, scope aur demo humne chuna, aur results humne check kiye. App ke andar analysis Google Gemini karta hai."
+"Code Sagar ne Claude Code (AI coding assistant) ke saath likha: Claude ne zyada code likha, Sagar ne problem, scope, rules ka design aur test cases decide kiye, aur har change ko build, eval aur browser test se check kiya. App ke andar summary Gemini aur Cloudflare Workers AI likhte hain. Krishraj presentation aur demo karte hain."
 
 ---
 
 ## 7. `node tests/eval.ts` kya hai?
-Ye hamara **automatic test** hai. Isse chalane pe 16 sample logs ek-ek karke hamare asli code aur live AI pe chalte hain, aur har ek ka result PASS ya FAIL aata hai. Aakhir mein score dikhta hai, jaise `RESULT 16/16`.
+Ye hamara **automatic test** hai. Isse chalane pe 17 sample logs ek-ek karke hamare asli code aur live AI pe chalte hain, aur har ek ka result PASS ya FAIL aata hai. Aakhir mein score dikhta hai, jaise `RESULT 17/17`.
 
 **Kaise chalayein:** project folder mein terminal kholo aur likho:
 ```
 node tests/eval.ts
 ```
-1-2 minute lagte hain, kyunki AI wale cases live Gemini se poochte hain.
+2-3 minute lagte hain (har AI call ke beech 4 second ka gap). Subah demo se pehle mat chalao: free AI quota bachao.
 
-**Judge ko kya bolna:** "Humne apna tool khud test kiya. Ye command 16 cases chalata hai, aur har case pe pehle se likha hai ki sahi jawab kya hona chahiye. Score `docs/TESTSET.md` mein likha hai, fails ke saath."
+**Judge ko kya bolna:** "Humne apna tool khud test kiya. Ye command 17 cases chalata hai, aur har case pe pehle se likha hai ki sahi jawab kya hona chahiye. Score `docs/TESTSET.md` mein likha hai, fails ke saath."

@@ -1,6 +1,6 @@
 # TESTSET (all inputs are sample data we wrote)
 
-**Current honest result (2026-10-15 12:53, 16 cases incl. 2 web-log cases, 3 runs of `node tests/eval.ts` against the live API): 16/16, 16/16, 15/16.** The one failure: case 9 (Hindi) took longer than 8 s once, so the app showed the offline rules summary instead. Earlier 14-case runs after fixes: 14/14 x3. Small set (14 cases we wrote ourselves), so this shows the demo path is stable, not that the tool is accurate on all real-world logs. AI answers can still vary between runs.
+**Current honest result (v2, 22 Oct 2026, 17 cases, `node tests/eval.ts` against https://loglens-v2.loglens.workers.dev): 17/17 (22:32), 17/17 (22:56), then 16/17, 15/17, 16/17 after 23:12, when the free Workers AI daily allowance ran out and only Gemini was left.** Every failure was the AI taking longer than 8 s (the app then shows the labelled offline summary); no case failed on a wrong rule or a wrong AI verdict in those runs. Earlier v1 results (15 Oct, 16 cases): 16/16, 16/16, 15/16. Small set we wrote ourselves: it shows the demo path is stable, not accuracy on all real-world logs. AI answers can vary between runs.
 
 Before fixes: 11/14, 13/14, 11/14. Fixes: added `verdict` field separate from confidence (cases 2, 5), added impossible-travel rule (case 6), server retries another model if Hindi was asked but the reply is not in Devanagari (case 9).
 
