@@ -1,4 +1,5 @@
 // Evidence integrity: SHA-256 hashing (browser Web Crypto) + audit trail kept in localStorage.
+import type { Receipt } from './ledger.ts';
 
 // Hashes text (log pasted in the box) or raw bytes (any uploaded file: PDF, image...)
 export async function sha256(data: string | ArrayBuffer): Promise<string> {
@@ -8,7 +9,7 @@ export async function sha256(data: string | ArrayBuffer): Promise<string> {
 }
 
 // kind 'text' = the log in the box; kind 'file' = a non-text file, verified by choosing it again
-export type Evidence = { name: string; size: number; hash: string; lockedAt: string; kind?: 'text' | 'file'; type?: string; lastModified?: string };
+export type Evidence = { name: string; size: number; hash: string; lockedAt: string; kind?: 'text' | 'file'; type?: string; lastModified?: string; receipt?: Receipt };
 // Each audit entry stores the hash of the entry before it (a hash chain).
 // If anyone edits or deletes an old entry, the hashes after it stop matching.
 export type AuditEntry = { at: string; action: string; detail: string; prev: string; hash: string };
@@ -82,6 +83,13 @@ export async function lockFile(f: File): Promise<Evidence> {
   return memEvidence;
 }
 export const getEvidence = () => memEvidence;
+
+// Attach the signed server receipt to the current evidence (null = server unreachable)
+export function setReceipt(r: Receipt | null) {
+  if (!memEvidence) return;
+  memEvidence = { ...memEvidence, receipt: r ?? undefined };
+  write(KEY_EVIDENCE, memEvidence);
+}
 
 export async function verifyEvidence(data: string | ArrayBuffer) {
   if (!memEvidence) return null;

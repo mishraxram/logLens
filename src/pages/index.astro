@@ -25,6 +25,9 @@ const samples = [
       <section class="panel p-4">
         <h2 class="font-semibold text-lg">Open a case</h2>
         <p class="text-sm text-muted mb-3">Pick a sample case (made-up data) or paste your own log.</p>
+        <label for="investigator" class="text-sm font-semibold">Investigator name</label>
+        <input id="investigator" type="text" maxlength="60" autocomplete="name" placeholder="e.g. IT cell, Dr. Sharma"
+          class="mt-1 mb-4 w-full min-h-11 border border-line rounded-lg px-2 bg-paper/40" />
         <div class="space-y-2 mb-4">
           {samples.map((s) => (
             <button type="button" data-sample={s.file} class="sample-btn case-btn font-semibold">
@@ -55,6 +58,7 @@ const samples = [
           <p class="text-xs font-semibold mt-2">SHA-256</p>
           <p id="evHash" class="font-mono text-xs break-all"></p>
         </div>
+        <div id="receipt" class="mb-4 text-sm" aria-live="polite"></div>
         <div class="flex flex-wrap gap-2">
           <button id="verify" type="button" class="btn btn-primary">Verify integrity</button>
           <button id="pdf" type="button" class="btn btn-quiet">Save report as PDF</button>
@@ -126,9 +130,10 @@ const samples = [
 <script>
   import { parseLog } from '../lib/parse.ts';
   import { applyRules, ruleVerdict } from '../lib/rules.ts';
-  import { lockEvidence, verifyEvidence, getEvidence, getAudit, audit, clearCase, now, verifyAuditChain, lockFile, tamperAuditForDemo, getOriginal, changedLines } from '../lib/evidence.ts';
+  import { lockEvidence, verifyEvidence, getEvidence, getAudit, audit, clearCase, now, verifyAuditChain, lockFile, tamperAuditForDemo, getOriginal, changedLines, setReceipt } from '../lib/evidence.ts';
   import { buildReport } from '../lib/report.ts';
   import { MITRE, mitreUrl } from '../lib/mitre.ts';
+  import { sealOnServer, checkReceipt, getInvestigator, setInvestigator } from '../lib/ledger.ts';
   import { extractChanges, STATUS_TEXT } from '../lib/changes.ts';
 
   const $ = (id: string) => document.getElementById(id)!;
@@ -149,6 +154,7 @@ const samples = [
       const res = await fetch(b.dataset.sample!);
       logBox.value = await res.text();
       await lockEvidence(b.dataset.sample!.split('/').pop()!, logBox.value);
+      void sealNow('SEALED');
       run(true);
     }),
   );
@@ -164,6 +170,7 @@ const samples = [
       if (f.size > 50_000_000) { msg.textContent = 'File too big (max 50 MB).'; return; }
       msg.textContent = 'Hashing file…';
       await lockFile(f);
+      void sealNow('SEALED');
       msg.textContent = `${f.name} locked as evidence (not a text log, so no timeline).`;
       $('verifyOut').replaceChildren(); lastVerify = null;
       showLocker();
@@ -172,6 +179,7 @@ const samples = [
     if (f.size > 2_000_000) { msg.textContent = 'Log too big (max 2 MB).'; return; }
     logBox.value = await f.text();
     await lockEvidence(f.name, logBox.value);
+    void sealNow('SEALED');
     run(true);
   });
 
@@ -179,12 +187,52 @@ const samples = [
   let lastAi: AiResult | null = null;
   let lastVerify: { match: boolean; current: string } | null = null;
 
+  // Investigator name: remembered in this browser, sent with every server receipt
+  const invBox = $('investigator') as HTMLInputElement;
+  invBox.value = getInvestigator();
+  invBox.addEventListener('change', () => setInvestigator(invBox.value));
+
+  // Ask the server for a signed, hash-chained receipt. SEALED receipts are kept on the evidence;
+  // verify results are only logged on the server (who checked what, when).
+  async function sealNow(action: 'SEALED' | 'VERIFIED_MATCH' | 'VERIFIED_TAMPERED', hash?: string) {
+    const ev = getEvidence();
+    if (!ev) return;
+    const who = getInvestigator() || 'not given';
+    const r = await sealOnServer({ sha256: hash ?? ev.hash, name: ev.name, size: ev.size, investigator: who, action });
+    if (action === 'SEALED') setReceipt(r);
+    await audit(r ? `SERVER_${action}` : 'SERVER_OFFLINE', r ? `receipt #${r.id} · server time ${r.sealed_at} · by ${who}` : 'Server ledger unreachable: local hash only');
+    showLocker();
+  }
+
+  function showReceipt() {
+    const box = $('receipt'); box.replaceChildren();
+    const r = getEvidence()?.receipt;
+    if (!r) { box.append(el('p', 'text-muted', 'Server receipt: not available (offline or sealing…). The local SHA-256 above still works.')); return; }
+    box.append(el('p', 'font-semibold', `Server receipt #${r.id}`),
+      el('p', 'text-xs text-muted', `Sealed ${r.sealed_at} (server time, UTC) by ${r.investigator}`),
+      el('p', 'font-mono text-xs break-all', `Signature ${r.sig.slice(0, 24)}…`));
+    const btn = el('button', 'text-sm underline mt-1 min-h-11', 'Check server receipt') as HTMLButtonElement;
+    btn.type = 'button';
+    btn.addEventListener('click', async () => {
+      const c = await checkReceipt(r.id);
+      const same = c?.receipt.sha256 === getEvidence()?.hash;
+      const good = !!c && c.valid && c.linkOk && same;
+      out.replaceChildren(el('p', `p-2 rounded font-semibold ${good ? 'bg-match text-white' : 'bg-flag text-white'}`,
+        !c ? 'Server unreachable: receipt not checked.' : good ? 'RECEIPT VALID: signed by the LogLens server, chain link intact, same hash as the evidence tag.'
+          : `RECEIPT PROBLEM: ${!c.valid ? 'signature does not match. ' : ''}${!c.linkOk ? 'chain link broken. ' : ''}${!same ? 'hash differs from the evidence tag.' : ''}`));
+      await audit('RECEIPT_CHECK', `receipt #${r.id}: ${good ? 'valid' : 'problem'}`);
+    });
+    const out = el('div', 'mt-1');
+    box.append(btn, out);
+  }
+
   async function showLocker() {
     const ev = getEvidence();
     $('locker').classList.toggle('hidden', !ev);
     if (!ev) return;
     $('evName').textContent = `${ev.name} (${ev.size} bytes)${ev.kind === 'file' ? `\n${ev.type}, modified ${ev.lastModified}` : ''}\nLocked ${ev.lockedAt}`;
     $('evHash').textContent = ev.hash;
+    showReceipt();
     const list = $('auditList'); list.replaceChildren();
     getAudit().forEach((a, i) => list.append(el('li', '', `${i + 1}. ${a.at}  ${a.action}  ${a.detail}  [${a.hash.slice(0, 10)}…]`)));
     const broken = await verifyAuditChain();
@@ -209,6 +257,7 @@ const samples = [
   function showVerify(r: Awaited<ReturnType<typeof verifyEvidence>>) {
     if (!r) return;
     lastVerify = r;
+    void sealNow(r.match ? 'VERIFIED_MATCH' : 'VERIFIED_TAMPERED', r.current); // server log of who verified what
     const out = $('verifyOut'); out.replaceChildren();
     if (r.match) {
       out.append(el('p', 'p-3 rounded-lg bg-match text-white font-semibold', 'MATCH: evidence unchanged since it was locked.'));
@@ -364,7 +413,7 @@ const samples = [
     const text = logBox.value;
     if (!text.trim()) { msg.textContent = 'Paste a log or try a sample.'; $('result').classList.add('hidden'); return; }
     msg.textContent = '';
-    if (!getEvidence()) await lockEvidence('pasted-log.txt', text); // pasted text becomes evidence on first run
+    if (!getEvidence()) { await lockEvidence('pasted-log.txt', text); void sealNow('SEALED'); } // pasted text becomes evidence on first run
     const parsed = parseLog(text);
     const events = applyRules(parsed.events);
     if (last?.events.map((e) => e.raw).join() !== events.map((e) => e.raw).join()) $('aiOut').replaceChildren();

@@ -2,6 +2,7 @@
 // The API handlers are the same files v1 uses on Pages, so both versions share one tested code path.
 import { onRequestPost as analyze } from '../functions/api/analyze.ts';
 import { onRequestGet as health } from '../functions/api/health.ts';
+import { sealPost, sealGet, ledgerGet } from '../functions/api/seal.ts';
 
 type RateLimiter = { limit: (opts: { key: string }) => Promise<{ success: boolean }> };
 type Env = {
@@ -9,6 +10,8 @@ type Env = {
   AI_LIMITER?: RateLimiter; // Cloudflare rate limit binding (wrangler.jsonc "ratelimits")
   GEMINI_API_KEY?: string;
   GEMINI_MODEL?: string;
+  DB?: any; // D1 evidence ledger (wrangler.jsonc "d1_databases"), typed in functions/api/seal.ts
+  SEAL_SECRET?: string; // HMAC key for receipts (wrangler secret)
   AI?: { run: (model: string, input: object) => Promise<any> }; // Workers AI binding (wrangler.jsonc "ai")
 };
 
@@ -76,6 +79,17 @@ async function handleAnalyze(request: Request, env: Env): Promise<Response> {
   return analyze({ request: new Request(request.url, { method: 'POST', headers: request.headers, body: text }), env });
 }
 
+// Seal requests are tiny; same rate limit and JSON-only rule as /api/analyze
+async function handleSeal(request: Request, env: Env): Promise<Response> {
+  if (!(await allowed(env, request.headers.get('cf-connecting-ip') ?? 'unknown'))) {
+    return Response.json({ error: 'Too many requests, try again in a minute' }, { status: 429, headers: { 'retry-after': '60' } });
+  }
+  if (!(request.headers.get('content-type') ?? '').includes('application/json')) return Response.json({ error: 'Send JSON' }, { status: 415 });
+  const text = await request.text();
+  if (text.length > 4096) return Response.json({ error: 'Request too large' }, { status: 413 });
+  return sealPost(new Request(request.url, { method: 'POST', headers: request.headers, body: text }), env);
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     return withSecurityHeaders(await route(request, env));
@@ -87,6 +101,9 @@ async function route(request: Request, env: Env): Promise<Response> {
   try {
     if (pathname === '/api/analyze' && request.method === 'POST') return await handleAnalyze(request, env);
     if (pathname === '/api/health' && request.method === 'GET') return health();
+    if (pathname === '/api/seal' && request.method === 'POST') return await handleSeal(request, env);
+    if (pathname === '/api/seal' && request.method === 'GET') return await sealGet(request, env);
+    if (pathname === '/api/ledger' && request.method === 'GET') return await ledgerGet(env);
     if (pathname.startsWith('/api/')) return Response.json({ error: 'Not found' }, { status: 404 });
   } catch {
     // Never leak a stack trace; the page shows the offline rule-based result instead

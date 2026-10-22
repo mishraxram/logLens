@@ -1,7 +1,7 @@
 # UPGRADE LOG (state for docs/UPGRADE_LOOP.md)
 
 Branch `avinya-final` (from `loglens-v2` @ b158675). Backup demo: `main` -> https://loglens-solarflares.pages.dev
-Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iteration 9 = J3 HMAC signed receipt).
+Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iteration 10 = PS6 investigation dashboard).
 
 ## NEEDS YOU (the loop cannot do these; `bash win.sh` asks for 1-3)
 | # | What | Why | Status |
@@ -18,6 +18,7 @@ Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iterat
 | 3 | 22:18 | B | Live AI fix: Gemini + Workers AI (70b preferred, 8b-fast late backup) in parallel inside 8 s | done. Hindi case 9 still >8 s (offline fallback shown, known) | eval v2 live **15/16** (was 6/16); ERP sample 6.7 s on live; deploy loglens-v2 OK |
 | 4 | 22:25 | B | Security headers (CSP with hash for font loader, nosniff, DENY, referrer, permissions, HSTS) on all responses; new `scripts/e2e.ts` (headless Chrome over CDP) | done | live `curl -I`: 6/6 headers; e2e live 360 + 1280 px PASS, 0 console errors; eval live 15/16 (case 9 Hindi >8 s) |
 | 5 | 22:32 | B | Prompt-injection guard: log text inside <<<EVENTS ... EVENTS>>> marked untrusted, markers stripped from fields/notes, AI told to report AI-addressed text as an indicator; eval case 17; eval default -> v2 | done | local 16/17 (case 9 Hindi >8 s), **live 17/17**; case 17: AI verdict incident and cites #3, #4 injection lines; e2e live 360 PASS |
+| 9 | 23:08 | B | J3 server evidence ledger: D1 `loglens-audit` (schema/audit.sql), `/api/seal` (HMAC-SHA256 with secret SEAL_SECRET, hash-chained, server time), `/api/seal?id=`, `/api/ledger`; investigator name field; receipt on evidence + in report; verify results logged server-side; report adds "Hash function: SHA-256" + not-a-legal-certificate note | done | `scripts/check-seal.ts` live SEAL PASS (7/7); local D1 row edited -> `valid:false`, `intact:false`, restored -> `intact:true`; e2e live 360 + 1280 PASS incl. RECEIPT VALID; eval live 17/17. Note: check-seal writes one labelled test row ('check script') to the live ledger |
 | 6 | 22:36 | B | MITRE ATT&CK chips (verified IDs, link to attack.mitre.org) on every flag + in report; e2e checks chips | done | e2e live 360 + 1280 PASS (chips step PASS); eval live 16/17: case 5 AI 8b-fast said incident for a legit late admin (AI flake, not this change) |
 | 7 | 22:52 | B | J1 footer/QR/README -> v2 URL + honest v1 lineage; J2 rule severity (HIGH/MEDIUM) sent to AI + backup 8b capped at suspicious without HIGH evidence (labelled note); `npm run check:worker` (wrangler dry-run bundle) after a build error slipped past astro build | done | eval local + live 16/17 (case 5 now PASS; case 9 Hindi >8 s); e2e live 360 + 1280 PASS; live footer shows v2 URL + अvinya |
 | 8 | 22:58 | B | Hindi inside 8 s: stronger Devanagari instruction (neutral style example, not copied), 504 now lists every provider's reason (`tried`) | done | probe: before = 70b/Gemini timeout + 8b 'wrong language'; after 8b Hindi 6.5-7.7 s with case-specific text; eval **local 17/17, live 17/17**; e2e live 360 PASS |
@@ -32,7 +33,7 @@ Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iterat
 | 4 | PS2 | Verified MITRE ID chips on flags + report | PS2, Domain | H | S | done (iter 6) |
 | 5 | PS2 | Attack-chain panel (stages + event refs) | PS2, Prototype | H | M | todo |
 | 6 | PS6 | Investigation dashboard: cases list, status, progress, investigator | PS6, Prototype | H | M | todo |
-| 7 | PS4/PS6 | D1 append-only hash-chained audit log + signed receipt /api/seal | PS4, PS6 | H | L | todo |
+| 7 | PS4/PS6 | D1 append-only hash-chained audit log + signed receipt /api/seal | PS4, PS6 | H | L | done (iter 9) |
 | 8 | PS5 | Report: event refs per finding, MITRE, hash function field | PS5 | M | S | todo |
 | 9 | PS1 | File metadata panel | PS1 | M | S | todo |
 | 10 | AI | AI vs rules cross-check | PS2 | M | S | todo |
@@ -41,7 +42,7 @@ Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iterat
 | 13 | Docs | TEAM.md (needs names), TECH_STACK.md + diagram, DEFENSE, deck | Team, Stack, Pres | H | M | Phase C |
 | J1 | Presentation | Footer/QR point to v1 + say CHAKRAVYUH 1.0 (Base.astro:7,38): looks like a resubmission. Point to v2, declare v1 lineage honestly | Pres, originality | H | S | done (iter 7) |
 | J2 | AI | 8b-fast backup over-calls incident (eval case 5) | Prototype | M | S | done (iter 7) |
-| J3 | PS4 | Audit chain forgeable (unkeyed SHA-256 in localStorage): HMAC signed receipt /api/seal + /api/verify-seal | PS4, PS6 | H | M | todo |
+| J3 | PS4 | Audit chain forgeable (unkeyed SHA-256 in localStorage): HMAC signed receipt /api/seal + /api/verify-seal | PS4, PS6 | H | M | done (iter 9) |
 | J4 | Docs | README/PITCH/DEFENSE stale numbers (16/16, 14/14, 10 rules, v1 URL, no Workers AI) | Pres, Proto | H | S | Phase C |
 | 14 | Perf | Lighthouse mobile before/after on v2 | Prototype | M | S | after deploy |
 

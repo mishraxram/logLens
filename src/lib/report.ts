@@ -19,13 +19,15 @@ export function buildReport(opts: {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>LogLens investigation report</title>
 <style>@media print{h2{break-after:avoid}tr{break-inside:avoid}}body{font-family:system-ui,"Noto Sans Devanagari",sans-serif;max-width:900px;margin:24px auto;padding:0 16px;color:#14161A}
 code,td.m{font-family:ui-monospace,monospace;font-size:12px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:4px;text-align:left;vertical-align:top;font-size:13px}
-.bad{color:#C2362B;font-weight:600}.ok{color:#2F7D4F;font-weight:600}.tag{background:#E0A526;padding:2px 6px}</style></head><body>
+.bad{color:#C2362B;font-weight:600}.ok{color:#2F7D4F;font-weight:600}.tag{background:#E0A526;padding:2px 6px}.note{font-size:12px;color:#555}</style></head><body>
 <h1>LogLens investigation report</h1>
 <p>Generated: ${esc(generatedAt)} · Tool: LogLens (SOLAR FLARES, HK26-0014)</p>
 ${notes.length ? `<h2>Case notes</h2>${notes.map((n) => `<p>${esc(n)}</p>`).join('')}` : ''}
 <h2>Evidence</h2>
 ${evidence ? `<p><span class="tag">EVIDENCE</span> ${esc(evidence.name)} · ${evidence.size} bytes · locked ${esc(evidence.lockedAt)}</p>
-<p>SHA-256 at lock: <code>${esc(evidence.hash)}</code></p>
+<p>Hash function: SHA-256 · Hash value at lock: <code>${esc(evidence.hash)}</code></p>
+${evidence.receipt ? `<p>Server receipt #${evidence.receipt.id} · sealed ${esc(evidence.receipt.sealed_at)} (server time, UTC) by ${esc(evidence.receipt.investigator)}<br>Entry hash <code>${esc(evidence.receipt.entry_hash)}</code><br>HMAC-SHA256 signature <code>${esc(evidence.receipt.sig)}</code><br>Check it: GET /api/seal?id=${evidence.receipt.id} on the LogLens server.</p>` : '<p>Server receipt: not available (offline). Local hash only.</p>'}
+<p class="note">This report records hash values to help show the evidence did not change after intake. It is not a legal certificate (for example under BSA 2023 s.63) and does not replace one.</p>
 <p>Integrity check: ${verify ? (verify.match ? '<span class="ok">MATCH: evidence unchanged</span>' : `<span class="bad">TAMPERED: hash mismatch</span><br>Current SHA-256: <code>${esc(verify.current)}</code>`) : 'not run'}</p>` : '<p>No evidence locked.</p>'}
 <h2>Changes made (${changes.length}, ${changes.filter((c) => c.status === 'unauthorized').length} unauthorized)</h2>
 <p><small>"Who" is the account that made the change. An account can be stolen, so read the reasons.</small></p>

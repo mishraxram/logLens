@@ -51,6 +51,13 @@ async function main() {
   step(await js(`document.documentElement.scrollWidth <= window.innerWidth`), `no horizontal scroll at ${width}px`);
   step(await js(`[...document.querySelectorAll('.mitre-chip')].some((a) => /^T\\d{4}/.test(a.textContent) && a.href.startsWith('https://attack.mitre.org/'))`), 'MITRE ATT&CK chips on flags');
 
+  // Server receipt (v2 only). On a site without the ledger (v1) this shows the offline message instead.
+  const hasReceipt = await waitFor(`/Server receipt #\\d+/.test(document.getElementById('receipt').textContent)`, 6000);
+  if (hasReceipt) {
+    await js(`[...document.querySelectorAll('#receipt button')].find((b) => /Check server receipt/.test(b.textContent)).click()`);
+    step(await waitFor(`/RECEIPT VALID/.test(document.getElementById('receipt').textContent)`, 6000), 'server receipt -> RECEIPT VALID');
+  } else step(await js(`/not available/.test(document.getElementById('receipt').textContent)`), 'no server ledger: offline receipt message shown');
+
   await js(`document.getElementById('ai').click()`);
   step(await waitFor(`document.getElementById('aiOut').textContent.trim().length > 40`, 12000), 'AI summary (live or labelled offline) shown');
   steps.push('     AI label: ' + (await js(`(document.getElementById('aiOut').textContent.match(/AI generated \\([^)]*\\)|offline[^.]*/i) || ['?'])[0]`)));
