@@ -1,7 +1,7 @@
 # UPGRADE LOG (state for docs/UPGRADE_LOOP.md)
 
 Branch `avinya-final` (from `loglens-v2` @ b158675). Backup demo: `main` -> https://loglens-solarflares.pages.dev
-Next phase: **A Audit** (no iterations run yet).
+Loop file: `LOOP.md` (project root). Next phase: **R Research** (no iterations run yet).
 
 ## NEEDS YOU (the loop cannot do these)
 | # | What | Why | Status |
@@ -21,3 +21,14 @@ Next phase: **A Audit** (no iterations run yet).
 ## Judge score trend
 | Round | Time | Pres /20 | Domain /20 | Solution /20 | Team /20 | Stack /20 | Prototype /100 | Total /200 |
 |---|---|---|---|---|---|---|---|---|
+
+## Coverage matrix (LOOP.md section 6; filled by the audit)
+| Req | Requirement | What LogLens shows | Evidence | Status | Slice |
+|---|---|---|---|---|---|
+| PS1 | Digital evidence analysis (logs, file metadata, artifacts) | | | | |
+| PS2 | AI pattern discovery (relationships, attack indicators) | | | | |
+| PS3 | Incident timeline reconstruction | | | | |
+| PS4 | SHA-256 evidence integrity | | | | |
+| PS5 | Automated reports with timestamps + evidence refs | | | | |
+| PS6 | Investigation dashboard, progress, audit trail | | | | |
+| R1-R26 | Rubric bullets (added by the audit) | | | | |
