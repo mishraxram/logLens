@@ -12,6 +12,36 @@ type Env = {
   AI?: { run: (model: string, input: object) => Promise<any> }; // Workers AI binding (wrangler.jsonc "ai")
 };
 
+// Security headers on every response (page, files and API).
+// CSP: only our own scripts, plus the one inline font-loader handler in Base.astro (allowed by its hash).
+// If that onload text changes, recompute: printf "%s" "<handler>" | openssl dgst -sha256 -binary | base64
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-hashes' 'sha256-1jAmyYXcRq6zFldLe/GCgIDJBiOONdXjTLgEFMDnDSM='",
+  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "font-src https://fonts.gstatic.com",
+  "img-src 'self' data: blob:",
+  "connect-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+].join('; ');
+const SECURITY_HEADERS: Record<string, string> = {
+  'content-security-policy': CSP,
+  'x-content-type-options': 'nosniff',
+  'x-frame-options': 'DENY',
+  'referrer-policy': 'strict-origin-when-cross-origin',
+  'permissions-policy': 'camera=(), microphone=(), geolocation=()',
+  'strict-transport-security': 'max-age=31536000',
+};
+
+function withSecurityHeaders(res: Response): Response {
+  const out = new Response(res.body, res); // copy, because asset responses have read-only headers
+  for (const [k, v] of Object.entries(SECURITY_HEADERS)) out.headers.set(k, v);
+  return out;
+}
+
 const MAX_BODY_BYTES = 256 * 1024; // 200 events of short fields fit easily in this
 const LOCAL_LIMIT = 20; // per IP per minute, counted inside this server instance
 const hits = new Map<string, { count: number; start: number }>();
@@ -48,16 +78,20 @@ async function handleAnalyze(request: Request, env: Env): Promise<Response> {
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    const { pathname } = new URL(request.url);
-    try {
-      if (pathname === '/api/analyze' && request.method === 'POST') return await handleAnalyze(request, env);
-      if (pathname === '/api/health' && request.method === 'GET') return health();
-      if (pathname.startsWith('/api/')) return Response.json({ error: 'Not found' }, { status: 404 });
-    } catch {
-      // Never leak a stack trace; the page shows the offline rule-based result instead
-      return Response.json({ error: 'Server error' }, { status: 500 });
-    }
-    // Everything else is a static file from dist/ (404.html if nothing matches)
-    return env.ASSETS.fetch(request);
+    return withSecurityHeaders(await route(request, env));
   },
 };
+
+async function route(request: Request, env: Env): Promise<Response> {
+  const { pathname } = new URL(request.url);
+  try {
+    if (pathname === '/api/analyze' && request.method === 'POST') return await handleAnalyze(request, env);
+    if (pathname === '/api/health' && request.method === 'GET') return health();
+    if (pathname.startsWith('/api/')) return Response.json({ error: 'Not found' }, { status: 404 });
+  } catch {
+    // Never leak a stack trace; the page shows the offline rule-based result instead
+    return Response.json({ error: 'Server error' }, { status: 500 });
+  }
+  // Everything else is a static file from dist/ (404.html if nothing matches)
+  return env.ASSETS.fetch(request);
+}

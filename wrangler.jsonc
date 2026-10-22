@@ -8,7 +8,7 @@
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
-    "run_worker_first": ["/api/*"],
+    "run_worker_first": true, // every request goes through the Worker, so security headers are added to pages too
     "not_found_handling": "404-page"
   },
   // Cloudflare Workers AI (second AI provider, runs next to Gemini)
