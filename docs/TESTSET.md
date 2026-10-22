@@ -1,6 +1,8 @@
 # TESTSET (all inputs are sample data we wrote)
 
-**Current honest result (v2, 22 Oct 2026, 17 cases, `node tests/eval.ts` against https://loglens-v2.loglens.workers.dev): 17/17 (22:32), 17/17 (22:56), then 16/17, 15/17, 16/17 after 23:12, when the free Workers AI daily allowance ran out and only Gemini was left.** Every failure was the AI taking longer than 8 s (the app then shows the labelled offline summary); no case failed on a wrong rule or a wrong AI verdict in those runs. Earlier v1 results (15 Oct, 16 cases): 16/16, 16/16, 15/16. Small set we wrote ourselves: it shows the demo path is stable, not accuracy on all real-world logs. AI answers can vary between runs.
+**All live v2 runs on 22 Oct 2026 (17 cases from 22:32; 16 before), `node tests/eval.ts` against https://loglens-v2.loglens.workers.dev:**
+22:18 15/16 · 22:25 15/16 · 22:32 17/17 · 22:36 16/17 (case 5: backup model said "incident" for a legit late admin; fixed 22:52 by sending rule severity and capping the backup) · 22:52 16/17 · 22:56 17/17 · 23:08 17/17 · 23:12 16/17 · 23:16 16/17 · 23:27 13/17 · 23:30 15/17 · 23:31 15/17 · 23:40 16/17.
+From 23:12 the free Workers AI daily allowance was used up, so only Gemini was left; all failures after 22:52 were the AI taking longer than 8 s or a Gemini 429 rate limit (the app then shows the labelled offline summary), not a wrong rule. Earlier v1 results (15 Oct, 16 cases): 16/16, 16/16, 15/16. Small self-written set: it shows the demo path is stable, not accuracy on real-world logs. AI answers can vary between runs.
 
 Before fixes: 11/14, 13/14, 11/14. Fixes: added `verdict` field separate from confidence (cases 2, 5), added impossible-travel rule (case 6), server retries another model if Hindi was asked but the reply is not in Devanagari (case 9).
 

@@ -34,7 +34,7 @@ Open http://localhost:8787. Without keys everything works except the AI summary 
 ## Tests (run them yourself)
 - `npm run check`: build, strict typecheck, Worker bundle, and 5 check scripts (rules, hash, change register, attack chain, report content).
 - `node tests/eval.ts [api-url]`: 17 cases from [docs/TESTSET.md](docs/TESTSET.md) through the real parser, rules, hashing and the live AI API (default: v2), 4 s apart.
-  Results on 22 Oct night: 17/17, 17/17, then 15-16/17 after the free Workers AI daily allowance ran out (fails = AI over 8 s, offline summary shown). Case 17 is a prompt-injection log: the AI must not obey text inside the log.
+  Results on 22 Oct night: 13 live runs from 13/17 to 17/17 (all listed in docs/TESTSET.md). After the fixes at 22:52, every failure was the AI taking over 8 s or a rate limit (offline summary shown), not a wrong rule. Case 17 is a prompt-injection log: the AI must not obey text inside the log.
   It is a small set we wrote ourselves: it shows the demo path is stable, not accuracy on all real-world logs.
 - `node scripts/e2e.ts <url> 360`: headless Chrome walks the demo path (sample → timeline → MITRE + attack chain → server receipt → AI → cross-check → MATCH → TAMPERED → file upload → dashboard) and fails on any console error.
 - `node scripts/check-seal.ts <url>`: server receipts, bad input, and 6 parallel receipts keep one unbroken chain.
