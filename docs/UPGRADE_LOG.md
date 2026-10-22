@@ -1,7 +1,7 @@
 # UPGRADE LOG (state for docs/UPGRADE_LOOP.md)
 
 Branch `avinya-final` (from `loglens-v2` @ b158675). Backup demo: `main` -> https://loglens-solarflares.pages.dev
-Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iteration 10 = PS6 investigation dashboard).
+Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iteration 11 = docs truth pass J4: README/PITCH/DEFENSE + TEAM/TECH_STACK skeletons).
 
 ## NEEDS YOU (the loop cannot do these; `bash win.sh` asks for 1-3)
 | # | What | Why | Status |
@@ -9,6 +9,7 @@ Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iterat
 | 1 | (checked 21:53: GEMINI_API_KEY empty in .env and .dev.vars) Put a Gemini key in `.env` + `.dev.vars`, then `npx wrangler secret put GEMINI_API_KEY` (Worker `loglens-v2`) | Key set 22:08 (piped from .env, never printed). Gemini itself is slow (simple call 9.5 s), so Workers AI was added | done |
 | 2 | `npx wrangler login` | Needed to deploy v2 | done (user logged in 22:0x, whoami checked) |
 | 3 | Team member names + who does what | Team Delegation = 20 marks; the loop must not invent names | open |
+| 4 | Decide: keep Workers AI on the free plan (10,000 neurons/day, resets 05:30 IST) or upgrade to Workers Paid ($5/month) | 23:12: free allowance used up by testing (`4006: daily free allocation`). Fixed by dropping the 70b model and starting the 8b backup only after 2.5 s. Free should be enough for the demo if we do not run the full eval many times in the morning | open (money: user decides) |
 
 ## Iterations
 | # | Time | Phase | Item | Result | Evidence / commit |
@@ -19,6 +20,9 @@ Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iterat
 | 4 | 22:25 | B | Security headers (CSP with hash for font loader, nosniff, DENY, referrer, permissions, HSTS) on all responses; new `scripts/e2e.ts` (headless Chrome over CDP) | done | live `curl -I`: 6/6 headers; e2e live 360 + 1280 px PASS, 0 console errors; eval live 15/16 (case 9 Hindi >8 s) |
 | 5 | 22:32 | B | Prompt-injection guard: log text inside <<<EVENTS ... EVENTS>>> marked untrusted, markers stripped from fields/notes, AI told to report AI-addressed text as an indicator; eval case 17; eval default -> v2 | done | local 16/17 (case 9 Hindi >8 s), **live 17/17**; case 17: AI verdict incident and cites #3, #4 injection lines; e2e live 360 PASS |
 | 9 | 23:08 | B | J3 server evidence ledger: D1 `loglens-audit` (schema/audit.sql), `/api/seal` (HMAC-SHA256 with secret SEAL_SECRET, hash-chained, server time), `/api/seal?id=`, `/api/ledger`; investigator name field; receipt on evidence + in report; verify results logged server-side; report adds "Hash function: SHA-256" + not-a-legal-certificate note | done | `scripts/check-seal.ts` live SEAL PASS (7/7); local D1 row edited -> `valid:false`, `intact:false`, restored -> `intact:true`; e2e live 360 + 1280 PASS incl. RECEIPT VALID; eval live 17/17. Note: check-seal writes one labelled test row ('check script') to the live ledger |
+| 10 | 23:20 | B | PS6: `/cases` dashboard (cases grouped by evidence hash, status, investigators, server audit trail table with per-row signature + chain check), case progress strip (6 steps from the audit trail), header link; Astro script inlining turned off (CSP blocked an inlined script, caught by e2e) | done | e2e live 360 + 1280 PASS incl. "cases dashboard loads"; dashboard: "Ledger intact" |
+| 10b | 23:12 | B | Ledger fork found on live (2 receipts in the same ms linked to one prev row) -> new table `receipts` with UNIQUE(prev_hash) + retry; old `seals` table kept unchanged | done | live: rows 5/6 and 8/9 forked before; after: check-seal live SEAL PASS incl. burst of 6 parallel receipts, ledger intact (22 rows) |
+| 10c | 23:16 | B | Workers AI free allowance used up -> 70b dropped, 8b backup starts only after 2.5 s; AI-unavailable now returns 200 + error (a 504 printed a console error) | done | live probes: Gemini 5.2 s / 7.5 s; e2e live 360 + 1280 PASS 0 errors; eval live 16/17 (case 9 Hindi: Gemini >8 s, backup out of quota until 05:30 IST) |
 | 6 | 22:36 | B | MITRE ATT&CK chips (verified IDs, link to attack.mitre.org) on every flag + in report; e2e checks chips | done | e2e live 360 + 1280 PASS (chips step PASS); eval live 16/17: case 5 AI 8b-fast said incident for a legit late admin (AI flake, not this change) |
 | 7 | 22:52 | B | J1 footer/QR/README -> v2 URL + honest v1 lineage; J2 rule severity (HIGH/MEDIUM) sent to AI + backup 8b capped at suspicious without HIGH evidence (labelled note); `npm run check:worker` (wrangler dry-run bundle) after a build error slipped past astro build | done | eval local + live 16/17 (case 5 now PASS; case 9 Hindi >8 s); e2e live 360 + 1280 PASS; live footer shows v2 URL + अvinya |
 | 8 | 22:58 | B | Hindi inside 8 s: stronger Devanagari instruction (neutral style example, not copied), 504 now lists every provider's reason (`tried`) | done | probe: before = 70b/Gemini timeout + 8b 'wrong language'; after 8b Hindi 6.5-7.7 s with case-specific text; eval **local 17/17, live 17/17**; e2e live 360 PASS |
@@ -32,7 +36,7 @@ Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iterat
 | 3 | Security/AI | Prompt-injection guard + eval case | Stack, PS2 | M | S | done (iter 5) |
 | 4 | PS2 | Verified MITRE ID chips on flags + report | PS2, Domain | H | S | done (iter 6) |
 | 5 | PS2 | Attack-chain panel (stages + event refs) | PS2, Prototype | H | M | todo |
-| 6 | PS6 | Investigation dashboard: cases list, status, progress, investigator | PS6, Prototype | H | M | todo |
+| 6 | PS6 | Investigation dashboard: cases list, status, progress, investigator | PS6, Prototype | H | M | done (iter 10) |
 | 7 | PS4/PS6 | D1 append-only hash-chained audit log + signed receipt /api/seal | PS4, PS6 | H | L | done (iter 9) |
 | 8 | PS5 | Report: event refs per finding, MITRE, hash function field | PS5 | M | S | todo |
 | 9 | PS1 | File metadata panel | PS1 | M | S | todo |
@@ -57,9 +61,9 @@ Loop file: `LOOP.md` (project root). Next phase: **B Build** until 03:30 (iterat
 | PS1 | Digital evidence analysis (logs, file metadata, artifacts) | 3 log formats parsed (ERP CSV, auth.log, Apache/Nginx); any-file SHA-256 | check-rules: 3 samples, 0 not understood | partial (metadata view thin) | 9 |
 | PS2 | AI pattern discovery (relationships, attack indicators) | 13 rules + Gemini indicators citing event #s + hidden_patterns | rules pass in eval; live AI down 22:00 | partial | 1, 4, 5, 10 |
 | PS3 | Incident timeline reconstruction | Sorted timeline with flagged rows; case 10 shuffled input | eval case 10 PASS | proven (local) | - |
-| PS4 | SHA-256 evidence integrity | Web Crypto hash, MATCH/TAMPERED, hash-chained local audit | check-hash MATCH -> TAMPERED; eval 13/14 PASS | partial (no server-side record) | 7 |
+| PS4 | SHA-256 evidence integrity | Web Crypto hash, MATCH/TAMPERED, local chain + HMAC-signed D1 receipt | check-hash MATCH -> TAMPERED; e2e live TAMPERED + RECEIPT VALID; edited D1 row -> valid:false | proven | 7 |
 | PS5 | Automated reports with timestamps + evidence refs | HTML/PDF report with hashes, flags, timeline, AI summary | src/lib/report.ts | partial (no per-finding refs, MITRE) | 8 |
-| PS6 | Investigation dashboard, progress, audit trail | Single case + local audit trail | - | missing | 6, 7 |
+| PS6 | Investigation dashboard, progress, audit trail | /cases dashboard from server ledger, progress strip, investigator name, signed hash-chained server audit trail | e2e live 'cases dashboard loads' + 'RECEIPT VALID'; check-seal live PASS | proven (no login: demo ledger, stated on page) | 6, 7 |
 | R1 | Pres: clear problem + objective | PITCH.md | - | partial (old rubric) | 13 |
 | R2 | Pres: logical order | PITCH.md | - | partial | 13 |
 | R3 | Pres: on time | 3-min script | - | partial (slot length unknown) | 13 |

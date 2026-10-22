@@ -1,4 +1,5 @@
 // Server-side evidence ledger (v2 Worker only: needs the D1 binding DB and the secret SEAL_SECRET).
+// Table "receipts" in schema/audit.sql.
 //   POST /api/seal        -> adds a signed, hash-chained receipt for an evidence hash. Returns the receipt.
 //   GET  /api/seal?id=N   -> re-checks one receipt: signature valid? chain link to the row before intact?
 //   GET  /api/ledger      -> last 50 rows, each re-checked, plus whether the whole chain is intact.
@@ -49,31 +50,40 @@ export async function sealPost(request: Request, env: SealEnv): Promise<Response
     prev_hash: GENESIS,
   };
   const db = env.DB!;
-  // Link to the newest row. Two seals at the same instant could pick the same prev; the ledger check then shows it.
-  const last = await db.prepare('SELECT entry_hash FROM seals ORDER BY id DESC LIMIT 1').first<{ entry_hash: string }>();
-  row.prev_hash = last?.entry_hash ?? GENESIS;
-  const entry_hash = await entryHashOf(row);
-  const sig = await hmac(env.SEAL_SECRET!, entry_hash);
-  const saved = await db.prepare(
-    'INSERT INTO seals (sealed_at, sha256, name, size, investigator, action, prev_hash, entry_hash, sig) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id',
-  ).bind(row.sealed_at, row.sha256, row.name, row.size, row.investigator, row.action, row.prev_hash, entry_hash, sig).first<{ id: number }>();
-  return Response.json({ id: saved?.id, ...row, entry_hash, sig });
+  // Link to the newest row. prev_hash is UNIQUE, so if another receipt was written at the same instant
+  // the insert fails and we retry with the new newest row (keeps the chain a single line).
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const last = await db.prepare('SELECT entry_hash FROM receipts ORDER BY id DESC LIMIT 1').first<{ entry_hash: string }>();
+    row.prev_hash = last?.entry_hash ?? GENESIS;
+    row.sealed_at = new Date().toISOString(); // fresh time on a retry, so times stay in chain order
+    const entry_hash = await entryHashOf(row);
+    const sig = await hmac(env.SEAL_SECRET!, entry_hash);
+    try {
+      const saved = await db.prepare(
+        'INSERT INTO receipts (sealed_at, sha256, name, size, investigator, action, prev_hash, entry_hash, sig) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id',
+      ).bind(row.sealed_at, row.sha256, row.name, row.size, row.investigator, row.action, row.prev_hash, entry_hash, sig).first<{ id: number }>();
+      return Response.json({ id: saved?.id, ...row, entry_hash, sig });
+    } catch (err) {
+      if (!String(err).includes('UNIQUE')) throw err;
+    }
+  }
+  return Response.json({ error: 'Ledger busy, try again' }, { status: 503 });
 }
 
 export async function sealGet(request: Request, env: SealEnv): Promise<Response> {
   if (notReady(env)) return offline();
   const id = Number(new URL(request.url).searchParams.get('id'));
   if (!Number.isInteger(id) || id < 1) return Response.json({ error: 'Give ?id=<receipt number>' }, { status: 400 });
-  const row = await env.DB!.prepare('SELECT * FROM seals WHERE id = ?').bind(id).first<Row>();
+  const row = await env.DB!.prepare('SELECT * FROM receipts WHERE id = ?').bind(id).first<Row>();
   if (!row) return Response.json({ error: `No receipt #${id}` }, { status: 404 });
-  const before = await env.DB!.prepare('SELECT entry_hash FROM seals WHERE id < ? ORDER BY id DESC LIMIT 1').bind(id).first<{ entry_hash: string }>();
+  const before = await env.DB!.prepare('SELECT entry_hash FROM receipts WHERE id < ? ORDER BY id DESC LIMIT 1').bind(id).first<{ entry_hash: string }>();
   const linkOk = row.prev_hash === (before?.entry_hash ?? GENESIS);
   return Response.json({ receipt: row, valid: await checkRow(row, env.SEAL_SECRET!), linkOk });
 }
 
 export async function ledgerGet(env: SealEnv): Promise<Response> {
   if (notReady(env)) return offline();
-  const { results } = await env.DB!.prepare('SELECT * FROM seals ORDER BY id DESC LIMIT 51').all<Row>();
+  const { results } = await env.DB!.prepare('SELECT * FROM receipts ORDER BY id DESC LIMIT 51').all<Row>();
   const rows = results.slice(0, 50);
   // Newest first: each row's prev_hash must equal the entry_hash of the next (older) row
   // (we read 51 rows so the 50th row can still be checked against the one before it)

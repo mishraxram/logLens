@@ -69,6 +69,12 @@ async function main() {
   step(await waitFor(`/TAMPERED/.test(document.getElementById('verifyOut').textContent)`, 4000), 'one char changed -> TAMPERED');
   step(await js(`!!document.getElementById('report') && !document.getElementById('report').disabled`), 'report button ready');
 
+  // PS6 dashboard page: cases from the server ledger, chain re-checked
+  await send('Page.navigate', { url: new URL('/cases', url).href });
+  step(await waitFor(`/Ledger intact|not reachable/.test(document.getElementById('chainState')?.textContent ?? '')`, 8000), 'cases dashboard loads');
+  steps.push('     dashboard: ' + (await js(`document.getElementById('chainState').textContent + ' | ' + document.getElementById('counts').textContent`)));
+  step(await js(`document.documentElement.scrollWidth <= window.innerWidth`), `dashboard: no horizontal scroll at ${width}px`);
+
   ws.close();
 }
 

@@ -1,6 +1,6 @@
 // POST /api/analyze  -> asks an AI model for an investigation summary.
-// Two providers run at the same time: Gemini (secret GEMINI_API_KEY) and Cloudflare Workers AI
-// (binding AI, v2 Worker only). The first valid answer inside 8s wins; keys stay on the server.
+// Two providers: Gemini (secret GEMINI_API_KEY) first, Cloudflare Workers AI (binding AI, v2 Worker only)
+// as a backup if Gemini is slow. One valid answer inside 8s is returned; keys stay on the server.
 import { investigationPrompt, type AiEvent } from '../../src/lib/prompts.ts';
 
 type WorkersAi = { run: (model: string, input: object) => Promise<any> };
@@ -11,9 +11,10 @@ const TIMEOUT_MS = 8000;
 // Tried in order; Gemini models are sometimes busy, so we keep backups
 const MODELS = ['gemini-flash-lite-latest', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'];
 // Workers AI models with JSON mode (listed in the Workers AI JSON mode docs).
-// The big one writes better summaries; the small fast one is a backup (see step 2 below).
-const CF_BIG = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
+// Backup only (see step 2). The 70b model was dropped on 22 Oct: it used up the free daily
+// Workers AI allowance (10,000 neurons) in one evening of testing.
 const CF_FAST = '@cf/meta/llama-3.1-8b-instruct-fast';
+const BACKUP_START_MS = 2500;
 const BACKUP_GRACE_MS = 1500;
 
 // Check one AI reply and clean it. Throws (with a readable message) if it cannot be used.
@@ -94,25 +95,29 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   if (!events.length) return Response.json({ error: 'No events to analyze' }, { status: 400 });
   const notes = (Array.isArray(body.notes) ? body.notes : []).map((n) => String(n).slice(0, 500)).slice(0, 5);
   const lang = body.lang === 'hi' ? 'hi' : 'en';
-  if (!env.GEMINI_API_KEY && !env.AI) return Response.json({ error: 'AI not configured' }, { status: 503 });
+  if (!env.GEMINI_API_KEY && !env.AI) return Response.json({ source: 'none', error: 'AI not configured' });
 
-  // 2. Start all providers at once. Whole thing must finish in 8s.
-  //    Gemini and the big Workers AI model are preferred. The small fast model is only a backup:
-  //    its answer is used if nothing better arrived by 1.5s before the deadline (it over-calls "incident").
+  // 2. Gemini starts at once. Whole thing must finish in 8s.
+  //    The Workers AI backup starts only if Gemini has not answered after 2.5s (saves the free daily
+  //    Workers AI allowance). Gemini is preferred: the backup's answer is used only if Gemini still has
+  //    nothing 1.5s before the deadline (the small model over-calls "incident").
   const deadline = Date.now() + TIMEOUT_MS;
   const prompt = investigationPrompt(events, notes, lang);
-  const better: Promise<any>[] = [];
-  if (env.GEMINI_API_KEY) better.push(gemini(env.GEMINI_API_KEY, env.GEMINI_MODEL ? [env.GEMINI_MODEL] : MODELS, prompt, events, lang, deadline));
-  if (env.AI) better.push(workersAi(env.AI, CF_BIG, prompt, events, lang, deadline));
-  const best = Promise.any(better);
+  const best = env.GEMINI_API_KEY
+    ? gemini(env.GEMINI_API_KEY, env.GEMINI_MODEL ? [env.GEMINI_MODEL] : MODELS, prompt, events, lang, deadline)
+    : Promise.reject(new Error('Gemini not configured'));
   const tries: Promise<any>[] = [best];
   if (env.AI) {
-    const fast = workersAi(env.AI, CF_FAST, prompt, events, lang, deadline);
-    tries.push(fast.then(async (r) => {
-      const wait = new Promise((ok) => setTimeout(ok, Math.max(0, deadline - BACKUP_GRACE_MS - Date.now())));
-      await Promise.race([wait, best.catch(() => {})]);
+    const ai = env.AI;
+    const waitFor = (ms: number) => new Promise((ok) => setTimeout(ok, Math.max(0, ms)));
+    tries.push((async () => {
+      // Skip the backup if Gemini answers within the first 2.5s
+      const geminiFirst = await Promise.race([best.then(() => true, () => false), waitFor(env.GEMINI_API_KEY ? BACKUP_START_MS : 0).then(() => false)]);
+      if (geminiFirst) throw new Error('Backup not needed');
+      const r = await workersAi(ai, CF_FAST, prompt, events, lang, deadline);
+      await Promise.race([waitFor(deadline - BACKUP_GRACE_MS - Date.now()), best.catch(() => {})]);
       return r;
-    }));
+    })());
   }
   try {
     const ai = await Promise.any(tries);
@@ -123,6 +128,8 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
     const reasons: string[] = [];
     const walk = (e: unknown) => e instanceof AggregateError ? e.errors.forEach(walk) : reasons.push(e instanceof Error ? e.message : 'AI unavailable');
     walk(err);
-    return Response.json({ error: reasons[0] ?? 'AI unavailable', tried: reasons }, { status: 504 });
+    // 200, not 504: this is an expected outcome (the page shows the labelled offline result), and a 5xx
+    // would print a network error in the browser console during the demo
+    return Response.json({ source: 'none', error: reasons[0] ?? 'AI unavailable', tried: reasons });
   }
 };

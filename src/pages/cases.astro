@@ -1,0 +1,101 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Cases dashboard · LogLens" description="Investigation dashboard: every evidence item sealed on the LogLens server, its status, investigator and a re-check of the signed, hash-chained ledger.">
+  <header class="mb-6">
+    <p class="mb-2"><a class="underline text-sm" href="/">← Back to the forensics desk</a></p>
+    <h1 class="font-cond font-bold text-3xl sm:text-4xl leading-tight">Cases dashboard</h1>
+    <p class="mt-2 max-w-2xl text-ink/80">Every evidence item sealed on the server, who handled it and its latest status. Each row is re-checked now: signature and chain link.</p>
+    <p class="mt-2 max-w-2xl text-sm text-muted">Demo ledger: shared by everyone who uses this site, no login. A real deployment would put this page behind an access gate for authorised investigators only.</p>
+  </header>
+
+  <section class="panel p-4 mb-6" aria-live="polite">
+    <div class="flex flex-wrap items-center gap-3">
+      <p id="chainState" class="font-semibold">Checking the ledger…</p>
+      <button id="reload" type="button" class="btn btn-quiet">Re-check now</button>
+    </div>
+    <p id="counts" class="text-sm text-muted mt-2"></p>
+  </section>
+
+  <section class="mb-8">
+    <h2 class="font-semibold text-lg mb-2">Cases (one per evidence hash)</h2>
+    <div id="cases" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"></div>
+  </section>
+
+  <section>
+    <h2 class="font-semibold text-lg mb-2">Server audit trail (newest first, last 50)</h2>
+    <div class="panel overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="text-left text-muted">
+          <tr><th class="p-2">#</th><th class="p-2">Server time (UTC)</th><th class="p-2">Investigator</th><th class="p-2">Action</th><th class="p-2">Evidence</th><th class="p-2">Check</th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+</Base>
+
+<script>
+  type Row = { id: number; sealed_at: string; sha256: string; name: string; size: number; investigator: string; action: string; valid: boolean; linkOk: boolean };
+  const $ = (id: string) => document.getElementById(id)!;
+  function el(tag: string, cls: string, text = '') {
+    const n = document.createElement(tag); n.className = cls; n.textContent = text; return n;
+  }
+  // Status of a case = its newest action (rows arrive newest first)
+  const STATUS: Record<string, [string, string]> = {
+    SEALED: ['Sealed, not verified yet', 'bg-ink/10'],
+    VERIFIED_MATCH: ['Verified: unchanged', 'bg-match text-white'],
+    VERIFIED_TAMPERED: ['TAMPERED: hash mismatch seen', 'bg-flag text-white'],
+  };
+
+  async function load() {
+    $('chainState').textContent = 'Checking the ledger…';
+    let data: { rows: Row[]; intact: boolean } | null = null;
+    try {
+      const res = await fetch('/api/ledger', { signal: AbortSignal.timeout(6000) });
+      if (res.ok) data = await res.json();
+    } catch { /* offline: handled below */ }
+    const cases = $('cases'), rows = $('rows');
+    cases.replaceChildren(); rows.replaceChildren();
+    if (!data) {
+      $('chainState').textContent = 'Server ledger not reachable (offline or not configured). Local evidence checks on the main page still work.';
+      $('chainState').className = 'font-semibold text-flag';
+      return;
+    }
+    const bad = data.rows.filter((r) => !r.valid || !r.linkOk).length;
+    $('chainState').textContent = data.intact ? `Ledger intact: all ${data.rows.length} rows signed and chained correctly.` : `LEDGER PROBLEM: ${bad} row(s) failed the signature or chain check.`;
+    $('chainState').className = `font-semibold px-2 py-1 rounded ${data.intact ? 'bg-match text-white' : 'bg-flag text-white'}`;
+
+    // Group rows by evidence hash: first row seen = newest action for that case
+    const byHash = new Map<string, Row[]>();
+    for (const r of data.rows) byHash.set(r.sha256, [...(byHash.get(r.sha256) ?? []), r]);
+    const tampered = [...byHash.values()].filter((list) => list[0].action === 'VERIFIED_TAMPERED').length;
+    $('counts').textContent = `${byHash.size} case(s) · ${tampered} with tampering seen · ${data.rows.length} ledger entries`;
+    if (!byHash.size) cases.append(el('p', 'text-muted', 'No evidence sealed yet. Open a case on the main page to create the first receipt.'));
+
+    for (const [hash, list] of byHash) {
+      const latest = list[0], first = list[list.length - 1];
+      const [label, cls] = STATUS[latest.action] ?? ['Unknown', 'bg-ink/10'];
+      const card = el('article', 'panel p-3');
+      card.append(el('p', 'font-semibold break-all', first.name),
+        el('p', `inline-block text-sm font-semibold rounded px-2 py-0.5 my-1 ${cls}`, label),
+        el('p', 'text-sm', `Investigator: ${[...new Set(list.map((r) => r.investigator))].join(', ')}`),
+        el('p', 'text-xs text-muted', `Sealed ${first.sealed_at} · ${list.length} action(s) · last ${latest.sealed_at}`),
+        el('p', 'font-mono text-xs break-all mt-1', `SHA-256 ${hash}`));
+      cases.append(card);
+    }
+
+    for (const r of data.rows) {
+      const tr = document.createElement('tr');
+      tr.className = 'border-t border-line align-top';
+      const ok = r.valid && r.linkOk;
+      [String(r.id), r.sealed_at.replace('T', ' ').replace(/\.\d+Z$/, 'Z'), r.investigator, r.action, `${r.name} (${r.size} B)`].forEach((t, i) =>
+        tr.append(el('td', `p-2 ${i === 1 || i === 3 ? 'font-mono text-xs' : ''}`, t)));
+      tr.append(el('td', `p-2 font-semibold ${ok ? 'text-match' : 'text-flag'}`, ok ? 'OK' : `${!r.valid ? 'bad signature ' : ''}${!r.linkOk ? 'broken link' : ''}`));
+      rows.append(tr);
+    }
+  }
+
+  $('reload').addEventListener('click', load);
+  load();
+</script>

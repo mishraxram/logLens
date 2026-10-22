@@ -22,8 +22,13 @@ const wrongType = await fetch(`${base}/api/seal`, { method: 'POST', headers: { '
 ok(wrongType.status === 415, 'non-JSON refused (415)');
 ok((await fetch(`${base}/api/seal?id=999999999`)).status === 404, 'unknown receipt -> 404');
 
+// Race test: 6 receipts at the same moment must still form one straight chain (UNIQUE prev_hash + retry)
+const burst = await Promise.all(Array.from({ length: 6 }, (_, i) => post({ sha256: hash, name: 'check-seal burst', size: i, investigator: 'check script', action: 'VERIFIED_MATCH' })));
+ok(burst.every((b) => b.status === 200), 'burst of 6 parallel receipts all saved');
+
 const l: any = await (await fetch(`${base}/api/ledger`)).json();
-ok(Array.isArray(l.rows) && l.rows[0]?.id === r.id, 'ledger lists the new receipt first');
+ok(l.intact === true, 'ledger chain intact after the burst (no fork)');
+ok(Array.isArray(l.rows) && l.rows.some((x: any) => x.id === r.id), 'ledger lists the new receipt');
 console.log(`ledger intact: ${l.intact} (${l.rows?.length} rows checked)`);
 
 console.log(fails ? `SEAL FAIL (${fails})` : 'SEAL PASS');

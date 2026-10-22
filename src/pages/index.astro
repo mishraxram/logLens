@@ -14,6 +14,7 @@ const samples = [
       <svg aria-hidden="true" width="22" height="22" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#E3A72F"/><circle cx="14" cy="14" r="7" fill="none" stroke="#1B1F24" stroke-width="3"/><path d="M19 19l7 7" stroke="#1B1F24" stroke-width="3" stroke-linecap="round"/></svg>
       <span class="font-semibold">LogLens</span>
       <span class="text-muted">digital forensics desk</span>
+      <a href="/cases" class="ml-auto text-sm underline min-h-11 inline-flex items-center">Cases dashboard</a>
     </p>
     <h1 class="font-cond font-bold text-3xl sm:text-4xl lg:text-5xl leading-[1.08] max-w-3xl">Find who changed what. Prove the log was not touched.</h1>
     <p class="mt-3 max-w-2xl text-ink/80">Rules flag suspicious events, AI (Gemini or Cloudflare Workers AI) explains them, and a SHA-256 hash seals the evidence.</p>
@@ -51,7 +52,8 @@ const samples = [
 
       <!-- Evidence locker: the signature element (an evidence tag carrying the SHA-256) -->
       <section id="locker" class="hidden panel p-4">
-        <h2 class="font-semibold text-lg mb-3">Evidence</h2>
+        <h2 class="font-semibold text-lg mb-2">Evidence</h2>
+        <ol id="progress" class="progress mb-4" aria-label="Case progress"></ol>
         <div class="evtag ml-4 mb-4">
           <p class="font-semibold">Evidence tag</p>
           <p id="evName" class="text-sm mt-1 whitespace-pre-line"></p>
@@ -226,6 +228,23 @@ const samples = [
     box.append(btn, out);
   }
 
+  // Case progress (PS6): each step is done when its action is in the audit trail
+  const STEPS: [string, RegExp][] = [
+    ['Intake', /^EVIDENCE_LOCKED$/], ['Server seal', /^SERVER_SEALED$/], ['Timeline', /^TIMELINE_BUILT$/],
+    ['AI summary', /^(AI|OFFLINE)_SUMMARY$/], ['Verified', /^VERIFY_/], ['Report', /^(REPORT_DOWNLOADED|PDF_REPORT)$/],
+  ];
+  function showProgress() {
+    const done = new Set(getAudit().map((a) => a.action));
+    const ol = $('progress'); ol.replaceChildren();
+    let count = 0;
+    for (const [name, re] of STEPS) {
+      const ok = [...done].some((a) => re.test(a));
+      if (ok) count++;
+      ol.append(el('li', ok ? 'is-done' : '', `${ok ? '✓ ' : ''}${name}`));
+    }
+    ol.setAttribute('aria-label', `Case progress: ${count} of ${STEPS.length} steps done`);
+  }
+
   async function showLocker() {
     const ev = getEvidence();
     $('locker').classList.toggle('hidden', !ev);
@@ -233,6 +252,7 @@ const samples = [
     $('evName').textContent = `${ev.name} (${ev.size} bytes)${ev.kind === 'file' ? `\n${ev.type}, modified ${ev.lastModified}` : ''}\nLocked ${ev.lockedAt}`;
     $('evHash').textContent = ev.hash;
     showReceipt();
+    showProgress();
     const list = $('auditList'); list.replaceChildren();
     getAudit().forEach((a, i) => list.append(el('li', '', `${i + 1}. ${a.at}  ${a.action}  ${a.detail}  [${a.hash.slice(0, 10)}…]`)));
     const broken = await verifyAuditChain();

@@ -35,6 +35,10 @@ label:has(input.sr-only:focus-visible) { outline: 3px solid var(--color-tag); ou
   .case-btn { display: block; width: 100%; text-align: left; padding: .6rem .8rem; border: 1px solid var(--color-line); border-radius: 8px; background: var(--color-sheet); }
   .case-btn:hover { border-color: var(--color-ink); }
   .case-btn span { display: block; font-size: .875rem; color: var(--color-muted); font-weight: 400; }
+  /* Case progress strip: done steps solid, open steps outlined */
+  .progress { display: flex; flex-wrap: wrap; gap: .35rem; list-style: none; padding: 0; }
+  .progress li { font-size: .8rem; padding: .15rem .5rem; border: 1px dashed var(--color-line); border-radius: 999px; color: var(--color-muted); }
+  .progress li.is-done { border: 1px solid var(--color-ink); background: var(--color-ink); color: var(--color-sheet); }
   /* MITRE ATT&CK chip on a flag: small mono label, links to attack.mitre.org */
   .mitre-chip { display: inline-block; font-family: var(--font-mono, ui-monospace, monospace); font-size: .75rem; font-weight: 600; color: var(--color-ink); border: 1px solid var(--color-ink); border-radius: 4px; padding: 0 .35rem; margin-left: .15rem; text-decoration: none; white-space: nowrap; }
   .mitre-chip:hover, .mitre-chip:focus-visible { background: var(--color-ink); color: var(--color-sheet); }
