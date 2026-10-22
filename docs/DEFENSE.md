@@ -6,7 +6,7 @@ Is file ko judging se pehle 2 baar padho. Jawab ratne nahi hain, matlab samajhna
 
 ## 1. Project kaise bana hai (6 points mein)
 1. **Do pages:** `/` (forensics desk) aur `/cases` (dashboard). Dono browser mein chalte hain.
-2. **Browser khud kaam karta hai:** log padhta hai, 13 rules chalata hai (har ek ke saath MITRE ID), attack chain banata hai, aur SHA-256 banata hai. Asli file computer se bahar nahi jaati.
+2. **Browser khud kaam karta hai:** log padhta hai, 16 rules chalata hai (har ek ke saath MITRE ID), attack chain banata hai, aur SHA-256 banata hai. Asli file computer se bahar nahi jaati.
 3. **Ek Cloudflare Worker** (`worker/index.ts`) pages bhi deta hai aur API bhi. Har response pe security headers (CSP) lagata hai, rate limit aur size limit rakhta hai.
 4. **AI ke liye** browser sirf events ki lines `/api/analyze` ko bhejta hai. Server 3 Gemini models ek saath chalata hai; Gemini 2.5 s mein na aaye to Cloudflare Workers AI backup. 8 s mein kuch na aaye to rules wala offline summary.
 5. **Signed receipt:** lock hote hi browser hash `/api/seal` ko bhejta hai. Server time + secret key se HMAC signature + pichhli receipt se chain, sab D1 (SQLite) mein. Browser ke paas key nahi hai, isliye receipt nakli nahi ban sakti.
@@ -18,7 +18,7 @@ Is file ko judging se pehle 2 baar padho. Jawab ratne nahi hain, matlab samajhna
 | File | Kaam |
 |---|---|
 | `src/lib/parse.ts` | Log ki har line ko event banata hai (time, user, role, IP, action, target, detail). 3 format padhta hai: ERP CSV, Linux auth.log, Apache/Nginx log. Time ke hisaab se sort karta hai. Jo line samajh na aaye, use "not understood" mein rakhta hai, phenkta nahi. |
-| `src/lib/rules.ts` | 13 rules jo laal/amber flag lagate hain, reason ke saath (galat password ki burst, naya IP, marks jump, log delete, SQL injection...). |
+| `src/lib/rules.ts` | 16 rules jo laal/amber flag lagate hain, reason ke saath (galat password ki burst, naya IP, marks jump, log delete, SQL injection...). |
 | `src/lib/changes.ts` | "Changes made" list: har update/delete ka kaun, kab, IP, pehle → baad, aur status (Unauthorized / Suspicious / Blocked / Normal). |
 | `src/lib/evidence.ts` | SHA-256 banata hai, evidence lock karta hai, sealed copy rakhta hai, verify karta hai, badli lines dhoondhta hai, aur hash-chained audit trail rakhta hai. |
 | `src/lib/mitre.ts` | Har rule ka verified MITRE ATT&CK technique ID (attack.mitre.org pe check kiye). |

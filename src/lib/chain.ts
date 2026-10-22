@@ -10,6 +10,8 @@ export const STAGES: Stage[] = [
   { key: 'recon', tactic: 'TA0043', name: 'Reconnaissance' },
   { key: 'cred', tactic: 'TA0006', name: 'Credential Access' },
   { key: 'access', tactic: 'TA0001', name: 'Initial Access' },
+  { key: 'persist', tactic: 'TA0003', name: 'Persistence' },
+  { key: 'privesc', tactic: 'TA0004', name: 'Privilege Escalation' },
   { key: 'impact', tactic: 'TA0040', name: 'Impact' },
   { key: 'stealth', tactic: 'TA0005', name: 'Stealth' },
 ];
@@ -21,6 +23,8 @@ const STAGE_OF: Record<string, string> = {
   'new-ip': 'access', 'shared-ip': 'access', 'impossible-travel': 'access',
   'role-misuse': 'impact', 'marks-jump': 'impact',
   'log-clear': 'stealth',
+  'new-account': 'persist', 'admin-group': 'persist',
+  'sudo-root-shell': 'privesc',
 };
 
 export type ChainStep = Stage & { events: number[]; reasons: string[]; from: string };
@@ -38,14 +42,16 @@ export function buildChains(events: LogEvent[]): Chain[] {
     return root;
   };
   const join = (a: string, b: string) => parent.set(find(a), find(b));
-  const keysOf = (e: LogEvent) => [e.ip && `ip:${e.ip}`, e.user && `user:${e.user}`].filter(Boolean) as string[];
+  // An event that creates or changes an account also links that account (root made "sysbackup" -> same actor)
+  const keysOf = (e: LogEvent) => [e.ip && `ip:${e.ip}`, e.user && `user:${e.user}`,
+    (e.action === 'USER_ADD' || e.action === 'GROUP_ADD') && e.target && `user:${e.target}`].filter(Boolean) as string[];
 
   // Only flagged events link actors, so normal traffic from a shared office IP does not merge everyone
   const flagged = events.filter((e) => e.flags.some((f) => STAGE_OF[f.code]));
   for (const e of flagged) {
     const ks = keysOf(e);
     ks.forEach((k) => find(k));
-    if (ks.length === 2) join(ks[0], ks[1]);
+    for (const k of ks.slice(1)) join(ks[0], k);
   }
 
   const groups = new Map<string, LogEvent[]>();

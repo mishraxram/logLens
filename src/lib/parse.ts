@@ -1,5 +1,5 @@
 // Turns raw log text into a sorted list of events.
-// Supports 3 formats: ERP audit CSV, Linux auth.log (sshd lines), Apache/Nginx access log.
+// Supports 3 formats: ERP audit CSV, Linux auth.log (sshd, sudo, useradd, usermod lines), Apache/Nginx access log.
 
 export type Flag = { code: string; reason: string; severity: 'high' | 'medium' };
 
@@ -50,13 +50,32 @@ function parseErpLine(line: string): Omit<LogEvent, 'n' | 'flags' | 'timeText'> 
 }
 
 // auth.log: "Oct 14 03:41:02 host sshd[2310]: Failed password for root from 1.2.3.4 port 51122 ssh2"
+// Also sudo, useradd and usermod lines from the same file (standard Linux formats):
+//   "Oct 14 03:46:30 host sudo:  alice : TTY=pts/1 ; PWD=/home/alice ; USER=root ; COMMAND=/bin/bash"
+//   "Oct 14 03:44:10 host useradd[2401]: new user: name=sysbackup, UID=1002, GID=1002, home=/home/sysbackup, shell=/bin/bash"
+//   "Oct 14 03:44:12 host usermod[2410]: add 'sysbackup' to group 'sudo'"
 function parseAuthLine(line: string, year: number): Omit<LogEvent, 'n' | 'flags' | 'timeText'> | null {
-  const m = line.match(/^([A-Z][a-z]{2})\s+(\d{1,2}) (\d{2}):(\d{2}):(\d{2}) (\S+) sshd\[\d+\]: (.*)$/);
+  const m = line.match(/^([A-Z][a-z]{2})\s+(\d{1,2}) (\d{2}):(\d{2}):(\d{2}) (\S+) (sshd|sudo|useradd|usermod)(?:\[\d+\])?: (.*)$/);
   if (!m || !MONTHS.includes(m[1])) return null;
   const time = new Date(year, MONTHS.indexOf(m[1]), +m[2], +m[3], +m[4], +m[5]);
-  const msg = m[7];
+  const msg = m[8].trim();
   const base = { time, role: '', ip: '', target: m[6], detail: msg, raw: line };
   let x;
+  if (m[7] === 'sudo') {
+    // user : ... USER=<runs as> ; COMMAND=<command>
+    if ((x = msg.match(/^(\S+) : .*USER=(\S+) ; COMMAND=(.*)$/)))
+      return { ...base, user: x[1], role: 'user', target: x[3].trim(), detail: `sudo as ${x[2]}: ${x[3].trim()}`, action: 'SUDO' };
+    return null;
+  }
+  // useradd / usermod need root, so the acting account is root; the target is the account changed
+  if (m[7] === 'useradd') {
+    if ((x = msg.match(/new user: name=([^,\s]+)/))) return { ...base, user: 'root', role: 'root', target: x[1], action: 'USER_ADD' };
+    return null;
+  }
+  if (m[7] === 'usermod') {
+    if ((x = msg.match(/add '([^']+)' to group '([^']+)'/))) return { ...base, user: 'root', role: 'root', target: x[1], detail: `added ${x[1]} to group ${x[2]}`, action: 'GROUP_ADD' };
+    return null;
+  }
   if ((x = msg.match(/^Failed password for (invalid user )?(\S+) from (\S+)/)))
     return { ...base, user: x[2], role: x[2] === 'root' ? 'root' : x[1] ? 'unknown' : 'user', ip: x[3], action: 'LOGIN_FAIL' };
   if ((x = msg.match(/^Accepted (\S+) for (\S+) from (\S+)/)))

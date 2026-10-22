@@ -9,4 +9,8 @@ Oct 14 03:41:26 erp-srv sshd[2312]: Failed password for root from 185.220.101.4 
 Oct 14 03:41:31 erp-srv sshd[2313]: Failed password for invalid user oracle from 185.220.101.4 port 51180 ssh2
 Oct 14 03:42:48 erp-srv sshd[2320]: Accepted password for root from 185.220.101.4 port 51210 ssh2
 Oct 14 03:42:49 erp-srv sshd[2320]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Oct 14 03:44:10 erp-srv useradd[2401]: new user: name=sysbackup, UID=1002, GID=1002, home=/home/sysbackup, shell=/bin/bash
+Oct 14 03:44:12 erp-srv usermod[2410]: add 'sysbackup' to group 'sudo'
+Oct 14 03:46:05 erp-srv sshd[2451]: Accepted password for sysbackup from 185.220.101.4 port 51302 ssh2
+Oct 14 03:46:30 erp-srv sudo: sysbackup : TTY=pts/1 ; PWD=/home/sysbackup ; USER=root ; COMMAND=/bin/bash
 Oct 14 03:47:55 erp-srv sshd[2320]: pam_unix(sshd:session): session closed for user root

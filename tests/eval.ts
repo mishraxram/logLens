@@ -21,7 +21,7 @@ type Case = {
 const cases: Case[] = [
   { id: 1, file: S + 'erp-marks-tamper.csv', must: ['burst-fail', 'off-hours', 'new-ip', 'role-misuse', 'log-clear', 'marks-jump', 'login-after-burst'], ai: ['incident'] },
   { id: 2, file: T + '02-normal-faculty.csv', noFlags: true, ai: ['normal'] },
-  { id: 3, file: S + 'ssh-bruteforce.log', must: ['burst-fail', 'root-login', 'login-after-burst'], ai: ['incident'] },
+  { id: 3, file: S + 'ssh-bruteforce.log', must: ['burst-fail', 'root-login', 'login-after-burst', 'new-account', 'admin-group', 'sudo-root-shell'], ai: ['incident'] },
   { id: 4, file: T + '04-bruteforce-fail-only.log', must: ['burst-fail'], mustNot: ['login-after-burst', 'root-login'], ai: ['incident', 'suspicious'] },
   { id: 5, file: T + '05-admin-late-legit.csv', must: ['off-hours'], mustNot: ['marks-jump', 'role-misuse', 'log-clear'], ai: ['normal', 'suspicious', 'unsure'] },
   { id: 6, file: T + '06-impossible-travel.csv', must: ['impossible-travel'], ai: ['incident', 'suspicious'] },

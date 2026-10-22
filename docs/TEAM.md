@@ -15,7 +15,7 @@ Both must be able to explain the 8-step flow in docs/DEFENSE.md and say the hone
 | Role | What it covers | Files to know |
 |---|---|---|
 | Problem + research | ABCS-02 needs, existing tools, Indian law (BSA s.63, CERT-In), MITRE mapping | docs/PROBLEM.md, docs/RESEARCH-DEEP.md |
-| Detection rules | 13 rules, attack chain, change register | src/lib/rules.ts, src/lib/chain.ts, src/lib/changes.ts |
+| Detection rules | 16 rules, attack chain, change register | src/lib/rules.ts, src/lib/chain.ts, src/lib/changes.ts |
 | Evidence integrity | SHA-256, local hash chain, signed server receipts (D1) | src/lib/evidence.ts, functions/api/seal.ts |
 | AI | Prompt, Gemini + Workers AI backup, checks on the AI answer, injection guard | src/lib/prompts.ts, functions/api/analyze.ts |
 | Backend + security | Worker routes, CSP, rate limit, size limits | worker/index.ts, wrangler.jsonc |

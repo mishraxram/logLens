@@ -31,7 +31,7 @@ and server time go to the ledger.
 | Cloudflare D1 (SQLite) | Server evidence ledger | The PS suggests SQLite/PostgreSQL; D1 is SQLite with no server to run. UNIQUE(prev_hash) keeps the hash chain linear |
 | Google Gemini flash-lite | Investigation summary (EN / Hindi) | Free tier, JSON output mode, good Hindi |
 | Cloudflare Workers AI (llama-3.1-8b-instruct-fast) | Backup AI when Gemini is slow | Runs inside Cloudflare, no extra key; JSON mode supported (Workers AI docs) |
-| Rules in TypeScript | 13 detections | Explainable, instant, work offline; the AI is checked against them |
+| Rules in TypeScript | 16 detections | Explainable, instant, work offline; the AI is checked against them |
 
 ## Versus the suggested stack (Python, Pandas, Scikit-learn, NLP, YARA, SQLite/PostgreSQL, FastAPI, React)
 | Suggested | We use | Trade-off (honest) |

@@ -28,7 +28,7 @@ Splunk ya Timesketch jaise tools ke liye server aur training chahiye. College IT
 ## Step 2: Sample case (0:25 - 0:55)
 **Karo:** **ERP marks tampering** dabao.
 **Dikhao:** laal "High risk" banner → **Attack chain** box → timeline ki laal lines aur unke **T1110.001** jaise chips.
-**Bolo:** "Ek click mein timeline ban gayi. 13 rules ne gadbad pakdi, aur har flag ke saath MITRE ATT&CK ka standard ID hai.
+**Bolo:** "Ek click mein timeline ban gayi. 16 rules ne gadbad pakdi, aur har flag ke saath MITRE ATT&CK ka standard ID hai.
 Attack chain dikhata hai ki ek hi IP aur account ke events jud ke ek kahani banate hain:
 password guessing → naye IP se login → marks badle → audit log delete. Ye sab rules hain, AI nahi."
 

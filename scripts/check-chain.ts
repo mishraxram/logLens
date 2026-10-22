@@ -8,7 +8,7 @@ import { buildChains } from '../src/lib/chain.ts';
 // file -> stages the longest chain must contain (empty list = no chain expected)
 const expect: [string, string[]][] = [
   ['public/samples/erp-marks-tamper.csv', ['cred', 'access', 'impact', 'stealth']],
-  ['public/samples/ssh-bruteforce.log', ['cred', 'access']],
+  ['public/samples/ssh-bruteforce.log', ['cred', 'access', 'persist', 'privesc']],
   ['tests/cases/15-web-attack.log', ['recon', 'access']],
   ['tests/cases/02-normal-faculty.csv', []],
   ['tests/cases/16-web-normal.log', []],

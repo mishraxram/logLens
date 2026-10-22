@@ -16,6 +16,9 @@ export const MITRE: Record<string, Technique[]> = {
   'web-attack': [{ id: 'T1190', name: 'Exploit Public-Facing Application' }],
   'attack-success': [{ id: 'T1190', name: 'Exploit Public-Facing Application' }],
   'scan-burst': [{ id: 'T1595.002', name: 'Active Scanning: Vulnerability Scanning' }],
+  'sudo-root-shell': [{ id: 'T1548.003', name: 'Abuse Elevation Control Mechanism: Sudo and Sudo Caching' }],
+  'new-account': [{ id: 'T1136.001', name: 'Create Account: Local Account' }],
+  'admin-group': [{ id: 'T1098', name: 'Account Manipulation' }],
 };
 
 // attack.mitre.org uses a slash for sub-techniques: T1110.001 -> /techniques/T1110/001/

@@ -6,7 +6,7 @@ Every number below was measured on 22 Oct 2026 (see docs/UPGRADE_LOG.md). Do not
 ## 1. Three-minute script (simple English). Steps match docs/DEMO_SCRIPT.md
 1. **Hook (Krishraj):** "Result week. A student's DBMS marks went from 42 to 92 at 2 AM. The professor says he never logged in. The IT cell has thousands of log lines. Who did it, and can we even trust the logs?"
 2. **Why now:** "Tools like Splunk or Timesketch need servers, setup and training. A college IT cell needs answers in minutes, in a browser."
-3. **Demo 1: timeline + attack chain.** "One click. 13 rules flag the events, each with a MITRE ATT&CK technique ID. The attack chain links one IP and two accounts: password guessing, login from a new IP, marks changed, audit log deleted."
+3. **Demo 1: timeline + attack chain.** "One click. 16 rules flag the events, each with a MITRE ATT&CK technique ID. The attack chain links one IP and two accounts: password guessing, login from a new IP, marks changed, audit log deleted."
 4. **Demo 2: AI + cross-check.** "The AI explains the case and must cite event numbers; points that cite events not in the log are removed. A cross-check shows where the AI and the rules agree or disagree. Hindi works too. If the AI is slow, a clearly labelled rules summary appears."
 5. **Demo 3: evidence integrity (the wow).** "At intake the log gets a SHA-256 fingerprint and a signed server receipt: server time, HMAC signature with a secret key, chained to the previous receipt. I change one digit… TAMPERED, and it shows which line changed."
 6. **Demo 4: dashboard.** "Every case, its status, the investigator, and the full server audit trail, re-checked now: Ledger intact."

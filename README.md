@@ -14,8 +14,8 @@ After an incident (example: college ERP marks changed at 2 AM), a college IT or 
 ## Solution: LogLens (what each PS point maps to)
 | PS | What LogLens does |
 |---|---|
-| PS1 evidence analysis | Parses ERP audit CSV, Linux `auth.log`, Apache/Nginx access logs. Any other file (PDF, image) is hashed as raw bytes; name, size, type and last-modified time are kept |
-| PS2 pattern discovery | 13 explainable rules, each with a verified MITRE ATT&CK technique ID. **Attack chain**: flagged events linked by shared IP or account, in MITRE tactic stages. AI summary (Gemini, Workers AI backup) with indicators that must cite real event numbers, plus "AI found beyond the rules" and an **AI vs rules cross-check** |
+| PS1 evidence analysis | Parses ERP audit CSV, Linux `auth.log` (sshd, sudo, useradd, usermod), Apache/Nginx access logs. Any other file (PDF, image) is hashed as raw bytes; name, size, type and last-modified time are kept |
+| PS2 pattern discovery | 16 explainable rules, each with a verified MITRE ATT&CK technique ID. **Attack chain**: flagged events linked by shared IP or account, in MITRE tactic stages. AI summary (Gemini, Workers AI backup) with indicators that must cite real event numbers, plus "AI found beyond the rules" and an **AI vs rules cross-check** |
 | PS3 timeline | Every event sorted by time, flagged rows marked, change register (who changed what, before → after) |
 | PS4 integrity | SHA-256 in the browser (Web Crypto), MATCH / TAMPERED, changed-lines diff and restore. **Signed server receipt**: HMAC-SHA256, hash-chained, stored in Cloudflare D1 (SQLite) |
 | PS5 reports | HTML / PDF report: hash function + value, server receipt, findings with event numbers, MITRE IDs, attack chain, AI summary, audit trail, full raw timeline |

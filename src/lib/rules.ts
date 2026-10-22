@@ -85,6 +85,16 @@ export function applyRules(events: LogEvent[]): LogEvent[] {
       if (prev) add(e, 'impossible-travel', `${e.user} logged in from ${prev.ip} and ${e.ip} within ${Math.round((t - prev.time.getTime()) / 60_000)} min: shared or stolen password?`, 'medium');
     }
 
+    // ---- Linux account rules (auth.log sudo / useradd / usermod) ----
+    // 14. sudo used to open a root shell (not just one admin command)
+    if (e.action === 'SUDO' && /^sudo as root:/.test(e.detail) && /(^|\/)(ba|z|k|da)?sh(\s|$)|(^|\/)su(\s|$)|\s-(i|s)(\s|$)/.test(e.target))
+      add(e, 'sudo-root-shell', `${e.user} opened a root shell with sudo (${e.target})`, 'high');
+    // 15. A new local account was created
+    if (e.action === 'USER_ADD') add(e, 'new-account', `New local account "${e.target}" created: check it was approved`, 'medium');
+    // 16. An account was put in an admin group
+    if (e.action === 'GROUP_ADD' && /group (sudo|wheel|admin|root)$/.test(e.detail))
+      add(e, 'admin-group', `${e.detail}: this account can now act as root`, 'high');
+
     // ---- Web server (Apache/Nginx) rules ----
     if (e.action.startsWith('HTTP_')) {
       const status = Number(e.detail.match(/status (\d{3})/)?.[1] ?? 0);
