@@ -30,26 +30,28 @@ const { title = 'LogLens', current = 'desk', description = 'AI-assisted digital 
     <!-- App bar: frosted, sticky, the same on every page; Desk | Cases is a segmented control -->
     <header class="appbar">
       <div class="max-w-6xl mx-auto px-4 flex items-center gap-3 min-h-14">
-        <a href="/" class="flex items-center gap-2 font-semibold no-underline">
+        <a href="/" class="flex items-center gap-2 font-cond font-bold text-xl tracking-wide no-underline">
           <svg aria-hidden="true" width="26" height="26" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#E3A72F"/><circle cx="14" cy="14" r="7" fill="none" stroke="#1B1F24" stroke-width="3"/><path d="M19 19l7 7" stroke="#1B1F24" stroke-width="3" stroke-linecap="round"/></svg>
           LogLens
         </a>
-        <span class="hidden sm:inline text-muted text-sm">digital forensics desk</span>
+        <span class="hidden sm:inline text-sm text-[#9AA3AB] border-l border-white/20 pl-3">AI-assisted digital forensics console</span>
         <nav class="segnav ml-auto" aria-label="Main">
           <a href="/" class="navlink" aria-current={current === 'desk' ? 'page' : undefined}>Desk</a>
           <a href="/cases" class="navlink" aria-current={current === 'cases' ? 'page' : undefined}>Cases</a>
         </nav>
       </div>
     </header>
-    <main class="flex-1 w-full max-w-6xl mx-auto px-4 py-6 lg:py-8">
+    <main class="flex-1 w-full max-w-6xl mx-auto px-4 py-5 lg:py-7">
       <slot />
     </main>
-    <footer class="border-t border-line text-sm text-muted px-4 py-6">
-      <div class="max-w-6xl mx-auto flex items-center gap-4">
-        <div class="w-24 h-24 shrink-0" set:html={qrSvg} aria-label={`QR code for ${LIVE_URL}`} role="img"></div>
-        <div>
-          <p>Try it on your phone: <a class="underline" href={LIVE_URL}>{LIVE_URL.replace('https://', '')}</a></p>
-          <p>Built by team SOLAR FLARES (HK26-0014) for अvinya '26 Hackathon 4.0, BIET Lucknow. v1 was first built at CHAKRAVYUH 1.0; this is the upgraded v2.</p>
+    <footer class="bg-night text-[#B9C0C7] text-sm px-4 py-8 mt-8">
+      <div class="max-w-6xl mx-auto grid gap-6 md:grid-cols-[auto_1fr] items-start">
+        <div class="flex items-center gap-4">
+          <div class="w-24 h-24 shrink-0 rounded-lg overflow-hidden" set:html={qrSvg} aria-label={`QR code for ${LIVE_URL}`} role="img"></div>
+          <p class="max-w-[14rem]">Scan to open on your phone: <a class="underline text-white" href={LIVE_URL}>{LIVE_URL.replace('https://', '')}</a></p>
+        </div>
+        <div class="space-y-1.5 max-w-3xl">
+          <p><span class="text-white font-semibold">LogLens</span> by team SOLAR FLARES (HK26-0014) for अvinya '26 Hackathon 4.0, BIET Lucknow. v1 was first built at CHAKRAVYUH 1.0; this is the upgraded v2.</p>
           <p>AI summaries come from Google Gemini or Cloudflare Workers AI and can be wrong. All sample cases are made-up data.</p>
         </div>
       </div>

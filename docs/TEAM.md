@@ -1,7 +1,7 @@
 # Team SOLAR FLARES (HK26-0014): who does what
 
 **Sagar Mishra** (B.Tech CSE): builder, owns every technical part.
-**Krishraj Shukla**: presenter, gives the talk and the live demo.
+**Krishraj Shukla** ([@krishrajshukla-eng](https://github.com/krishrajshukla-eng)): presenter, gives the talk and the live demo.
 
 ## On stage (hand-off order)
 1. Krishraj: problem, users, why existing tools do not fit (Presentation, Domain Knowledge).

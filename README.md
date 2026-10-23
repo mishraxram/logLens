@@ -59,4 +59,4 @@ Open http://localhost:8787. Without keys everything works except the AI summary 
 Astro 5 + Tailwind 4 + TypeScript (pages) · one Cloudflare Worker (static assets + API, CSP and security headers, rate limit) · Cloudflare D1 (SQLite) evidence ledger · Google Gemini API + Cloudflare Workers AI · Web Crypto (SHA-256, HMAC-SHA256) · `qrcode` (QR made at build time). Why each was chosen: [docs/TECH_STACK.md](docs/TECH_STACK.md).
 
 ## Team
-SOLAR FLARES (HK26-0014): **Sagar Mishra** (builder, B.Tech CSE) and **Krishraj Shukla** (presenter). Roles, stage hand-off and the human vs AI-tool split: [docs/TEAM.md](docs/TEAM.md).
+SOLAR FLARES (HK26-0014): **Sagar Mishra** (builder, B.Tech CSE) and **Krishraj Shukla** ([@krishrajshukla-eng](https://github.com/krishrajshukla-eng), presenter). Roles, stage hand-off and the human vs AI-tool split: [docs/TEAM.md](docs/TEAM.md).

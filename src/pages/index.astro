@@ -9,17 +9,27 @@ const samples = [
 ];
 ---
 <Base>
-  <header class="mb-6 lg:mb-8">
-    <p class="kicker mb-2">ABCS-02 · AI-assisted digital forensics</p>
-    <h1 class="font-cond font-bold text-3xl sm:text-4xl lg:text-[2.75rem] leading-[1.08] max-w-3xl">Find who changed what. Prove the log was not touched.</h1>
-    <p class="mt-3 max-w-2xl text-ink/80">Rules flag suspicious events, AI (Gemini or Cloudflare Workers AI) explains them, and a SHA-256 hash with a signed server receipt seals the evidence.</p>
+  <header class="mb-4 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+    <div>
+      <p class="kicker mb-1">ABCS-02 · AI-assisted digital forensics</p>
+      <h1 class="font-cond font-bold text-2xl sm:text-3xl leading-tight">Find who changed what. Prove the log was not touched.</h1>
+    </div>
+    <p class="text-sm text-muted max-w-md">Rules flag events, AI explains them, a SHA-256 hash with a signed server receipt seals the evidence.</p>
   </header>
 
-  <div class="grid gap-6 lg:grid-cols-[380px_1fr] items-start">
+  <!-- Case strip: which evidence is open and its integrity state (filled by showLocker) -->
+  <div id="caseStrip" class="strip mb-5" data-state="none" role="status">
+    <span class="dot" aria-hidden="true"></span>
+    <span id="stripName" class="font-semibold">No case open</span>
+    <span id="stripHash" class="hash break-all"></span>
+    <span id="stripChip" class="chip ml-auto">Waiting for evidence</span>
+  </div>
+
+  <div class="grid gap-5 lg:grid-cols-[360px_1fr] items-start">
     <!-- Left: evidence in -->
-    <aside class="space-y-6">
+    <aside class="space-y-5">
       <section class="panel p-4">
-        <h2 class="font-semibold text-lg">Open a case</h2>
+        <div class="panel-h"><h2>Open a case</h2><span class="kicker">Intake</span></div>
         <p class="text-sm text-muted mb-3">Pick a sample case (made-up data) or paste your own log.</p>
         <label for="investigator" class="text-sm font-semibold">Investigator name</label>
         <input id="investigator" type="text" maxlength="60" autocomplete="name" placeholder="e.g. IT cell, Dr. Sharma"
@@ -48,7 +58,7 @@ const samples = [
 
       <!-- Evidence locker: the signature element (an evidence tag carrying the SHA-256) -->
       <section id="locker" class="hidden panel p-4">
-        <h2 class="font-semibold text-lg mb-2">Evidence</h2>
+        <div class="panel-h"><h2>Evidence locker</h2><span class="kicker">Chain of custody</span></div>
         <ol id="progress" class="progress mb-4" aria-label="Case progress"></ol>
         <div class="evtag ml-4 mb-4">
           <p class="font-semibold">Evidence tag</p>
@@ -79,22 +89,22 @@ const samples = [
       <section id="result" class="hidden space-y-5">
         <div id="notes"></div>
         <div>
-          <div id="verdict"></div>
+          <div id="verdict" class="verdict"></div>
           <dl id="kpis" class="kpis mt-3"></dl>
           <p id="stats" class="text-sm text-muted mt-2"></p>
         </div>
 
         <!-- Attack chain: flagged events linked by shared IP / account, in MITRE ATT&CK tactic stages -->
         <div id="chainPanel" class="panel p-4 lg:p-5 hidden">
-          <h2 class="font-semibold text-lg">Attack chain</h2>
+          <div class="panel-h"><h2>Attack chain</h2><span class="kicker">MITRE ATT&amp;CK</span></div>
           <p class="text-xs text-muted mt-1">Flagged events joined when they share an IP or an account, then put in MITRE ATT&CK tactic order of first appearance. Built by rules, not AI.</p>
           <div id="chains" class="mt-3 space-y-4"></div>
         </div>
 
         <!-- AI investigation summary -->
         <div class="panel p-4 lg:p-5">
-          <div class="flex flex-wrap items-center gap-3">
-            <h2 class="font-semibold text-lg mr-auto">What happened</h2>
+          <div class="panel-h">
+            <h2>What happened</h2>
             <div class="seg" role="radiogroup" aria-label="Summary language">
               <label><input type="radio" name="lang" value="en" checked /> English</label>
               <label><input type="radio" name="lang" value="hi" /> हिंदी</label>
@@ -108,8 +118,8 @@ const samples = [
 
         <!-- Change register: who changed what, when, from where, before -> after -->
         <div class="panel p-4 lg:p-5">
-          <div class="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 class="font-semibold text-lg">Changes made</h2>
+          <div class="panel-h">
+            <h2>Changes made</h2>
             <p id="changeCount" class="text-sm text-muted"></p>
           </div>
           <p class="text-xs text-muted mt-1">Every update, delete or admin form post in the log. "Who" is the account that made it; an account can be stolen, so check the reasons.</p>
@@ -118,17 +128,23 @@ const samples = [
 
         <!-- Timeline: every event in time order -->
         <div class="panel p-4 lg:p-5">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <h2 class="font-semibold text-lg">Timeline</h2>
+          <div class="panel-h">
+            <h2>Timeline</h2>
             <label class="text-sm flex items-center gap-2 min-h-11 cursor-pointer"><input id="onlyFlags" type="checkbox" class="w-5 h-5 accent-ink" /> Only flagged events</label>
           </div>
-          <ol id="timeline" class="rail space-y-2 mt-3"></ol>
+          <ol id="timeline" class="rail mt-3"></ol>
         </div>
       </section>
 
-      <section id="empty" class="panel p-6 lg:p-10">
+      <section id="empty" class="panel p-5 lg:p-8">
+        <p class="kicker mb-2">Start here</p>
         <h2 class="font-cond font-bold text-2xl mb-2">No case open yet</h2>
-        <p class="text-ink/80 max-w-prose">Pick “ERP marks tampering” to watch a 2 AM marks change come apart event by event, or paste your own log. The timeline, the AI summary and the evidence check appear here.</p>
+        <p class="text-ink/80 max-w-prose">Pick “ERP marks tampering” on the left to watch a 2 AM marks change come apart event by event, or paste your own log.</p>
+        <dl class="mt-5 grid gap-3 sm:grid-cols-3">
+          <div class="border-t-2 border-ink pt-2"><dt class="font-semibold">Timeline + rules</dt><dd class="text-sm text-muted">Every event in time order. Suspicious ones are flagged with a reason and a MITRE ATT&amp;CK ID.</dd></div>
+          <div class="border-t-2 border-ink pt-2"><dt class="font-semibold">AI summary</dt><dd class="text-sm text-muted">English or Hindi, cross-checked against the rules. If the AI is down, an offline rule summary shows instead.</dd></div>
+          <div class="border-t-2 border-tag pt-2"><dt class="font-semibold">Evidence seal</dt><dd class="text-sm text-muted">SHA-256 tag, signed server receipt, and a verify button that says MATCH or TAMPERED.</dd></div>
+        </dl>
       </section>
     </div>
   </div>
@@ -162,6 +178,7 @@ const samples = [
     b.addEventListener('click', async () => {
       const res = await fetch(b.dataset.sample!);
       logBox.value = await res.text();
+      lastVerify = null;
       await lockEvidence(b.dataset.sample!.split('/').pop()!, logBox.value);
       void sealNow('SEALED');
       run(true);
@@ -256,9 +273,25 @@ const samples = [
     ol.setAttribute('aria-label', `Case progress: ${count} of ${STEPS.length} steps done`);
   }
 
+  // Case strip: dot colour + chip say sealed / verified / tampered at a glance
+  function updateStrip() {
+    const ev = getEvidence();
+    const strip = $('caseStrip');
+    if (!ev) {
+      strip.dataset.state = 'none'; $('stripName').textContent = 'No case open'; $('stripHash').textContent = ''; $('stripChip').textContent = 'Waiting for evidence';
+      return;
+    }
+    const state = lastVerify ? (lastVerify.match ? 'match' : 'tampered') : 'sealed';
+    strip.dataset.state = state;
+    $('stripName').textContent = ev.name;
+    $('stripHash').textContent = `SHA-256 ${ev.hash.slice(0, 12)}…${ev.hash.slice(-6)}`;
+    $('stripChip').textContent = state === 'match' ? 'Verified: unchanged' : state === 'tampered' ? 'TAMPERED' : ev.receipt ? `Sealed · receipt #${ev.receipt.id}` : 'Locked on this device';
+  }
+
   async function showLocker() {
     const ev = getEvidence();
     $('locker').classList.toggle('hidden', !ev);
+    updateStrip();
     if (!ev) return;
     $('evName').textContent = `${ev.name} (${ev.size} bytes)${ev.type ? `\nType ${ev.type} · file last modified ${ev.lastModified}` : ''}\nLocked ${ev.lockedAt} (this device)`;
     $('evHash').textContent = ev.hash;
@@ -468,16 +501,30 @@ const samples = [
 
     // Verdict banner: the first thing a judge reads
     const verdict = $('verdict');
-    const banner = 'rounded-2xl px-5 py-5 lg:px-6 font-cond font-bold text-2xl lg:text-3xl leading-tight';
+    const setVerdict = (cls: string, level: string, headline: string) => {
+      verdict.className = `verdict ${cls}`;
+      verdict.replaceChildren(el('p', 'level', level), el('p', 'headline', headline));
+    };
     if (events.length === 0) {
-      verdict.className = `${banner} bg-ink/10`;
-      verdict.textContent = 'Not a supported log. Use ERP audit CSV, Linux auth.log or Apache/Nginx access log, or try a sample.';
+      setVerdict('', 'Unsupported input', 'Not a supported log. Use ERP audit CSV, Linux auth.log or Apache/Nginx access log, or try a sample.');
     } else if (v.level === 'none') {
-      verdict.className = `${banner} bg-match text-white`;
-      verdict.textContent = 'No suspicious pattern found by the rules. Rules can miss things: run the AI summary or check more logs.';
+      setVerdict('is-ok', 'Rule verdict · low', 'No suspicious pattern found by the rules. Rules can miss things: run the AI summary or check more logs.');
     } else {
-      verdict.className = `${banner} ${v.level === 'high' ? 'bg-flag text-white' : 'bg-tag'}`;
-      verdict.textContent = `${v.level === 'high' ? 'High' : 'Medium'} risk: ${v.high} high-risk and ${v.medium} medium-risk events flagged by the rules`;
+      setVerdict(v.level === 'high' ? 'is-high' : 'is-med', `Rule verdict · ${v.level === 'high' ? 'high' : 'medium'} risk`,
+        `${v.high} high-risk and ${v.medium} medium-risk events flagged by the rules`);
+    }
+    // Risk meter: share of events by severity
+    if (events.length) {
+      const normal = Math.max(0, events.length - v.high - v.medium);
+      const bar = el('div', 'meter'); bar.setAttribute('aria-hidden', 'true');
+      ([[v.high, '#B42318'], [v.medium, '#E3A72F'], [normal, '#1F7A4D']] as [number, string][]).forEach(([n, c]) => {
+        const seg = document.createElement('span'); seg.style.width = `${(n / events.length) * 100}%`; seg.style.background = c; bar.append(seg);
+      });
+      const legend = el('p', 'meter-legend');
+      ([['High', v.high, '#B42318'], ['Medium', v.medium, '#E3A72F'], ['Normal', normal, '#1F7A4D']] as [string, number, string][]).forEach(([l, n, c]) => {
+        const t = el('span', '', `${l} ${n}`); const sw = document.createElement('i'); sw.style.background = c; t.prepend(sw); legend.append(t);
+      });
+      verdict.append(bar, legend);
     }
     $('stats').textContent = `${events.length} events, sorted by time. ${parsed.unparsed.length} lines not understood.`;
 
@@ -541,7 +588,7 @@ const samples = [
       const high = e.flags.some((f) => f.severity === 'high');
       // Each row = one event on the rail; red seal for high risk, amber for medium
       const li = el('li', `row ${high ? 'is-high' : e.flags.length ? 'is-med' : ''}`);
-      const top = el('div', 'flex flex-wrap items-baseline gap-x-3 gap-y-0.5');
+      const top = el('div', 'ev-top');
       top.append(el('span', 'font-mono text-xs text-muted', `#${e.n}`), el('span', 'font-mono text-sm font-semibold', e.timeText),
         el('span', 'font-semibold', e.user || '-'), el('span', 'text-sm text-muted', e.role), el('span', 'font-mono text-sm', e.ip),
         el('span', 'font-mono text-sm font-semibold', e.action));
