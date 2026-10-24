@@ -51,6 +51,21 @@ async function main() {
   await js(`document.querySelector('[data-sample]').click()`);
   step(await waitFor(`document.querySelectorAll('#timeline > *').length > 5`, 5000), 'sample -> timeline rows');
   step(await js(`document.documentElement.scrollWidth <= window.innerWidth`), `no horizontal scroll at ${width}px`);
+  // Timeline filter chips: "High" shows only high-risk rows, "All" brings everything back
+  await js(`document.querySelector('input[name=tlf][value=high]').click()`);
+  step(await waitFor(`(() => { const r = [...document.querySelectorAll('#timeline > li')]; return r.length > 0 && r.length === +document.getElementById('nHigh').textContent && r.every((li) => li.classList.contains('is-high')); })()`, 3000), 'timeline filter "High" shows only high-risk rows');
+  await js(`document.querySelector('input[name=tlf][value=all]').click()`);
+  step(await waitFor(`document.querySelectorAll('#timeline > li').length === +document.getElementById('nAll').textContent`, 3000), 'timeline filter "All" shows every event');
+  if (width < 1024) {
+    // Phone: intake folds away, tab bar shows, "Change case" brings the form back, "Evidence" tab jumps to the locker
+    step(await js(`getComputedStyle(document.getElementById('intake')).display === 'none' && getComputedStyle(document.querySelector('.casenav')).display !== 'none'`), 'phone: intake folded, tab bar shown');
+    await js(`document.getElementById('stripEdit').click()`);
+    step(await js(`getComputedStyle(document.getElementById('intake')).display !== 'none'`), 'phone: "Change case" shows the intake form');
+    await js(`document.getElementById('stripEdit').click()`);
+    await js(`document.querySelector('.casenav a[href="#locker"]').click()`);
+    step(await waitFor(`Math.abs(document.getElementById('locker').getBoundingClientRect().top) < 120`, 3000), 'phone: "Evidence" tab jumps to the locker');
+    await js(`window.scrollTo(0, 0)`);
+  }
   step(await js(`!document.getElementById('chainPanel').classList.contains('hidden') && /TA00\\d\\d/.test(document.getElementById('chains').textContent)`), 'attack chain panel with MITRE tactics');
   step(await js(`[...document.querySelectorAll('.mitre-chip')].some((a) => /^T\\d{4}/.test(a.textContent) && a.href.startsWith('https://attack.mitre.org/'))`), 'MITRE ATT&CK chips on flags');
 

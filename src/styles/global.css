@@ -191,8 +191,30 @@ label:has(input.sr-only:focus-visible) { outline: 3px solid var(--color-tag); ou
   }
 }
 
+/* Filter chips on the timeline: wrap on phones, small count after each label */
+.seg-wrap { flex-wrap: wrap; }
+.seg-wrap label { padding: 0 .7rem; font-size: .9rem; }
+.seg .cnt { margin-left: .35rem; font-family: var(--font-mono); font-size: .75rem; color: var(--color-muted); }
+
 /* Once a case is open, the page intro steps aside (the case strip names the evidence) */
 body:has(#result:not(.hidden)) .page-head { display: none; }
+
+/* Phone and tablet with a case open: findings first, intake folded, a tab bar at the bottom */
+.strip-edit { display: none; }
+.casenav { display: none; }
+#result, #changesPanel, #timelinePanel, #locker, #intake { scroll-margin-top: 4.5rem; }
+@media (max-width: 1023px) {
+  body:has(#result:not(.hidden)) .case-main { order: -1; }
+  body:has(#result:not(.hidden)):not(.show-intake) #intake { display: none; }
+  body:has(#result:not(.hidden)) .strip-edit { display: inline-flex; align-items: center; min-height: 44px; padding: 0 .9rem; border-radius: 10px;
+    background: var(--color-tag); color: var(--color-ink); font-weight: 700; font-size: .9rem; }
+  body:has(#result:not(.hidden)) .strip .hash { display: none; }
+  body:has(#result:not(.hidden)) .casenav { display: grid; grid-template-columns: repeat(4, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+    background: var(--color-night); border-top: 3px solid var(--color-tag); padding: 0 .25rem env(safe-area-inset-bottom); }
+  .casenav a { display: flex; align-items: center; justify-content: center; min-height: 52px; color: #E9ECE8; font-weight: 600; font-size: .9rem; text-decoration: none; }
+  .casenav a:active, .casenav a:focus-visible { background: rgba(255,255,255,.1); }
+  body:has(#result:not(.hidden)) { padding-bottom: 56px; }
+}
 
 /* A case result slides in once, like a sheet (skipped when the user asks for less motion) */
 @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }

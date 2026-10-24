@@ -24,12 +24,14 @@ const samples = [
     <span id="stripName" class="font-semibold">No case open</span>
     <span id="stripHash" class="hash break-all"></span>
     <span id="stripChip" class="chip ml-auto">Waiting for evidence</span>
+    <!-- Phone only, once a case is open: bring the intake form back -->
+    <button id="stripEdit" type="button" class="strip-edit">Change case</button>
   </div>
 
   <div class="grid gap-5 lg:grid-cols-[360px_1fr] items-start">
     <!-- Left: evidence in -->
-    <aside class="space-y-5">
-      <section class="panel p-4">
+    <aside class="case-aside space-y-5">
+      <section id="intake" class="panel p-4">
         <div class="panel-h"><h2>Open a case</h2><span class="kicker">Intake</span></div>
         <p class="text-sm text-muted mb-3">Pick a sample case (made-up data) or paste your own log.</p>
         <label for="investigator" class="text-sm font-semibold">Investigator name</label>
@@ -86,7 +88,7 @@ const samples = [
     </aside>
 
     <!-- Right: findings out -->
-    <div>
+    <div class="case-main">
       <section id="result" class="hidden space-y-5">
         <div id="notes"></div>
         <!-- Case summary: verdict, key numbers and a mini MITRE stage strip in one card -->
@@ -119,7 +121,7 @@ const samples = [
         </div>
 
         <!-- Change register: who changed what, when, from where, before -> after -->
-        <div class="panel p-4 lg:p-5">
+        <div id="changesPanel" class="panel p-4 lg:p-5">
           <div class="panel-h">
             <h2>Changes made</h2>
             <p id="changeCount" class="text-sm text-muted"></p>
@@ -129,10 +131,16 @@ const samples = [
         </div>
 
         <!-- Timeline: every event in time order -->
-        <div class="panel p-4 lg:p-5">
+        <div id="timelinePanel" class="panel p-4 lg:p-5">
           <div class="panel-h">
             <h2>Timeline</h2>
-            <label class="text-sm flex items-center gap-2 min-h-11 cursor-pointer"><input id="onlyFlags" type="checkbox" class="w-5 h-5 accent-ink" /> Only flagged events</label>
+            <!-- Filter chips: one tap shows only what matters -->
+            <div class="seg seg-wrap" role="radiogroup" aria-label="Show events">
+              <label><input type="radio" name="tlf" value="all" checked /> All <span id="nAll" class="cnt"></span></label>
+              <label><input type="radio" name="tlf" value="high" /> ▲ High <span id="nHigh" class="cnt"></span></label>
+              <label><input type="radio" name="tlf" value="flagged" /> Flagged <span id="nFlag" class="cnt"></span></label>
+              <label><input type="radio" name="tlf" value="changes" /> Changes <span id="nChg" class="cnt"></span></label>
+            </div>
           </div>
           <ol id="timeline" class="rail mt-3"></ol>
         </div>
@@ -157,6 +165,14 @@ const samples = [
       </section>
     </div>
   </div>
+
+  <!-- Phone only, once a case is open: jump between the parts of the case (44 px targets) -->
+  <nav class="casenav" aria-label="Case sections">
+    <a href="#result">Story</a>
+    <a href="#changesPanel">Changes</a>
+    <a href="#timelinePanel">Timeline</a>
+    <a href="#locker">Evidence</a>
+  </nav>
 </Base>
 
 <script>
@@ -393,7 +409,7 @@ const samples = [
   showLocker(); // restore a case saved in this browser
 
   $('run').addEventListener('click', () => run(true));
-  $('onlyFlags').addEventListener('change', () => run());
+  document.querySelectorAll('input[name=tlf]').forEach((r) => r.addEventListener('change', () => run()));
   $('ai').addEventListener('click', analyze);
 
   // Last parsed result, reused by the AI step
@@ -492,6 +508,12 @@ const samples = [
     r.next_steps.forEach((s) => steps.append(el('li', '', s)));
     out.append(steps);
   }
+
+  // Phone: "Change case" in the case strip shows the intake form again
+  $('stripEdit').addEventListener('click', () => {
+    document.body.classList.toggle('show-intake');
+    if (document.body.classList.contains('show-intake')) $('intake').scrollIntoView({ block: 'start' });
+  });
 
   async function run(scrollToResult = false) {
     const text = logBox.value;
@@ -618,10 +640,18 @@ const samples = [
 
     // Timeline
     const list = $('timeline'); list.replaceChildren();
-    const onlyFlags = ($('onlyFlags') as HTMLInputElement).checked;
+    const show = (document.querySelector('input[name=tlf]:checked') as HTMLInputElement | null)?.value ?? 'all';
+    const changed = new Set(changes.map((c) => c.n));
+    const isHigh = (e: (typeof events)[number]) => e.flags.some((f) => f.severity === 'high');
+    $('nAll').textContent = String(events.length);
+    $('nHigh').textContent = String(events.filter(isHigh).length);
+    $('nFlag').textContent = String(events.filter((e) => e.flags.length).length);
+    $('nChg').textContent = String(changed.size);
     for (const e of events) {
-      if (onlyFlags && !e.flags.length) continue;
-      const high = e.flags.some((f) => f.severity === 'high');
+      if (show === 'high' && !isHigh(e)) continue;
+      if (show === 'flagged' && !e.flags.length) continue;
+      if (show === 'changes' && !changed.has(e.n)) continue;
+      const high = isHigh(e);
       // Each row = one event on the rail; red seal for high risk, amber for medium
       const li = el('li', `row ${high ? 'is-high' : e.flags.length ? 'is-med' : ''}`);
       const top = el('div', 'ev-top');
@@ -650,6 +680,7 @@ const samples = [
       list.append(d);
     }
     $('result').classList.remove('hidden');
+    document.body.classList.remove('show-intake');
     await audit('TIMELINE_BUILT', `${events.length} events · ${v.high} high · ${v.medium} medium · ${parsed.unparsed.length} not understood`);
     showLocker();
     // On phones the result is below the input: bring it into view after a new case
