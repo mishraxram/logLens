@@ -11,7 +11,7 @@ export function aiLabel(model = '') {
   return model.includes('llama-3.1-8b') ? `${LLAMA_LABEL} on Cloudflare Workers AI` : `AI: Gemini backup (${model})`;
 }
 
-type Ai = { source: string; verdict: string; hidden_patterns?: { events: number[]; text: string }[]; model?: string; summary: string; indicators: { events: number[]; text: string }[]; confidence: string; next_steps: string[] } | null;
+type Ai = { source: string; verdict: string; hidden_patterns?: { events: number[]; text: string }[]; model?: string; masked?: string; summary: string; indicators: { events: number[]; text: string }[]; confidence: string; next_steps: string[] } | null;
 
 // Escape everything that came from the log or the AI
 const esc = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
@@ -48,7 +48,7 @@ ${changes.map((c) => `<tr><td>${c.n}</td><td class="m">${esc(c.timeText)}</td><t
 ${flagged.map((e) => `<tr><td>${e.n}</td><td class="m">${esc(e.timeText)}</td><td class="m">${esc(e.user)}<br>${esc(e.ip)}</td><td class="m">${esc(e.action)} ${esc(e.target)} ${esc(e.detail)}</td><td>${e.flags.map((f) => `<div class="${f.severity === 'high' ? 'bad' : ''}">${esc(f.reason)}${(MITRE[f.code] ?? []).map((t) => ` <span class="tag">${esc(t.id)} ${esc(t.name)}</span>`).join('')}</div>`).join('')}</td></tr>`).join('')}
 </table>
 <h2>Summary</h2>
-${ai ? `<p><em>${ai.source === 'ai' ? `${esc(aiLabel(ai.model))}. AI generated: verify against cited events.` : 'Offline summary from rules (not AI).'}</em></p>
+${ai ? `<p><em>${ai.source === 'ai' ? `${esc(aiLabel(ai.model))}. AI generated: verify against cited events.${ai.masked ? ` ${esc(ai.masked)}` : ''}` : 'Offline summary from rules (not AI).'}</em></p>
 <p>${esc(ai.summary)}</p><p><strong>Verdict: ${esc(ai.verdict)}</strong> · confidence ${esc(ai.confidence)}</p>
 <ul>${ai.indicators.map((i) => `<li><code>${i.events.map((n) => '#' + n).join(' ')}</code> ${esc(i.text)}</li>`).join('')}</ul>
 ${ai.hidden_patterns?.length ? `<p><strong>AI found beyond the rules:</strong></p><ul>${ai.hidden_patterns.map((i) => `<li><code>${i.events.map((n) => '#' + n).join(' ')}</code> ${esc(i.text)}</li>`).join('')}</ul>` : ''}

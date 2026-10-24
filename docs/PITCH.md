@@ -15,7 +15,7 @@ Every number here comes from a command run on 25 Oct 2026 (docs/TESTSET.md, docs
 | 2:40-3:10 Real data | click **Real SSH server log** | "This one is not made up. It is a real server log from Loghub, a public research dataset. 300 lines, 308 events, 62 high-risk, a brute-force chain." |
 | 3:10-3:50 AI + guard | **Analyze with AI** -> label "AI: open-weight Llama 3.1 8B" -> cross-check box | "Llama writes the story and must cite event numbers. A small model can over-react, so the rules watch it: no high-risk flag, no 'incident'. Our test set: 16 of 17 right. The one miss: a normal log where it said 'unsure' instead of 'normal'." |
 | 3:50-4:20 Integrity | **Check server receipt** = VALID -> change 42 to 43 -> **Verify integrity** = TAMPERED | "The log got a fingerprint and a signed server receipt. I change one digit... TAMPERED, and it shows the line." |
-| 4:20-4:45 Limits + next | phone view (tab bar), dark mode | "Works on phones and in dark mode. Limits: 4 log formats, no login yet, user names still go to the AI unmasked. Next: masking, Windows logs, investigator login." |
+| 4:20-4:45 Limits + next | phone view (tab bar), dark mode | "Works on phones and in dark mode. Limits: 4 log formats, no login yet. Next: Windows logs, investigator login." |
 | 4:45-4:55 Link | QR in footer | "Try it with your own log: loglens-v2.loglens.workers.dev" |
 
 ## 1. Three-minute live script (stage, if shortlisted for 30 Oct)
@@ -47,7 +47,7 @@ Every number here comes from a command run on 25 Oct 2026 (docs/TESTSET.md, docs
 3. **How accurate?** 16/17 on our own small test set (25 Oct). It is not a real-world accuracy number; real Loghub logs have no security labels.
 4. **Why not Splunk / ELK / Timesketch?** They need servers, setup and training. LogLens is a browser tool for the first hour; big cases still go to full tools.
 5. **Where does the data come from?** The investigator's own log file. Demo: 3 made-up samples (labelled) and 1 real public log from Loghub (cited).
-6. **What goes to the AI? Privacy?** Only parsed event lines (max 200), not the raw file. User names and IPs are not masked yet: that is our next step, and we say it.
+6. **What goes to the AI? Privacy?** Only parsed event lines (max 200), not the raw file. Account names and IPs are masked by default (USER_1 / IP_1) before the AI call and put back in the browser; system accounts like root stay readable (`scripts/check-redact.ts`).
 7. **What if the AI is wrong or down?** Wrong: caps, citations, cross-check. Down: Gemini backup, then a clearly labelled rules-only summary after 8 s.
 8. **Prompt injection from a log?** Log text is fenced as untrusted data. Test case 17 hides "ignore previous instructions"; the verdict stays incident.
 9. **Can someone fake the evidence?** The server signs each receipt (HMAC-SHA256) and chains it in D1; one changed digit shows TAMPERED. Limit: no login yet, anyone can add receipts.
