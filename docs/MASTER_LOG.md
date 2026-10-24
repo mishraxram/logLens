@@ -2,7 +2,7 @@
 Branch `lu-upgrade` (from `avinya-final` @ 9f6c16a, tag `pre-lu-upgrade`). Not from `main` @ 3f1387f as LOOP-MASTER says:
 `main` lacks the case-file UI redesign (29c5bc0) and the Llama-primary AI switch (c892f66), both done on 25 Oct.
 Event: Lucknow Hacktoberfest Hack Day / "Lucknow University hackathon" (ASSUMED same event; name, date, rubric UNVERIFIED, see NEEDS YOU 1). Known rule from the user (25 Oct): open-source / open-weight AI must be an important part.
-Phase: **P2 Research** (P0 done 01:22; P1 done with ASSUMED rubric 01:26, redo when NEEDS YOU 1 arrives).
+Phase: **P3 Audit** (P0, P1 assumed, P2 UI research done; 2 UI slices built early on user request 25 Oct 01:41).
 
 ## NEEDS YOU
 | # | What | Status |
@@ -53,7 +53,10 @@ Conflicts found:
 |---|---|---|---|---|---|---|
 | 0 | 01:20 | setup | install pack, branch, Loghub baseline | done | `check-loghub.ts`: OpenSSH 2000 events, 0 not understood, actions SSHD 1480 / LOGIN_FAIL 517, flags burst-fail 490, shared-ip 72; Linux 0 events / 2000 not understood; Apache (error log) 0 events / 2000 not understood | 5556d15 |
 | 1 | 01:22 | P0 | inventory + conflicts | done | `claude mcp list`, settings deny list, `ls .claude/*` (table above) | 85c9602 |
-| 2 | 01:26 | P1 | ASSUMED rubric + coverage matrix | done | 13 rows, 2 proven / 11 partial; new gap: AI story stale in TECH_STACK/PITCH/DEFENSE (`grep -n Gemini docs/TECH_STACK.md` line 13, 32) | (this commit) |
+| 2 | 01:26 | P1 | ASSUMED rubric + coverage matrix | done | 13 rows, 2 proven / 11 partial; new gap: AI story stale in TECH_STACK/PITCH/DEFENSE (`grep -n Gemini docs/TECH_STACK.md` line 13, 32) | 87e0248 |
+| 3 | 01:40 | P2 | UI research: 29 pack sites + indiepage + 39 Marc Lou sites + Stalkr full page (docs/ui-research/) | done | 27/29 opened (wcag22 403, m3 404 redirect); googe.com timed out | 900a8e7, 07402a9 |
+| 4 | 01:46 | P5 | UI slice 1: compact case summary + mini MITRE strip + chain stepper + status icons + 01-04 empty steps | done | check-fold 1366x768 chain 458-712 (was 651-964); npm run check 0; e2e 360/1366/1920 PASS | e1bfc71 |
+| 5 | 01:55 | P5 | UI slice 2: blinking-eye logo (F7 part) | done | blink test 17 frames, reduced motion 1 frame; e2e 360/1366/1920 PASS | 9d3d445 |
 
 ## Backlog (seed from LOOP-MASTER 4.2 + 9.1; re-ranked in P3)
 | rank | id | item | rubric line | impact | effort | status |
@@ -64,10 +67,10 @@ Conflicts found:
 | 3 | F3 | parser: Invalid user, POSSIBLE BREAK-IN, pam_unix rhost, message repeated, Apache error log (D2-D4) | PS1, Prototype | H | S-M | todo |
 | 4 | F1 | linear-time rules + Web Worker parse with progress (D1, D13) | Prototype | H | S-M | todo |
 | 5 | F8 | redact users/IPs before AI (D12) | Domain, Stack | M | M | todo |
-| 6 | F4 | mobile: sticky verdict bar + tabs (D7) | Prototype | H | M | todo |
+| 6 | F4 | mobile: sticky verdict bar + tabs (D7); 360 page still 8,702 px | Prototype | H | M | todo (next) |
 | 7 | F5 | attack story card + actor chips filter (D10) | PS2, Prototype | H | M | todo |
 | 8 | F6 | events-per-minute strip + actor graph, plain SVG (D10) | PS2/PS3 | H | M | todo |
-| 9 | F7 | new brand mark (brand/) + dark mode (D9, D11) | Presentation | M | S | todo |
+| 9 | F7 | new brand mark (brand/) + dark mode (D9, D11) | Presentation | M | S | logo done 9d3d445; dark mode todo |
 | 10 | F9 | star + note on events -> report + ledger | PS5, PS6 | M | S | todo |
 | 11 | F10 | case bundle ZIP + "verify yourself" sha256sum | PS4, PS5 | M | M | todo |
 | 12 | F11 | rules as data + rules page | Stack, Domain | M | M | todo |
