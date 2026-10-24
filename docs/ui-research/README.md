@@ -41,3 +41,36 @@ text). Use that method to define our own dark-mode tokens.
 `npm run start:offline`, `@fontsource` self-hosted fonts, CSP `font-src 'self'`, "18 rules", `docs/FORENSIC_AUDIT.md`,
 "100k events 1.2 s". Checked with `grep` on `package.json`, `worker/index.ts`, `src/lib/rules.ts`, README and all branches
 (25 Oct 01:27). Real repo: 16 rules, Google Fonts with CSP `font-src https://fonts.gstatic.com`.
+
+## Round 2 (25 Oct 01:36-01:52): the user's two links
+- Link 1 `share.google/0X5eCDR2ekuLhojSt` -> https://indiepa.ge/marclou (Marc Lou's Indie Page, 49 links). Link 2 -> https://www.stalkr.ai/?ref=indiepage.
+- Opened in headless Chrome: indiepage + **39 product sites** from it (all document HTTP 200). Contact sheets in
+  `shots/marclou/` (each tile = the 1366x768 first screen). `googe.com` and `virallybot.com`: **not checked** (crawl
+  still on them when this was written). Social links (X, YouTube, LinkedIn, Instagram), book and newsletter skipped.
+- Stalkr: whole page walked top to bottom (9,561 px, 13 screens), contact sheets in `shots/stalkr-full/`.
+
+### Observed patterns worth taking (no copying of text, logos, colours or layouts)
+| Pattern | Where seen | Used in LogLens |
+|---|---|---|
+| Numbered 01-04 steps on one thin accent rail | Stalkr "Tell Stalkr what to watch -> We pull in -> AI filters the noise -> Act when it matters"; Datarot/DataCity "How to get started 1-2-3"; LogoFast first-visit coach "1. Pick 2. Choose 3. Export" | **Done**: empty state = 01 Open the log, 02 Rules flag, 03 Open-weight AI explains, 04 Seal and verify |
+| Two-tone headline (key line dark, second line muted) | Stalkr ("Know what people say. / See what needs action."), Supabase | **Done**: page h1 |
+| AI category pills with an icon + action chips | Stalkr "AI filters the noise" (Testimonial / Bug report / Misinformation / Complaint) | partly: status icon + word on verdict, flags, changes (**done**); category chips for findings = next |
+| Matched keyword highlighted inside the row | Stalkr mentions ("Stalkr" highlighted in each post) | next (P1): highlight the field that fired a rule in the raw log line |
+| Filter chips row in the app (Date, Source, Category, Status) | Stalkr "Inside Stalkr" screenshot | next (P1): All / High / Medium / Changes chips on the timeline |
+| Card = title + small status pill + one line + mini chart | indiepage (revenue pill + sparkline per product) | next (P2): /cases dashboard cards |
+| Notification-stack cards (icon, title, time on the right) | PoopUp, Zenvoice | already close: change register |
+| Dark-mode toggle in the header | Habits Garden, Radix, shadcn | not done (P1; needs a dark token set, contrast re-check) |
+| KPI labels small, numbers big, in one row | DataFast interactive demo | **Done**: KPI row inside the case summary |
+Rejected: game/3D themes (DataEmpire, DataCity, Macrodata, Datarot, DecisionGame, Gamify List, HyroX), big marketing
+heroes with gradients, testimonial avatars and star ratings (we have no real users to show).
+
+## Result after slice 1 (commit e1bfc71)
+`scripts/check-fold.ts` (headless Chrome, local `wrangler dev`, ERP sample clicked):
+| Viewport | verdict | attack chain | before |
+|---|---|---|---|
+| 1366x768 | 198-339 | **458-712 (fits, fold 768)** | chain 651-964 |
+| 1920x1080 | 198-339 | 458-712 | same as before, fits |
+| 360x800 | 1956-2140 | 2321-2819 | page 8,702 px tall; no side scroll (scrollWidth 360) |
+Screenshots: `shots/loglens-after1-1366.jpg`, `shots/loglens-after1-1920.jpg`.
+Checks: `npm run check` exit 0; `node scripts/e2e.ts` PASS at 360, 1366 and 1920 px, 0 console errors.
+Not tested: dark mode (not built yet), Lighthouse, keyboard tab-through, real phone / iOS Safari, screen reader.
