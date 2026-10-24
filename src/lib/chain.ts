@@ -27,6 +27,10 @@ const STAGE_OF: Record<string, string> = {
   'sudo-root-shell': 'privesc',
 };
 
+// A blocked attempt (the system said DENIED) changed nothing, so it is not an Impact stage
+const blocked = (e: LogEvent) => /DENIED|no permission/i.test(e.detail);
+const stageOf = (e: LogEvent, code: string) => (code === 'role-misuse' && blocked(e) ? undefined : STAGE_OF[code]);
+
 export type ChainStep = Stage & { events: number[]; reasons: string[]; from: string };
 export type Chain = { ips: string[]; users: string[]; steps: ChainStep[] };
 
@@ -47,7 +51,7 @@ export function buildChains(events: LogEvent[]): Chain[] {
     (e.action === 'USER_ADD' || e.action === 'GROUP_ADD') && e.target && `user:${e.target}`].filter(Boolean) as string[];
 
   // Only flagged events link actors, so normal traffic from a shared office IP does not merge everyone
-  const flagged = events.filter((e) => e.flags.some((f) => STAGE_OF[f.code]));
+  const flagged = events.filter((e) => e.flags.some((f) => stageOf(e, f.code)));
   for (const e of flagged) {
     const ks = keysOf(e);
     ks.forEach((k) => find(k));
@@ -65,7 +69,7 @@ export function buildChains(events: LogEvent[]): Chain[] {
     list.sort((a, b) => a.time.getTime() - b.time.getTime());
     const steps = new Map<string, ChainStep>();
     for (const e of list) for (const f of e.flags) {
-      const key = STAGE_OF[f.code];
+      const key = stageOf(e, f.code);
       if (!key) continue;
       const st = steps.get(key) ?? { ...STAGES.find((s) => s.key === key)!, events: [], reasons: [], from: e.timeText };
       if (!st.events.includes(e.n)) st.events.push(e.n);

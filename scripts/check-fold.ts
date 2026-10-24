@@ -1,5 +1,5 @@
 // Above-the-fold check: open LogLens, click the first sample, print where #verdict and #chainPanel sit (px from top).
-// Usage: node fold.ts <url> <width> <height> <out.jpg> [dark]
+// Usage: node scripts/check-fold.ts <url> <width> <height> <out.jpg> [dark]
 import { spawn } from 'node:child_process';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';

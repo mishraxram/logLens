@@ -61,8 +61,13 @@ export function applyRules(events: LogEvent[]): LogEvent[] {
       add(e, 'shared-ip', `IP ${e.ip} was used earlier by ${[...others].join(', ')}`, 'medium');
 
     // 6. Student account trying to change or delete records
-    if (e.role === 'student' && /UPDATE|DELETE/.test(e.action))
-      add(e, 'role-misuse', `Student account tried ${e.action} on ${e.target}`, 'high');
+    //    If the system blocked it (DENIED), it is an attempt with no change made: medium, not high
+    if (e.role === 'student' && /UPDATE|DELETE/.test(e.action)) {
+      const blocked = /DENIED|no permission/i.test(e.detail);
+      add(e, 'role-misuse', blocked
+        ? `Student account tried ${e.action} on ${e.target}; the system blocked it (attempt, nothing changed)`
+        : `Student account tried ${e.action} on ${e.target}`, blocked ? 'medium' : 'high');
+    }
 
     // 7. Big marks jump, e.g. 42->92
     const jump = e.detail.match(/(\d+)\s*->\s*(\d+)/);
