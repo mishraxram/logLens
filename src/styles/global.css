@@ -18,6 +18,30 @@
 
 body { background: var(--color-paper); color: var(--color-ink); font-size: 16px; line-height: 1.5; }
 
+/* Dark mode (follows the system setting). Same roles, darker sheet; every text pair measured >= 4.5:1
+   (ink 13.5, muted 6.5, flag 6.5, match 7.5 on the sheet; dark text 7.3 on red chips). Evidence tag stays amber. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-ink: #E6E9E5; --color-paper: #111418; --color-sheet: #1A1F25; --color-line: #313840;
+    --color-flag: #FF7A6E; --color-match: #4CC38A; --color-muted: #9AA3AB; --color-night: #0B0D10;
+    color-scheme: dark;
+  }
+  .panel, .kpi { border-color: rgba(255,255,255,.07); box-shadow: none; }
+  .field, .btn-quiet, .seg { background: rgba(255,255,255,.07); }
+  .btn-quiet:hover { background: rgba(255,255,255,.12); }
+  .case-list .case-btn:hover, .row:hover { background: rgba(255,255,255,.04); }
+  .meter { background: rgba(255,255,255,.12); }
+  .row + .row { border-top-color: var(--color-line) !important; }
+  .verdict.is-high { background: #2A1715; } .verdict.is-med { background: #2A2414; } .verdict.is-ok { background: #13261C; }
+  .entity { background: var(--color-sheet); }
+  .evtag { color: #1B1F24; }
+  .evtag::before { background: var(--color-sheet); }
+  /* Red and green chips: dark text, white on the lighter dark-mode red would be 2.5:1 */
+  .bg-flag, .bg-match { color: #111418 !important; }
+  .seg label { color: #C9CFD4; }
+  .stage-strip .dots span { border-color: #6B747C; }
+}
+
 /* Touch targets at least 44px, clear keyboard focus */
 button, .btn-like { min-height: 44px; }
 :focus-visible { outline: 3px solid var(--color-tag); outline-offset: 2px; }
