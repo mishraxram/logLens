@@ -14,7 +14,7 @@ After an incident (example: college ERP marks changed at 2 AM), a college IT or 
 ## Solution: LogLens (what each PS point maps to)
 | PS | What LogLens does |
 |---|---|
-| PS1 evidence analysis | Parses ERP audit CSV, Linux `auth.log` (sshd, sudo, useradd, usermod), Apache/Nginx access logs. Any other file (PDF, image) is hashed as raw bytes; name, size, type and last-modified time are kept |
+| PS1 evidence analysis | Parses ERP audit CSV, Linux `auth.log` (sshd, sudo, useradd, usermod, su; old and new syslog style), Apache/Nginx access logs, Apache error logs. Any other file (PDF, image) is hashed as raw bytes; name, size, type and last-modified time are kept |
 | PS2 pattern discovery | 16 explainable rules, each with a verified MITRE ATT&CK technique ID. **Attack chain**: flagged events linked by shared IP or account, in MITRE tactic stages. AI summary (open-weight Llama 3.1 8B on Workers AI, Gemini backup) with indicators that must cite real event numbers, plus "AI found beyond the rules" and an **AI vs rules cross-check** |
 | PS3 timeline | Every event sorted by time, flagged rows marked, change register (who changed what, before → after) |
 | PS4 integrity | SHA-256 in the browser (Web Crypto), MATCH / TAMPERED, changed-lines diff and restore. **Signed server receipt**: HMAC-SHA256, hash-chained, stored in Cloudflare D1 (SQLite) |
@@ -40,6 +40,15 @@ Open http://localhost:8787. Without keys everything works except the AI summary 
 - `node scripts/check-seal.ts <url>`: server receipts, bad input, and 6 parallel receipts keep one unbroken chain.
 - Lighthouse mobile on the live site (22 Oct): `/` 100/100/100/100, `/cases` 96-99/100/100/100 (several runs).
 
+## Tested on real logs (Loghub, public research data)
+Source: https://github.com/logpai/loghub (free for research and academic use; cited as its licence asks). Run: `node scripts/check-loghub.ts tests/loghub/*.log` (25 Oct 2026, one laptop).
+| File (2,000 lines each) | Events | Not understood | Flags | Before the parser update |
+|---|---|---|---|---|
+| OpenSSH_2k.log | 2,008 (2 "message repeated" lines expanded) | 0 | burst-fail 502, shared-ip 73 | 2,000 events but 1,480 were a generic "SSHD" (now 275) |
+| Linux_2k.log | 849 (sshd + su lines) | 1,151 (other services: logrotate, ftpd, klogind...) | burst-fail 464, off-hours 387 | 0 events |
+| Apache_2k.log (error log) | 2,000 | 0 | none (server notices, no person acted) | 0 events |
+These logs have no security labels, so this shows that real files parse and what the rules flag, not accuracy.
+
 ## AI usage and data
 - **AI: open-weight Llama 3.1 8B (Meta, Llama licence).** Primary model is `@cf/meta/llama-3.1-8b-instruct-fast`, run on Cloudflare Workers AI in JSON mode. Google Gemini flash-lite models are an optional backup: they start only if Llama fails or has no answer after 4 s, and are off when no `GEMINI_API_KEY` is set. Llama 3.1 is open-weight under the Llama 3.1 Community Licence (not an OSI open-source licence). Called only from the server (`functions/api/analyze.ts`); keys never reach the browser. Prompt in `src/lib/prompts.ts`.
 - **What is sent to the AI:** only parsed event lines (max 200, flagged first) and case notes. Raw files stay in the browser.
@@ -48,13 +57,13 @@ Open http://localhost:8787. Without keys everything works except the AI summary 
 - **Building it:** built with Claude Code (code, UI, rules, tests and docs, written under our direction and checked by us). Problem choice, scope, rules design, test cases and the demo are ours. See [docs/TEAM.md](docs/TEAM.md).
 
 ## Limits (honest)
-- 3 log formats only. Other formats show "Not a supported log".
+- 4 log formats only (Windows event logs are not supported). Other formats show "Not a supported log"; lines we do not understand are kept and counted, never dropped.
 - No login: the dashboard is a shared demo ledger. A real deployment needs an access gate for authorised investigators.
 - The server receipt proves the hash was recorded at that server time by this server. The Cloudflare account owner could still change the database; the signature check would show it unless the secret also leaked.
 - AI depends on free tiers (Workers AI 10,000 neurons/day, Gemini backup). When both are slow the offline summary is shown.
 - Llama 3.1 8B is a small model: Hindi answers and verdicts are weaker than big models. Answers are checked (cited events, language, incident cap).
 - The report supports an investigation. It is not a legal certificate (for example under BSA 2023 s.63).
-- All sample and test logs are made-up sample data.
+- Three sample cases and the eval test logs are made-up sample data. The "Real SSH server log" sample and `tests/loghub/` are real public research data from Loghub.
 
 ## Tech
 Astro 5 + Tailwind 4 + TypeScript (pages) · one Cloudflare Worker (static assets + API, CSP and security headers, rate limit) · Cloudflare D1 (SQLite) evidence ledger · Cloudflare Workers AI with open-weight Llama 3.1 8B (Meta) + Google Gemini API as backup · Web Crypto (SHA-256, HMAC-SHA256) · `qrcode` (QR made at build time). Why each was chosen: [docs/TECH_STACK.md](docs/TECH_STACK.md).

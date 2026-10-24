@@ -31,8 +31,8 @@ export function applyRules(events: LogEvent[]): LogEvent[] {
     const t = e.time.getTime();
     const h = e.time.getHours();
 
-    // 1. Off-hours activity (23:00 to 06:00)
-    if ((h < 6 || h >= 23) && e.action !== 'LOGOUT')
+    // 1. Off-hours activity (23:00 to 06:00). Not for the web server's own messages (HTTPD_*): no person acted
+    if ((h < 6 || h >= 23) && e.action !== 'LOGOUT' && !e.action.startsWith('HTTPD_'))
       add(e, 'off-hours', `Activity at ${hhmm(e)}, outside working hours (06:00-23:00)`, 'medium');
 
     // 2. Burst of failed logins from the same IP
@@ -57,7 +57,8 @@ export function applyRules(events: LogEvent[]): LogEvent[] {
 
     // 5. Same IP used by a different user before
     const others = usersByIp.get(e.ip);
-    if (e.ip && others && !others.has(e.user) && others.size > 0)
+    //    Events with no account name (disconnects, probes) cannot be "a different user"
+    if (e.ip && e.user && others && !others.has(e.user) && others.size > 0)
       add(e, 'shared-ip', `IP ${e.ip} was used earlier by ${[...others].join(', ')}`, 'medium');
 
     // 6. Student account trying to change or delete records

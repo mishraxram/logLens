@@ -6,6 +6,8 @@ const samples = [
   { file: '/samples/erp-marks-tamper.csv', label: 'ERP marks tampering', desc: 'DBMS marks changed from 42 to 92 at 2 AM' },
   { file: '/samples/ssh-bruteforce.log', label: 'Server SSH brute force', desc: 'Password guessing, root login, then a backdoor account' },
   { file: '/samples/hinglish-case.csv', label: 'Hinglish case note', desc: 'Investigator note in Hinglish, AI answers in Hindi' },
+  // Real data, not made up: 300 lines from the public Loghub research collection (source cited inside the file)
+  { file: '/samples/loghub-openssh-real.log', label: 'Real SSH server log', desc: 'Public research data (Loghub), not made up: 300 real lines' },
 ];
 ---
 <Base>
@@ -33,7 +35,7 @@ const samples = [
     <aside class="case-aside space-y-5">
       <section id="intake" class="panel p-4">
         <div class="panel-h"><h2>Open a case</h2><span class="kicker">Intake</span></div>
-        <p class="text-sm text-muted mb-3">Pick a sample case (made-up data) or paste your own log.</p>
+        <p class="text-sm text-muted mb-3">Pick a sample case (three made up for the demo, one real public log) or paste your own log.</p>
         <label for="investigator" class="text-sm font-semibold">Investigator name</label>
         <input id="investigator" type="text" maxlength="60" autocomplete="name" placeholder="e.g. IT cell, Dr. Sharma"
           class="field mt-1 mb-4" />

@@ -1,5 +1,6 @@
 // Turns raw log text into a sorted list of events.
-// Supports 3 formats: ERP audit CSV, Linux auth.log (sshd, sudo, useradd, usermod lines), Apache/Nginx access log.
+// Supports 4 formats: ERP audit CSV, Linux auth.log (sshd, sudo, useradd, usermod, su lines, old and new syslog style),
+// Apache/Nginx access log, Apache error log.
 
 export type Flag = { code: string; reason: string; severity: 'high' | 'medium' };
 
@@ -54,13 +55,22 @@ function parseErpLine(line: string): Omit<LogEvent, 'n' | 'flags' | 'timeText'> 
 //   "Oct 14 03:46:30 host sudo:  alice : TTY=pts/1 ; PWD=/home/alice ; USER=root ; COMMAND=/bin/bash"
 //   "Oct 14 03:44:10 host useradd[2401]: new user: name=sysbackup, UID=1002, GID=1002, home=/home/sysbackup, shell=/bin/bash"
 //   "Oct 14 03:44:12 host usermod[2410]: add 'sysbackup' to group 'sudo'"
+// Older syslog style seen in real logs (Loghub Linux_2k): "sshd(pam_unix)[19939]: authentication failure; ... rhost=218.188.2.4"
 function parseAuthLine(line: string, year: number): Omit<LogEvent, 'n' | 'flags' | 'timeText'> | null {
-  const m = line.match(/^([A-Z][a-z]{2})\s+(\d{1,2}) (\d{2}):(\d{2}):(\d{2}) (\S+) (sshd|sudo|useradd|usermod)(?:\[\d+\])?: (.*)$/);
+  const m = line.match(/^([A-Z][a-z]{2})\s+(\d{1,2}) (\d{2}):(\d{2}):(\d{2}) (\S+) (sshd|sudo|useradd|usermod|su)(\(pam_unix\))?(?:\[\d+\])?: (.*)$/);
   if (!m || !MONTHS.includes(m[1])) return null;
   const time = new Date(year, MONTHS.indexOf(m[1]), +m[2], +m[3], +m[4], +m[5]);
-  const msg = m[8].trim();
+  const msg = m[9].trim();
   const base = { time, role: '', ip: '', target: m[6], detail: msg, raw: line };
+  const roleOf = (u: string) => (u === 'root' ? 'root' : 'user');
   let x;
+  // Old style "sshd(pam_unix)": in these logs it is the only line per failed login, so it counts as LOGIN_FAIL
+  if (m[8] && m[7] === 'sshd' && (x = msg.match(/^authentication failure;.*rhost=(\S+)(?:\s+user=(\S+))?/)))
+    return { ...base, user: x[2] ?? '', role: x[2] ? roleOf(x[2]) : 'unknown', ip: x[1], action: 'LOGIN_FAIL' };
+  if (m[7] === 'su') {
+    if ((x = msg.match(/session (opened|closed) for user (\S+)/))) return { ...base, user: x[2], role: roleOf(x[2]), action: x[1] === 'opened' ? 'SU_OPEN' : 'SU_CLOSE' };
+    return null;
+  }
   if (m[7] === 'sudo') {
     // user : ... USER=<runs as> ; COMMAND=<command>
     if ((x = msg.match(/^(\S+) : .*USER=(\S+) ; COMMAND=(.*)$/)))
@@ -82,7 +92,29 @@ function parseAuthLine(line: string, year: number): Omit<LogEvent, 'n' | 'flags'
     return { ...base, user: x[2], role: x[2] === 'root' ? 'root' : 'user', ip: x[3], action: 'LOGIN' };
   if ((x = msg.match(/session (opened|closed) for user (\S+)/)))
     return { ...base, user: x[2], role: x[2] === 'root' ? 'root' : 'user', action: x[1] === 'opened' ? 'SESSION_OPEN' : 'LOGOUT' };
+  // More sshd lines from real logs (Loghub OpenSSH_2k), so they are not just "SSHD"
+  if ((x = msg.match(/^Invalid user (\S*) from (\S+)/)))
+    return { ...base, user: x[1], role: 'unknown', ip: x[2], action: 'INVALID_USER' };
+  if ((x = msg.match(/^reverse mapping checking getaddrinfo for \S+ \[(\S+)\] failed - POSSIBLE BREAK-IN ATTEMPT/)))
+    return { ...base, user: '', ip: x[1], action: 'DNS_MISMATCH' };
+  if ((x = msg.match(/^(?:error: )?(?:Received disconnect from|Connection closed by) (\d[\d.:a-f]*)/i)))
+    return { ...base, user: '', ip: x[1], action: 'DISCONNECT' };
+  if ((x = msg.match(/^Did not receive identification string from (\S+)/)))
+    return { ...base, user: '', ip: x[1], action: 'NO_IDENT' };
+  // New style "pam_unix(sshd:auth)" comes with a "Failed password" line for the same try: context only, not counted twice
+  if ((x = msg.match(/^pam_unix\(sshd:auth\): authentication failure;.*rhost=(\S+)/)))
+    return { ...base, user: '', ip: x[1], action: 'PAM_AUTH_FAIL' };
   return { ...base, user: '', action: 'SSHD' };
+}
+
+// Apache error log: "[Sun Dec 04 04:47:44 2005] [error] [client 1.2.3.4] File does not exist: /var/www/html/x"
+function parseApacheErrorLine(line: string): Omit<LogEvent, 'n' | 'flags' | 'timeText'> | null {
+  const m = line.match(/^\[[A-Z][a-z]{2} ([A-Z][a-z]{2}) (\d{1,2}) (\d{2}):(\d{2}):(\d{2})(?:\.\d+)? (\d{4})\] \[([a-z:]+)\] (.*)$/);
+  if (!m || !MONTHS.includes(m[1])) return null;
+  const time = new Date(+m[6], MONTHS.indexOf(m[1]), +m[2], +m[3], +m[4], +m[5]);
+  const client = m[8].match(/\[client (\S+?)(?::\d+)?\]/);
+  const level = m[7].split(':').pop()!.toUpperCase();
+  return { time, user: '', role: 'web', ip: client?.[1] ?? '', action: `HTTPD_${level}`, target: 'apache', detail: m[8].slice(0, 300), raw: line };
 }
 
 // Apache / Nginx access log (common + combined format):
@@ -109,7 +141,13 @@ export function parseLog(text: string, year = new Date().getFullYear()): ParseRe
     if (!line) continue;
     if (line.startsWith('#')) { notes.push(line.replace(/^#\s*/, '')); continue; }
     if (/^time,user,role/i.test(line)) continue; // CSV header
-    const ev = parseErpLine(line) ?? parseAuthLine(line, year) ?? parseAccessLine(line);
+    // syslog "message repeated N times: [ ... ]" = the same line N times (capped at 50)
+    const rep = line.match(/^(.*?: )message repeated (\d+) times: \[\s*(.*?)\s*\]$/);
+    if (rep) {
+      const inner = parseAuthLine(rep[1] + rep[3], year);
+      if (inner) { for (let i = 0; i < Math.min(+rep[2], 50); i++) rows.push({ ...inner, raw: line }); continue; }
+    }
+    const ev = parseErpLine(line) ?? parseAuthLine(line, year) ?? parseAccessLine(line) ?? parseApacheErrorLine(line);
     if (ev) rows.push(ev); else unparsed.push(line);
   }
 
