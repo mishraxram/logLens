@@ -57,20 +57,26 @@ Conflicts found:
 | 3 | 01:40 | P2 | UI research: 29 pack sites + indiepage + 39 Marc Lou sites + Stalkr full page (docs/ui-research/) | done | 27/29 opened (wcag22 403, m3 404 redirect); googe.com timed out | 900a8e7, 07402a9 |
 | 4 | 01:46 | P5 | UI slice 1: compact case summary + mini MITRE strip + chain stepper + status icons + 01-04 empty steps | done | check-fold 1366x768 chain 458-712 (was 651-964); npm run check 0; e2e 360/1366/1920 PASS | e1bfc71 |
 | 5 | 01:55 | P5 | UI slice 2: blinking-eye logo (F7 part) | done | blink test 17 frames, reduced motion 1 frame; e2e 360/1366/1920 PASS | 9d3d445 |
+| 6 | 01:57 | P5 | F15 docs AI story = Llama primary | done | grep: no Gemini-primary text left in TECH_STACK/PITCH/DEFENSE/TEAM/README | 51a07e4 |
+| 7 | 01:58 | P5 | F0 blocked attempt = medium, not Impact | done | check-chain: ERP chain Initial Access > Credential Access > Impact (#15,#16) > Stealth | 6bff19e |
+| 8 | 02:01 | P5 | F4 phone layout + timeline filter chips | done | 360: verdict 266-450 (was 1956); e2e new steps PASS 360/1366/1920 | 616cba5 |
+| 9 | 02:06 | P5 | F3 parser + F2 real Loghub sample | done | Loghub: OpenSSH SSHD 1480->275, Linux 0->849 events, Apache error 0->2000 | e39d990 |
+| 10 | 02:08 | P5 | dark mode (F7 rest) | done | contrast all >= 4.5:1 computed; fold 1366 dark 458-712 | 0735e66 |
+| 11 | 02:13 | P6 | audit: Lighthouse, eval, keyboard, report | done | docs/UI_UPGRADE_REPORT.md; eval 16/17; LH desktop 100x4, mobile 83/83/99 local | (this commit) |
 
 ## Backlog (seed from LOOP-MASTER 4.2 + 9.1; re-ranked in P3)
 | rank | id | item | rubric line | impact | effort | status |
 |---|---|---|---|---|---|---|
-| 0 | F15 | AI story = open-weight Llama primary in TECH_STACK, PITCH, DEFENSE, DEMO_SCRIPT, TEAM (stale Gemini-primary text) | Tech Stack, Presentation, open-weight rule | H | S | todo |
-| 1 | F0 | denied action = blocked attempt (medium), not Impact; group repeated reasons (D5, D6) | Prototype, Domain | H | S | todo |
-| 2 | F2 | real-data mode: Loghub sample button + README real-data table (D14) | Prototype, Domain | H | S | todo (data in tests/loghub) |
-| 3 | F3 | parser: Invalid user, POSSIBLE BREAK-IN, pam_unix rhost, message repeated, Apache error log (D2-D4) | PS1, Prototype | H | S-M | todo |
+| 0 | F15 | AI story = open-weight Llama primary in TECH_STACK, PITCH, DEFENSE, DEMO_SCRIPT, TEAM (stale Gemini-primary text) | Tech Stack, Presentation, open-weight rule | H | S | done 51a07e4 |
+| 1 | F0 | denied action = blocked attempt (medium), not Impact; group repeated reasons (D5, D6) | Prototype, Domain | H | S | done 6bff19e |
+| 2 | F2 | real-data mode: Loghub sample button + README real-data table (D14) | Prototype, Domain | H | S | done e39d990 |
+| 3 | F3 | parser: Invalid user, POSSIBLE BREAK-IN, pam_unix rhost, message repeated, Apache error log (D2-D4) | PS1, Prototype | H | S-M | done e39d990 |
 | 4 | F1 | linear-time rules + Web Worker parse with progress (D1, D13) | Prototype | H | S-M | todo |
 | 5 | F8 | redact users/IPs before AI (D12) | Domain, Stack | M | M | todo |
-| 6 | F4 | mobile: sticky verdict bar + tabs (D7); 360 page still 8,702 px | Prototype | H | M | todo (next) |
+| 6 | F4 | mobile: sticky verdict bar + tabs (D7); 360 page still 8,702 px | Prototype | H | M | done 616cba5 |
 | 7 | F5 | attack story card + actor chips filter (D10) | PS2, Prototype | H | M | todo |
 | 8 | F6 | events-per-minute strip + actor graph, plain SVG (D10) | PS2/PS3 | H | M | todo |
-| 9 | F7 | new brand mark (brand/) + dark mode (D9, D11) | Presentation | M | S | logo done 9d3d445; dark mode todo |
+| 9 | F7 | new brand mark (brand/) + dark mode (D9, D11) | Presentation | M | S | done (logo 9d3d445, dark 0735e66) |
 | 10 | F9 | star + note on events -> report + ledger | PS5, PS6 | M | S | todo |
 | 11 | F10 | case bundle ZIP + "verify yourself" sha256sum | PS4, PS5 | M | M | todo |
 | 12 | F11 | rules as data + rules page | Stack, Domain | M | M | todo |

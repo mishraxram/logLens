@@ -7,6 +7,7 @@
 - 01:09 **16/17**. Case 2 still fails: Llama said "suspicious" for the normal faculty log, capped to "unsure"; the test expects "normal". Not changed in the test: open decision.
 - Same session (on branch `avinya-final`, with the case-file UI redesign): `npm run check` exit 0, `node scripts/e2e.ts` PASS at 360 px and 1280 px (0 console errors, label "AI: open-weight Llama 3.1 8B (Meta, Llama licence) on Cloudflare Workers AI").
 - 01:14 **live preview** (Worker version 33bbb466, alias https://llama-loglens-v2.loglens.workers.dev, Gemini key present as backup; production not changed): `node tests/eval.ts <preview>/api/analyze` **16/17**, same case 2 fail ("unsure", expected "normal"). Probes on cases 1, 2, 3: every answer came from `@cf/meta/llama-3.1-8b-instruct-fast` (Gemini backup not used). `node scripts/e2e.ts` on the preview PASS at 360 px and 1280 px (0 console errors, receipt valid, cross-check shown, Llama label).
+- 02:10 after the parser/rules changes (F0, F3), local, Llama only: **16/17**, same case 2 fail. No rule assertion broke.
 - Honest note: the 8B model is weaker than Gemini on "normal" logs (over-calls); the caps turn that into "unsure" instead of a false alarm.
 
 **All live v2 runs on 22 Oct 2026 (17 cases from 22:32; 16 before), `node tests/eval.ts` against https://loglens-v2.loglens.workers.dev:**
