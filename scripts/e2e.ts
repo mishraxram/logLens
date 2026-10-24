@@ -63,9 +63,9 @@ async function main() {
 
   await js(`document.getElementById('ai').click()`);
   step(await waitFor(`document.getElementById('aiOut').textContent.trim().length > 40`, 12000), 'AI summary (live or labelled offline) shown');
-  if (await js(`/AI generated \\(/.test(document.getElementById('aiOut').textContent)`)) // offline label says "Not AI generated"
+  if (await js(`/AI: (open-weight|Gemini)/.test(document.getElementById('aiOut').textContent)`)) // live label; offline says "Not AI generated"
     step(await js(`/Cross-check: AI vs rules/.test(document.getElementById('aiOut').textContent)`), 'AI vs rules cross-check shown');
-  steps.push('     AI label: ' + (await js(`(document.getElementById('aiOut').textContent.match(/AI generated \\([^)]*\\)|offline[^.]*/i) || ['?'])[0]`)));
+  steps.push('     AI label: ' + (await js(`(document.getElementById('aiOut').textContent.match(/AI: (open-weight|Gemini)[^.]*|offline[^.]*/i) || ['?'])[0]`)));
 
   await js(`document.getElementById('verify').click()`);
   step(await waitFor(`/MATCH/.test(document.getElementById('verifyOut').textContent)`, 4000), 'verify -> MATCH');

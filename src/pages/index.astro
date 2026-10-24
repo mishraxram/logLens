@@ -14,7 +14,7 @@ const samples = [
       <p class="kicker mb-1">ABCS-02 · AI-assisted digital forensics</p>
       <h1 class="font-cond font-bold text-2xl sm:text-3xl leading-tight">Find who changed what. Prove the log was not touched.</h1>
     </div>
-    <p class="text-sm text-muted max-w-md">Rules flag events, AI explains them, a SHA-256 hash with a signed server receipt seals the evidence.</p>
+    <p class="text-sm text-muted max-w-md">Rules flag events, open-weight AI (Llama 3.1 8B by Meta, Llama licence) explains them, a SHA-256 hash with a signed server receipt seals the evidence.</p>
   </header>
 
   <!-- Case strip: which evidence is open and its integrity state (filled by showLocker) -->
@@ -111,7 +111,7 @@ const samples = [
             </div>
             <button id="ai" type="button" class="btn btn-primary">Analyze with AI</button>
           </div>
-          <p class="text-xs text-muted mt-2">Only the parsed event lines (max 200) go to Google Gemini and Cloudflare Workers AI. Raw files stay in your browser.</p>
+          <p class="text-xs text-muted mt-2">AI: open-weight Llama 3.1 8B (Meta, Llama licence), run on Cloudflare Workers AI; Google Gemini only as a backup if Llama fails. Only the parsed event lines (max 200) are sent. Raw files stay in your browser.</p>
           <p id="aiMsg" class="text-sm mt-2" aria-live="polite"></p>
           <div id="aiOut" class="mt-3"></div>
         </div>
@@ -154,7 +154,7 @@ const samples = [
   import { parseLog } from '../lib/parse.ts';
   import { applyRules, ruleVerdict } from '../lib/rules.ts';
   import { lockEvidence, verifyEvidence, getEvidence, getAudit, audit, clearCase, now, verifyAuditChain, lockFile, tamperAuditForDemo, getOriginal, changedLines, setReceipt } from '../lib/evidence.ts';
-  import { buildReport } from '../lib/report.ts';
+  import { buildReport, aiLabel } from '../lib/report.ts';
   import { MITRE, mitreUrl } from '../lib/mitre.ts';
   import { buildChains } from '../lib/chain.ts';
   import { crossCheck } from '../lib/crosscheck.ts';
@@ -392,7 +392,7 @@ const samples = [
 
   type AiResult = { source: string; verdict: string; hidden_patterns?: { events: number[]; text: string }[]; model?: string; adjusted?: string; summary: string; indicators: { events: number[]; text: string }[]; confidence: string; next_steps: string[] };
 
-  // Ask the server (which asks Gemini and Workers AI). On any failure, fall back to a summary built from the rules.
+  // Ask the server (Llama on Workers AI first, Gemini as backup). On any failure, fall back to a summary built from the rules.
   async function analyze() {
     if (!last || !last.events.length) { $('aiMsg').textContent = 'Build a timeline first.'; return; }
     const lang = (document.querySelector('input[name=lang]:checked') as HTMLInputElement).value;
@@ -443,7 +443,7 @@ const samples = [
   function showAi(r: AiResult) {
     const out = $('aiOut'); out.replaceChildren();
     const label = r.source === 'ai'
-      ? `AI generated (${r.model?.startsWith('@cf/') ? 'Cloudflare Workers AI' : 'Gemini'} · ${r.model}). Can be wrong: check the cited events.`
+      ? `${aiLabel(r.model)}. AI generated, can be wrong: check the cited events.`
       : 'Offline summary from rules (AI unavailable). Not AI generated.';
     out.append(el('p', `text-xs mb-3 inline-block px-2 py-1 rounded ${r.source === 'ai' ? 'bg-tag/30' : 'bg-ink/10'}`, label));
     if (r.confidence === 'low' || r.verdict === 'unsure')

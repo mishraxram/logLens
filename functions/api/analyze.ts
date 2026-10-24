@@ -1,6 +1,7 @@
 // POST /api/analyze  -> asks an AI model for an investigation summary.
-// Two providers: Gemini (secret GEMINI_API_KEY) first, Cloudflare Workers AI (binding AI, v2 Worker only)
-// as a backup if Gemini is slow. One valid answer inside 8s is returned; keys stay on the server.
+// PRIMARY: open-weight Llama 3.1 8B (Meta, Llama licence) on Cloudflare Workers AI (binding AI).
+// OPTIONAL backup: Gemini (secret GEMINI_API_KEY), only if Llama fails or is slow. Remove the secret to turn it off.
+// One valid answer inside 8s is returned; keys stay on the server.
 import { investigationPrompt, type AiEvent } from '../../src/lib/prompts.ts';
 
 type WorkersAi = { run: (model: string, input: object) => Promise<any> };
@@ -8,14 +9,14 @@ type Env = { GEMINI_API_KEY?: string; GEMINI_MODEL?: string; AI?: WorkersAi };
 
 const MAX_EVENTS = 200;
 const TIMEOUT_MS = 8000;
-// Raced in parallel (step 2); Gemini models are sometimes busy or slow, so we keep three
+// Open-weight model. Checked 25 Oct against the Workers AI JSON mode docs: the only bigger open model
+// with JSON mode is llama-3.3-70b-instruct-fp8-fast, but it costs ~6x the neurons and used up the free
+// daily allowance (10,000 neurons) in one evening on 22 Oct. So the 8B "fast" variant stays.
+const LLAMA = '@cf/meta/llama-3.1-8b-instruct-fast';
+// Backup Gemini models, raced in parallel; they are sometimes busy or slow, so we keep three
 const MODELS = ['gemini-flash-lite-latest', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'];
-// Workers AI models with JSON mode (listed in the Workers AI JSON mode docs).
-// Backup only (see step 2). The 70b model was dropped on 22 Oct: it used up the free daily
-// Workers AI allowance (10,000 neurons) in one evening of testing.
-const CF_FAST = '@cf/meta/llama-3.1-8b-instruct-fast';
-const BACKUP_START_MS = 2500;
-const BACKUP_GRACE_MS = 1500;
+const BACKUP_START_MS = 4000; // Gemini starts only if Llama has no answer after 4s
+const BACKUP_GRACE_MS = 1000; // a Gemini answer waits for Llama until 1s before the deadline
 
 // Check one AI reply and clean it. Throws (with a readable message) if it cannot be used.
 function clean(ai: any, events: AiEvent[], lang: string) {
@@ -68,16 +69,23 @@ async function workersAi(ai: WorkersAi, model: string, prompt: string, events: A
     messages: [{ role: 'user', content: prompt }],
     response_format: { type: 'json_object' },
     temperature: 0.2,
-    max_tokens: 900,
+    max_tokens: 1400, // 900 cut the JSON short once (eval case 2, 25 Oct)
   });
   const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('AI took longer than 8s')), deadline - Date.now()));
   const out: any = await Promise.race([call, timeout]);
   const reply = typeof out?.response === 'string' ? JSON.parse(out.response) : out?.response;
   const result = clean(reply, events, lang);
-  // The small backup model over-calls "incident" (eval case 5). Without any HIGH rule flag it may say at most "suspicious".
-  if (model === CF_FAST && result.verdict === 'incident' && !events.some((e) => e.flags.some((f) => f.startsWith('HIGH:')))) {
-    result.verdict = 'suspicious'; result.confidence = 'low';
-    result.adjusted = 'Backup model said "incident" without any high-risk rule flag, so it is shown as "suspicious".';
+  // The 8B model over-calls (eval cases 5 and 16). Applies to every Workers AI answer, now that Llama is primary:
+  // - no HIGH rule flag -> at most "suspicious"
+  // - no rule flag at all -> at most "unsure" (the page then tells the investigator what to collect next)
+  const anyFlag = events.some((e) => e.flags.length);
+  const anyHigh = events.some((e) => e.flags.some((f) => f.startsWith('HIGH:')));
+  const said = result.verdict;
+  if (!anyFlag && (said === 'incident' || said === 'suspicious')) result.verdict = 'unsure';
+  else if (!anyHigh && said === 'incident') result.verdict = 'suspicious';
+  if (result.verdict !== said) {
+    result.confidence = 'low';
+    result.adjusted = `Llama 3.1 8B said "${said}" without ${anyFlag ? 'any high-risk' : 'any'} rule flag, so it is shown as "${result.verdict}".`;
   }
   return { model, ...result };
 }
@@ -97,25 +105,25 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   const lang = body.lang === 'hi' ? 'hi' : 'en';
   if (!env.GEMINI_API_KEY && !env.AI) return Response.json({ source: 'none', error: 'AI not configured' });
 
-  // 2. Gemini starts at once. Whole thing must finish in 8s.
-  //    The Workers AI backup starts only if Gemini has not answered after 2.5s (saves the free daily
-  //    Workers AI allowance). Gemini is preferred: the backup's answer is used only if Gemini still has
-  //    nothing 1.5s before the deadline (the small model over-calls "incident").
+  // 2. Llama (open-weight) starts at once. Whole thing must finish in 8s.
+  //    Gemini (optional backup) starts only if Llama failed or has no answer after 4s. Llama is preferred:
+  //    a Gemini answer is used only if Llama still has nothing 1s before the deadline.
   const deadline = Date.now() + TIMEOUT_MS;
   const prompt = investigationPrompt(events, notes, lang);
-  const best = env.GEMINI_API_KEY
-    // All Gemini models at once (each has its own free quota); the first usable answer wins
-    ? Promise.any((env.GEMINI_MODEL ? [env.GEMINI_MODEL] : MODELS).map((m) => gemini(env.GEMINI_API_KEY!, [m], prompt, events, lang, deadline)))
-    : Promise.reject(new Error('Gemini not configured'));
+  const best = env.AI
+    ? workersAi(env.AI, LLAMA, prompt, events, lang, deadline)
+    : Promise.reject(new Error('Workers AI not configured'));
+  best.catch(() => {}); // handled below; avoids an "unhandled rejection" log
   const tries: Promise<any>[] = [best];
-  if (env.AI) {
-    const ai = env.AI;
+  if (env.GEMINI_API_KEY) {
+    const key = env.GEMINI_API_KEY;
     const waitFor = (ms: number) => new Promise((ok) => setTimeout(ok, Math.max(0, ms)));
     tries.push((async () => {
-      // Skip the backup if Gemini answers within the first 2.5s
-      const geminiFirst = await Promise.race([best.then(() => true, () => false), waitFor(env.GEMINI_API_KEY ? BACKUP_START_MS : 0).then(() => false)]);
-      if (geminiFirst) throw new Error('Backup not needed');
-      const r = await workersAi(ai, CF_FAST, prompt, events, lang, deadline);
+      // Skip the backup if Llama answers within the first 4s
+      const llamaFirst = await Promise.race([best.then(() => true, () => false), waitFor(env.AI ? BACKUP_START_MS : 0).then(() => false)]);
+      if (llamaFirst) throw new Error('Backup not needed');
+      // All Gemini models at once (each has its own free quota); the first usable answer wins
+      const r = await Promise.any((env.GEMINI_MODEL ? [env.GEMINI_MODEL] : MODELS).map((m) => gemini(key, [m], prompt, events, lang, deadline)));
       await Promise.race([waitFor(deadline - BACKUP_GRACE_MS - Date.now()), best.catch(() => {})]);
       return r;
     })());

@@ -1,5 +1,13 @@
 # TESTSET (all inputs are sample data we wrote)
 
+**25 Oct 2026: open-weight Llama 3.1 8B (`@cf/meta/llama-3.1-8b-instruct-fast`) is now the PRIMARY AI, Gemini only a backup.**
+`node tests/eval.ts http://localhost:8799/api/analyze` against local `wrangler dev` (Workers AI binding is remote; no Gemini key locally, so every AI answer below is Llama only):
+- 01:07 **15/17**. Case 2 failed: Llama JSON cut short ("Unterminated string", `max_tokens` 900). Case 16 failed: Llama said "suspicious" for a clean web log with zero rule flags.
+- Fixes: `max_tokens` 900 -> 1400; cap extended: with no rule flag at all Llama may say at most "unsure" (with no HIGH flag at most "suspicious", as before). Shown on the page as a note.
+- 01:09 **16/17**. Case 2 still fails: Llama said "suspicious" for the normal faculty log, capped to "unsure"; the test expects "normal". Not changed in the test: open decision.
+- Same session (on branch `avinya-final`, with the case-file UI redesign): `npm run check` exit 0, `node scripts/e2e.ts` PASS at 360 px and 1280 px (0 console errors, label "AI: open-weight Llama 3.1 8B (Meta, Llama licence) on Cloudflare Workers AI").
+- Honest note: the 8B model is weaker than Gemini on "normal" logs (over-calls). The live URL was not re-tested (not deployed yet).
+
 **All live v2 runs on 22 Oct 2026 (17 cases from 22:32; 16 before), `node tests/eval.ts` against https://loglens-v2.loglens.workers.dev:**
 22:18 15/16 · 22:25 15/16 · 22:32 17/17 · 22:36 16/17 (case 5: backup model said "incident" for a legit late admin; fixed 22:52 by sending rule severity and capping the backup) · 22:52 16/17 · 22:56 17/17 · 23:08 17/17 · 23:12 16/17 · 23:16 16/17 · 23:27 13/17 · 23:30 15/17 · 23:31 15/17 · 23:40 16/17.
 From 23:12 the free Workers AI daily allowance was used up, so only Gemini was left; all failures after 22:52 were the AI taking longer than 8 s or a Gemini 429 rate limit (the app then shows the labelled offline summary), not a wrong rule. Earlier v1 results (15 Oct, 16 cases): 16/16, 16/16, 15/16. Small self-written set: it shows the demo path is stable, not accuracy on real-world logs. AI answers can vary between runs.

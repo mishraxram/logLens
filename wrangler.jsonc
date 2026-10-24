@@ -15,7 +15,7 @@
   "d1_databases": [
     { "binding": "DB", "database_name": "loglens-audit", "database_id": "b8f8e4ca-0422-4455-8814-1e4bc9a672ab" }
   ],
-  // Cloudflare Workers AI (second AI provider, runs next to Gemini)
+  // Cloudflare Workers AI: primary AI (open-weight Llama 3.1 8B); Gemini is the backup
   "ai": { "binding": "AI" },
   // 20 AI calls per IP per minute (period must be 10 or 60 seconds)
   "ratelimits": [
