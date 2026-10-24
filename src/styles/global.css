@@ -146,6 +146,54 @@ label:has(input.sr-only:focus-visible) { outline: 3px solid var(--color-tag); ou
   .seg label:has(input:focus-visible) { outline: 3px solid var(--color-tag); outline-offset: -3px; }
 }
 
+@layer components {
+  /* Case summary: verdict + key numbers in one card, so the first laptop screen shows verdict and chain */
+  .case-sum { background: var(--color-sheet); border: 1px solid var(--color-line); border-radius: 14px; overflow: hidden; }
+  .case-sum .verdict { border: 0; border-radius: 0; padding: .85rem 1.1rem .8rem 1.45rem; }
+  .case-sum .verdict::before { border-radius: 0; }
+  .case-sum .verdict .headline { font-size: 1.3rem; }
+  @media (min-width: 1024px) { .case-sum .verdict .headline { font-size: 1.45rem; } }
+  .case-sum .meter { margin-top: .55rem; height: 8px; }
+  .case-sum .kpis { gap: 0; border-top: 1px solid var(--color-line); }
+  .case-sum .kpi { border: 0; border-radius: 0; box-shadow: none; padding: .5rem 1rem; background: transparent; }
+  .case-sum .kpi + .kpi { box-shadow: inset 1px 0 0 var(--color-line); }
+  .case-sum .kpi dd { font-size: 1.5rem; }
+  .case-sum .kpi.is-bad { background: rgba(180,35,24,.05); }
+
+  /* Status icon in front of a level word (colour is never the only signal) */
+  .pill-ico { display: inline-block; margin-right: .35rem; font-size: .8em; }
+
+  /* Mini MITRE stage strip: one dot per tactic stage, filled = reached in this case */
+  .stage-strip { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem .75rem; margin-top: .55rem; }
+  .stage-strip .dots { display: inline-flex; gap: .3rem; }
+  .stage-strip .dots span { width: .7rem; height: .7rem; border-radius: 50%; border: 2px solid #9AA3A0; background: transparent; }
+  .stage-strip .dots span.is-hit { border-color: var(--color-flag); background: var(--color-flag); box-shadow: 0 0 0 2px rgba(180,35,24,.18); }
+
+  /* Actor chip (account / IP) */
+  .entity { display: inline-flex; align-items: center; min-height: 26px; padding: 0 .5rem; border: 1px solid var(--color-line); border-radius: 6px; background: #fff; font-size: .8rem; font-weight: 600; }
+
+  /* Chain step number and one-line reason */
+  .step-n { display: inline-grid; place-items: center; width: 1.3rem; height: 1.3rem; border-radius: 50%; background: var(--color-ink); color: var(--color-sheet); font-size: .7rem; font-weight: 700; flex: none; }
+  .clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+  @media (max-width: 1023px) { .clamp-1 { -webkit-line-clamp: 3; } }
+  .chain li { padding: .45rem .65rem; }
+
+  /* Empty state: numbered steps on one rail (01-04) */
+  .steps { list-style: none; padding: 0; display: grid; gap: 1rem; position: relative; }
+  .steps li { position: relative; padding-left: 3rem; }
+  .steps li .n { position: absolute; left: 0; top: 0; font-family: var(--font-mono); font-size: .8rem; font-weight: 600; color: var(--color-ink);
+    width: 2.1rem; height: 2.1rem; display: grid; place-items: center; border: 1px solid var(--color-line); border-radius: 50%; background: var(--color-sheet); }
+  .steps li + li::before { content: ""; position: absolute; left: 1.05rem; top: -1rem; height: 1rem; width: 1px; background: var(--color-tag); }
+  @media (min-width: 900px) {
+    .steps { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .steps li { padding: 2.9rem 0 0; }
+    .steps li + li::before { left: -1rem; top: 1.05rem; width: calc(1rem + 0px); height: 1px; }
+  }
+}
+
+/* Once a case is open, the page intro steps aside (the case strip names the evidence) */
+body:has(#result:not(.hidden)) .page-head { display: none; }
+
 /* A case result slides in once, like a sheet (skipped when the user asks for less motion) */
 @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 #result:not(.hidden) > * { animation: rise .28s ease both; }

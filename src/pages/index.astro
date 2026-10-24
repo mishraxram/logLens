@@ -9,10 +9,11 @@ const samples = [
 ];
 ---
 <Base>
-  <header class="mb-4 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+  <!-- Page intro: hidden once a case is open, so the verdict and chain fit the first laptop screen -->
+  <header class="page-head mb-4 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
     <div>
       <p class="kicker mb-1">ABCS-02 · AI-assisted digital forensics</p>
-      <h1 class="font-cond font-bold text-2xl sm:text-3xl leading-tight">Find who changed what. Prove the log was not touched.</h1>
+      <h1 class="font-cond font-bold text-2xl sm:text-3xl leading-tight">Find who changed what.<span class="block text-muted">Prove the log was not touched.</span></h1>
     </div>
     <p class="text-sm text-muted max-w-md">Rules flag events, open-weight AI (Llama 3.1 8B by Meta, Llama licence) explains them, a SHA-256 hash with a signed server receipt seals the evidence.</p>
   </header>
@@ -88,17 +89,18 @@ const samples = [
     <div>
       <section id="result" class="hidden space-y-5">
         <div id="notes"></div>
-        <div>
+        <!-- Case summary: verdict, key numbers and a mini MITRE stage strip in one card -->
+        <div class="case-sum">
           <div id="verdict" class="verdict"></div>
-          <dl id="kpis" class="kpis mt-3"></dl>
-          <p id="stats" class="text-sm text-muted mt-2"></p>
+          <dl id="kpis" class="kpis"></dl>
         </div>
+        <p id="stats" class="text-xs text-muted !mt-2"></p>
 
         <!-- Attack chain: flagged events linked by shared IP / account, in MITRE ATT&CK tactic stages -->
-        <div id="chainPanel" class="panel p-4 lg:p-5 hidden">
-          <div class="panel-h"><h2>Attack chain</h2><span class="kicker">MITRE ATT&amp;CK</span></div>
-          <p class="text-xs text-muted mt-1">Flagged events joined when they share an IP or an account, then put in MITRE ATT&CK tactic order of first appearance. Built by rules, not AI.</p>
-          <div id="chains" class="mt-3 space-y-4"></div>
+        <div id="chainPanel" class="panel p-4 hidden">
+          <div class="panel-h !mb-2 !pb-2"><h2>Attack chain</h2><span class="kicker">MITRE ATT&amp;CK · built by rules, not AI</span></div>
+          <p class="sr-only">Flagged events joined when they share an IP or an account, then put in MITRE ATT&CK tactic order of first appearance.</p>
+          <div id="chains" class="space-y-3"></div>
         </div>
 
         <!-- AI investigation summary -->
@@ -140,11 +142,13 @@ const samples = [
         <p class="kicker mb-2">Start here</p>
         <h2 class="font-cond font-bold text-2xl mb-2">No case open yet</h2>
         <p class="text-ink/80 max-w-prose">Pick “ERP marks tampering” on the left to watch a 2 AM marks change come apart event by event, or paste your own log.</p>
-        <dl class="mt-5 grid gap-3 sm:grid-cols-3">
-          <div class="border-t-2 border-ink pt-2"><dt class="font-semibold">Timeline + rules</dt><dd class="text-sm text-muted">Every event in time order. Suspicious ones are flagged with a reason and a MITRE ATT&amp;CK ID.</dd></div>
-          <div class="border-t-2 border-ink pt-2"><dt class="font-semibold">AI summary</dt><dd class="text-sm text-muted">English or Hindi, cross-checked against the rules. If the AI is down, an offline rule summary shows instead.</dd></div>
-          <div class="border-t-2 border-tag pt-2"><dt class="font-semibold">Evidence seal</dt><dd class="text-sm text-muted">SHA-256 tag, signed server receipt, and a verify button that says MATCH or TAMPERED.</dd></div>
-        </dl>
+        <!-- How a case flows, as numbered steps on one rail -->
+        <ol class="steps mt-5">
+          <li><span class="n">01</span><p class="font-semibold">Open the log</p><p class="text-sm text-muted">ERP audit CSV, Linux auth.log or Apache/Nginx access log. It is hashed (SHA-256) the moment it opens.</p></li>
+          <li><span class="n">02</span><p class="font-semibold">Rules flag events</p><p class="text-sm text-muted">16 explainable rules, each with a reason and a MITRE ATT&amp;CK ID; flagged events are joined into an attack chain.</p></li>
+          <li><span class="n">03</span><p class="font-semibold">Open-weight AI explains</p><p class="text-sm text-muted">Llama 3.1 8B writes the story in English or Hindi, cross-checked against the rules. AI down: a labelled rule summary shows.</p></li>
+          <li><span class="n">04</span><p class="font-semibold">Seal and verify</p><p class="text-sm text-muted">Signed server receipt, then verify the same file again: MATCH or TAMPERED, with the changed line.</p></li>
+        </ol>
       </section>
     </div>
   </div>
@@ -156,7 +160,7 @@ const samples = [
   import { lockEvidence, verifyEvidence, getEvidence, getAudit, audit, clearCase, now, verifyAuditChain, lockFile, tamperAuditForDemo, getOriginal, changedLines, setReceipt } from '../lib/evidence.ts';
   import { buildReport, aiLabel } from '../lib/report.ts';
   import { MITRE, mitreUrl } from '../lib/mitre.ts';
-  import { buildChains } from '../lib/chain.ts';
+  import { buildChains, STAGES } from '../lib/chain.ts';
   import { crossCheck } from '../lib/crosscheck.ts';
   import { sealOnServer, checkReceipt, getInvestigator, setInvestigator } from '../lib/ledger.ts';
   import { extractChanges, STATUS_TEXT } from '../lib/changes.ts';
@@ -501,9 +505,14 @@ const samples = [
 
     // Verdict banner: the first thing a judge reads
     const verdict = $('verdict');
+    // Status = colour + icon + word, never colour alone
+    const ICON: Record<string, string> = { 'is-high': '▲', 'is-med': '●', 'is-ok': '✓', '': '?' };
     const setVerdict = (cls: string, level: string, headline: string) => {
       verdict.className = `verdict ${cls}`;
-      verdict.replaceChildren(el('p', 'level', level), el('p', 'headline', headline));
+      const lv = el('p', 'level', level);
+      lv.prepend(el('span', 'pill-ico', ICON[cls]));
+      lv.firstElementChild!.setAttribute('aria-hidden', 'true');
+      verdict.replaceChildren(lv, el('p', 'headline', headline));
     };
     if (events.length === 0) {
       setVerdict('', 'Unsupported input', 'Not a supported log. Use ERP audit CSV, Linux auth.log or Apache/Nginx access log, or try a sample.');
@@ -534,22 +543,43 @@ const samples = [
     const chainBox = $('chains'); chainBox.replaceChildren();
     for (const c of chains.slice(0, 3)) {
       const box = el('div', '');
-      box.append(el('p', 'text-sm', `Actors linked: ${[...c.ips.map((i) => `IP ${i}`), ...c.users.map((u) => `account ${u}`)].join(', ')}`));
+      // Actors as chips: account and IP, each with a type label
+      const actors = el('p', 'flex flex-wrap items-center gap-1.5 text-sm');
+      actors.append(el('span', 'text-muted', 'Actors linked:'));
+      c.users.forEach((u) => actors.append(el('span', 'entity', `account ${u}`)));
+      c.ips.forEach((i) => actors.append(el('span', 'entity font-mono', `IP ${i}`)));
+      box.append(actors);
       const ol = el('ol', 'chain mt-2');
-      for (const st of c.steps) {
+      c.steps.forEach((st, i) => {
         const li = el('li', '');
         const a = el('a', 'mitre-chip !ml-0', st.tactic) as HTMLAnchorElement;
         a.href = `https://attack.mitre.org/tactics/${st.tactic}/`; a.target = '_blank'; a.rel = 'noopener'; a.title = `MITRE ATT&CK tactic ${st.tactic}: ${st.name}`;
         const head = el('span', 'flex flex-wrap items-center gap-x-2 gap-y-1');
-        head.append(el('span', 'font-semibold', st.name), a);
+        head.append(el('span', 'step-n', String(i + 1)), el('span', 'font-semibold leading-tight', st.name), a);
+        const why = el('span', 'text-xs text-ink/75 mt-0.5 clamp-1', st.reasons.join(', '));
+        why.title = st.reasons.join(', ');
         li.append(head,
-          el('span', 'block font-mono text-xs text-muted mt-1', `from ${st.from.slice(11) || st.from}`),
-          el('span', 'block font-mono text-xs font-semibold mt-0.5', st.events.map((n) => `#${n}`).join(' ')),
-          el('span', 'block text-xs text-ink/75 mt-0.5', st.reasons.join(', ')));
+          el('span', 'block font-mono text-xs mt-1', `${st.from.slice(11, 16) || st.from} · ${st.events.map((n) => `#${n}`).join(' ')}`),
+          why);
         ol.append(li);
-      }
+      });
       box.append(ol);
       chainBox.append(box);
+    }
+    // Mini stage strip in the case summary: all tactic stages in order, the ones this case reached are filled
+    if (chains.length) {
+      const hit = new Set(chains.flatMap((c) => c.steps.map((s) => s.tactic)));
+      const strip = el('div', 'stage-strip');
+      strip.append(el('span', 'text-xs font-semibold', 'Attack chain'));
+      const dots = el('span', 'dots');
+      for (const s of STAGES) {
+        const d = el('span', hit.has(s.tactic) ? 'is-hit' : '');
+        d.title = `${s.name} (${s.tactic})${hit.has(s.tactic) ? ': reached' : ''}`;
+        dots.append(d);
+      }
+      dots.setAttribute('aria-hidden', 'true');
+      strip.append(dots, el('span', 'text-xs text-muted', `${hit.size} of ${STAGES.length} MITRE stages reached`));
+      verdict.append(strip);
     }
 
     // Change register
@@ -570,7 +600,8 @@ const samples = [
     for (const c of changes) {
       const li = el('li', `rounded-lg border p-3 ${c.status === 'unauthorized' ? 'border-flag/50 bg-flag/5' : 'border-line'}`);
       const head = el('div', 'flex flex-wrap items-center gap-2');
-      head.append(el('span', `text-xs font-semibold rounded px-2 py-0.5 ${chip[c.status]}`, STATUS_TEXT[c.status]),
+      const ico: Record<string, string> = { unauthorized: '▲ ', suspicious: '● ', blocked: '⊘ ', normal: '✓ ' };
+      head.append(el('span', `text-xs font-semibold rounded px-2 py-0.5 ${chip[c.status]}`, ico[c.status] + STATUS_TEXT[c.status]),
         el('span', 'font-mono text-sm font-semibold', c.timeText), el('span', 'font-mono text-xs text-muted', `#${c.n}`));
       li.append(head);
       li.append(el('p', 'mt-1', `${c.user}${c.role ? ` (${c.role})` : ''} from ${c.ip || 'unknown IP'}: ${c.action} ${c.target}`));
@@ -595,6 +626,8 @@ const samples = [
       li.append(top, el('p', 'font-mono text-xs text-ink/70 break-all mt-0.5', `${e.target} ${e.detail}`));
       for (const f of e.flags) {
         const p = el('p', `mt-1 text-sm ${f.severity === 'high' ? 'text-flag font-semibold' : 'text-ink'}`, f.reason);
+        p.prepend(el('span', 'pill-ico', f.severity === 'high' ? '▲ ' : '● '));
+        p.firstElementChild!.setAttribute('aria-hidden', 'true');
         // MITRE ATT&CK chip(s): standard name for the technique this flag points to
         for (const t of MITRE[f.code] ?? []) {
           const a = el('a', 'mitre-chip', t.id) as HTMLAnchorElement;
