@@ -6,7 +6,8 @@
 - Fixes: `max_tokens` 900 -> 1400; cap extended: with no rule flag at all Llama may say at most "unsure" (with no HIGH flag at most "suspicious", as before). Shown on the page as a note.
 - 01:09 **16/17**. Case 2 still fails: Llama said "suspicious" for the normal faculty log, capped to "unsure"; the test expects "normal". Not changed in the test: open decision.
 - Same session (on branch `avinya-final`, with the case-file UI redesign): `npm run check` exit 0, `node scripts/e2e.ts` PASS at 360 px and 1280 px (0 console errors, label "AI: open-weight Llama 3.1 8B (Meta, Llama licence) on Cloudflare Workers AI").
-- Honest note: the 8B model is weaker than Gemini on "normal" logs (over-calls). The live URL was not re-tested (not deployed yet).
+- 01:14 **live preview** (Worker version 33bbb466, alias https://llama-loglens-v2.loglens.workers.dev, Gemini key present as backup; production not changed): `node tests/eval.ts <preview>/api/analyze` **16/17**, same case 2 fail ("unsure", expected "normal"). Probes on cases 1, 2, 3: every answer came from `@cf/meta/llama-3.1-8b-instruct-fast` (Gemini backup not used). `node scripts/e2e.ts` on the preview PASS at 360 px and 1280 px (0 console errors, receipt valid, cross-check shown, Llama label).
+- Honest note: the 8B model is weaker than Gemini on "normal" logs (over-calls); the caps turn that into "unsure" instead of a false alarm.
 
 **All live v2 runs on 22 Oct 2026 (17 cases from 22:32; 16 before), `node tests/eval.ts` against https://loglens-v2.loglens.workers.dev:**
 22:18 15/16 · 22:25 15/16 · 22:32 17/17 · 22:36 16/17 (case 5: backup model said "incident" for a legit late admin; fixed 22:52 by sending rule severity and capping the backup) · 22:52 16/17 · 22:56 17/17 · 23:08 17/17 · 23:12 16/17 · 23:16 16/17 · 23:27 13/17 · 23:30 15/17 · 23:31 15/17 · 23:40 16/17.
