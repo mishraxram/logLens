@@ -7,6 +7,7 @@
 **Backup ka backup:** recorded demo video (phone + laptop dono mein rakho)
 
 "Bolo" wali lines apne shabdon mein bolo, ratna nahi hai. English lines `docs/PITCH.md` mein hain.
+**Hack Day video (< 5 min):** timing aur lines `docs/PITCH.md` section 0 mein hain. Usme "Real SSH server log" (asli Loghub data) aur Llama label bhi dikhana hai.
 
 ---
 
@@ -30,7 +31,7 @@ Splunk ya Timesketch jaise tools ke liye server aur training chahiye. College IT
 **Dikhao:** laal "High risk" banner → **Attack chain** box → timeline ki laal lines aur unke **T1110.001** jaise chips.
 **Bolo:** "Ek click mein timeline ban gayi. 16 rules ne gadbad pakdi, aur har flag ke saath MITRE ATT&CK ka standard ID hai.
 Attack chain dikhata hai ki ek IP aur do accounts (21cs045, prof.verma) ke events jud ke ek kahani banate hain:
-password guessing → naye IP se login → marks badle → audit log delete. Ye sab rules hain, AI nahi."
+naye IP se login → password guessing → marks badle → audit log delete. Ye sab rules hain, AI nahi."
 
 ## Step 3: Kisne kya badla (0:55 - 1:10)
 **Karo:** **Changes made** box mein ek laal "Unauthorized" card dikhao.
