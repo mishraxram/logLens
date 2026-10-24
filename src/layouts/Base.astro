@@ -31,7 +31,11 @@ const { title = 'LogLens', current = 'desk', description = 'AI-assisted digital 
     <header class="appbar">
       <div class="max-w-6xl mx-auto px-4 flex items-center gap-3 min-h-14">
         <a href="/" class="flex items-center gap-2 font-cond font-bold text-xl tracking-wide no-underline">
-          <svg aria-hidden="true" width="26" height="26" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="#E3A72F"/><circle cx="14" cy="14" r="7" fill="none" stroke="#1B1F24" stroke-width="3"/><path d="M19 19l7 7" stroke="#1B1F24" stroke-width="3" stroke-linecap="round"/></svg>
+          <!-- Logo: a magnifier with an eye that blinks every 5 s (still under prefers-reduced-motion) -->
+          <picture>
+            <source media="(prefers-reduced-motion: reduce)" srcset="/brand/loglens-mark-dark-still.svg" />
+            <img src="/brand/loglens-mark-dark.svg" alt="" width="38" height="38" class="w-[38px] h-[38px]" />
+          </picture>
           LogLens
         </a>
         <span class="hidden sm:inline text-sm text-[#9AA3AB] border-l border-white/20 pl-3">AI-assisted digital forensics console</span>

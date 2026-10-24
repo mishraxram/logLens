@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="t">
+  <title id="t">LogLens</title>
+  <style>.shut { opacity: 0; }</style>
+  <defs>
+    <clipPath id="lens"><circle cx="54" cy="54" r="35"/></clipPath>
+    <clipPath id="almond"><path d="M24 54 C 36 34, 72 34, 84 54 C 72 74, 36 74, 24 54 Z"/></clipPath>
+  </defs>
+  <!-- handle -->
+  <path d="M80 80 L110 110" stroke="#1B1F24" stroke-width="15" stroke-linecap="round"/>
+  <path d="M84 84 L106 106" stroke="#E3A72F" stroke-width="5" stroke-linecap="round"/>
+  <!-- lens glass -->
+  <circle cx="54" cy="54" r="35" fill="#FBFBF8"/>
+  <g clip-path="url(#lens)">
+    <!-- faint log lines behind the eye: the thing being examined -->
+    <g stroke="#CDD2CB" stroke-width="3" stroke-linecap="round">
+      <path d="M22 28 H70"/><path d="M22 80 H62"/><path d="M30 88 H78"/>
+    </g>
+    <!-- closed lid, shown only at the blink -->
+    <path class="shut" d="M26 55 C 38 66, 70 66, 82 55" fill="none" stroke="#1B1F24" stroke-width="4.5" stroke-linecap="round"/>
+    <path class="shut" d="M40 62 L37 68 M54 64 V71 M68 62 L71 68" stroke="#1B1F24" stroke-width="3" stroke-linecap="round"/>
+    <!-- the eye (blinks) -->
+    <g class="lid">
+      <path d="M24 54 C 36 34, 72 34, 84 54 C 72 74, 36 74, 24 54 Z" fill="#FFFFFF" stroke="#1B1F24" stroke-width="4" stroke-linejoin="round"/>
+      <g clip-path="url(#almond)">
+        <g class="iris">
+          <circle cx="54" cy="54" r="13" fill="#E3A72F"/>
+          <circle cx="54" cy="54" r="13" fill="none" stroke="#B07A12" stroke-width="2"/>
+          <circle cx="54" cy="54" r="6" fill="#1B1F24"/>
+          <circle class="glint" cx="58" cy="50" r="2.4" fill="#FFFFFF"/>
+        </g>
+      </g>
+    </g>
+  </g>
+  <!-- lens rim -->
+  <circle cx="54" cy="54" r="35" fill="none" stroke="#1B1F24" stroke-width="8"/>
+  <!-- red seal dot: evidence flagged -->
+  <circle cx="83" cy="25" r="7" fill="#B42318" stroke="#FBFBF8" stroke-width="3"/>
+</svg>

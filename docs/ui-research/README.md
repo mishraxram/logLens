@@ -74,3 +74,12 @@ heroes with gradients, testimonial avatars and star ratings (we have no real use
 Screenshots: `shots/loglens-after1-1366.jpg`, `shots/loglens-after1-1920.jpg`.
 Checks: `npm run check` exit 0; `node scripts/e2e.ts` PASS at 360, 1366 and 1920 px, 0 console errors.
 Not tested: dark mode (not built yet), Lighthouse, keyboard tab-through, real phone / iOS Safari, screen reader.
+
+## Slice 2: blinking-eye logo (25 Oct 01:55)
+- App bar: 38 px dark-variant mark; empty state: 96 px mark; new favicon (old one moved to `_trash/favicon-old.svg`).
+- Files from the pack (`brand/`) were read first: no script, no links, CSS animation only. Served from `public/brand/`.
+- Blink test (headless Chrome, 40 clips of the logo over 5 s): **17 distinct frames** = it animates.
+  With `prefers-reduced-motion: reduce` the SVG's own media query did NOT stop it inside `<img>` (16 frames), so a
+  `<picture>` swaps in a still copy (`*-still.svg`): **1 distinct frame** = stopped.
+- `npm run check` exit 0; e2e PASS at 360, 1366, 1920 (0 console errors). Screenshot: `shots/loglens-after2-empty-1366.jpg`.
+- Round 2 crawl end: `googe.com` = **Unverified: khul nahi payi** (net::ERR_CONNECTION_TIMED_OUT); `virallybot.com` opened (title only, not reviewed).

@@ -139,6 +139,11 @@ const samples = [
       </section>
 
       <section id="empty" class="panel p-5 lg:p-8">
+        <!-- Blinking-eye logo; a still version when the user asks for less motion -->
+        <picture>
+          <source media="(prefers-reduced-motion: reduce)" srcset="/brand/loglens-mark-still.svg" />
+          <img src="/brand/loglens-mark.svg" alt="" width="96" height="96" class="w-20 h-20 lg:w-24 lg:h-24 mb-3" />
+        </picture>
         <p class="kicker mb-2">Start here</p>
         <h2 class="font-cond font-bold text-2xl mb-2">No case open yet</h2>
         <p class="text-ink/80 max-w-prose">Pick “ERP marks tampering” on the left to watch a 2 AM marks change come apart event by event, or paste your own log.</p>
