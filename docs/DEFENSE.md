@@ -8,7 +8,7 @@ Is file ko judging se pehle 2 baar padho. Jawab ratne nahi hain, matlab samajhna
 1. **Do pages:** `/` (forensics desk) aur `/cases` (dashboard). Dono browser mein chalte hain.
 2. **Browser khud kaam karta hai:** log padhta hai, 16 rules chalata hai (har ek ke saath MITRE ID), attack chain banata hai, aur SHA-256 banata hai. Asli file computer se bahar nahi jaati.
 3. **Ek Cloudflare Worker** (`worker/index.ts`) pages bhi deta hai aur API bhi. Har response pe security headers (CSP) lagata hai, rate limit aur size limit rakhta hai.
-4. **AI ke liye** browser sirf events ki lines `/api/analyze` ko bhejta hai. Server 3 Gemini models ek saath chalata hai; Gemini 2.5 s mein na aaye to Cloudflare Workers AI backup. 8 s mein kuch na aaye to rules wala offline summary.
+4. **AI ke liye** browser sirf events ki lines `/api/analyze` ko bhejta hai. Server pehle open-weight Llama 3.1 8B (Cloudflare Workers AI) chalata hai; Llama fail ho ya 4 s mein na aaye to Gemini backup. 8 s mein kuch na aaye to rules wala offline summary.
 5. **Signed receipt:** lock hote hi browser hash `/api/seal` ko bhejta hai. Server time + secret key se HMAC signature + pichhli receipt se chain, sab D1 (SQLite) mein. Browser ke paas key nahi hai, isliye receipt nakli nahi ban sakti.
 6. **Report (HTML/PDF)** browser banata hai: hash, receipt, MITRE, attack chain, AI summary, audit trail, poori timeline.
 
@@ -25,7 +25,7 @@ Is file ko judging se pehle 2 baar padho. Jawab ratne nahi hain, matlab samajhna
 | `src/lib/chain.ts` | Attack chain: jo flagged events ek IP ya account share karte hain unhe jodta hai (union-find), aur MITRE tactic stages mein rakhta hai. |
 | `src/lib/crosscheck.ts` | AI vs rules: dono sahmat hain ya nahi, AI ne kaun se high-risk events miss kiye, kaun se sirf AI ne bataye. |
 | `src/lib/prompts.ts` | AI ko jaane wala prompt. Log text ko "untrusted data" mark karta hai (prompt injection se bachav). |
-| `functions/api/analyze.ts` | Server: input check, Gemini x3 race + Workers AI backup (8 s limit), galat event number wale points hatana, galat bhasha reject, backup model ka "incident" bina HIGH flag ke "suspicious". |
+| `functions/api/analyze.ts` | Server: input check, Llama 3.1 8B primary + Gemini backup (8 s limit), galat event number wale points hatana, galat bhasha reject, Llama ka "incident" bina HIGH flag ke "suspicious", bina kisi flag ke "unsure". |
 | `functions/api/seal.ts` | Signed receipts: HMAC-SHA256, hash chain, D1 table `receipts` (prev_hash UNIQUE, taaki do receipts ek saath aayein to chain na toote). `/api/ledger` har row dobara check karta hai. |
 | `src/lib/ledger.ts` | Browser se receipt maangna aur check karna; investigator ka naam. |
 | `worker/index.ts` | Routes, CSP + security headers, rate limit, 413/415. |
@@ -39,7 +39,7 @@ Is file ko judging se pehle 2 baar padho. Jawab ratne nahi hain, matlab samajhna
 ## 3. Demo ke time andar kya hota hai (8 steps, dono ko aana chahiye)
 1. **Sample dabaya** → SHA-256 bana → sealed copy rakhi → `/api/seal` se signed receipt aayi → audit trail mein entries.
 2. **Timeline bani** → `parse.ts` 19 events → `rules.ts` flags + MITRE chips → `chain.ts` attack chain → `changes.ts` "Changes made".
-3. **"Analyze with AI"** → 200 tak events server ko → Gemini x3 + (2.5 s baad) Workers AI → jawab check → verdict, indicators, "beyond the rules", next steps → browser mein cross-check box.
+3. **"Analyze with AI"** → 200 tak events server ko → Llama 3.1 8B (+ 4 s baad Gemini backup) → jawab check → verdict, indicators, "beyond the rules", next steps → browser mein cross-check box.
 4. **"Check server receipt"** → `/api/seal?id=` → server signature dobara banata hai aur chain link check karta hai → RECEIPT VALID.
 5. **Ek digit badla, "Verify"** → naya hash alag → TAMPERED → badli line dikhi → server pe bhi VERIFIED_TAMPERED entry.
 6. **"Restore original"** → sealed copy wapas → MATCH.
@@ -68,8 +68,11 @@ Taaki asli file computer se bahar na jaye. Browser ka Web Crypto standard hai, a
 **6. Sirf 200 events AI ko kyun?**
 Prompt chhota rahe, jawab jaldi aaye aur kharcha kam ho. Flagged events pehle bhejte hain, to zaroori wale kabhi nahi chhoot-te.
 
-**7. Gemini ke itne models kyun?**
-Build ke time kuch models busy the ya 5-9 second le rahe the. Isliye 3 "flash-lite" models ek saath race karte hain, pehla sahi jawab jeet-ta hai; 2.5 s tak koi na aaye to Workers AI backup bhi chalta hai. Sab 8 second ke andar, warna labelled offline summary.
+**7. Kaunsa AI model, aur open-weight kyun?**
+Primary model open-weight Llama 3.1 8B (Meta) hai, Cloudflare Workers AI pe. "Open-weight" matlab model ke weights public hain (Llama 3.1 Community Licence); yeh OSI open-source licence nahi hai, isliye hum "open-source" nahi bolte. Gemini sirf backup hai: Llama fail ho ya 4 s tak jawab na de tab chalta hai. Sab 8 second ke andar, warna labelled offline summary.
+
+**7b. 8B model chhota hai, bharosa kaise?**
+Rules uski nigrani karte hain: koi HIGH rule flag na ho to woh "incident" nahi bol sakta (max "suspicious"); koi flag hi na ho to max "unsure". Har point ko asli event number cite karna padta hai, warna hata dete hain. Eval 25 Oct: 16/17 (apne sample set pe; real-world accuracy ka claim nahi).
 
 **8. API key kahan hai?**
 Sirf Cloudflare ke secret mein aur local `.dev.vars` file mein, jo GitHub pe nahi jaati. Browser ko key kabhi nahi dikhti.
@@ -105,12 +108,12 @@ Judge kamzori pooche to chhupao mat. Seedha bolo "ye limitation hai, aage hum ye
 4. **Receipt kya prove karti hai.** "Sirf itna ki ye hash is server pe is time pe record hua. File kisne banayi, ye nahi."
 5. **Rules ke numbers fixed** (2 min mein 5 galat password, 06-23 working hours). "Aage organisation apne hisaab se set karegi."
 6. **Test set chhota, khud banaya.** "17 cases stability dikhate hain, real-world accuracy nahi."
-7. **Free AI quotas.** "Gemini aur Workers AI free tier pe hain. Dono slow hon to labelled offline summary."
+7. **Free AI quotas.** "Workers AI (Llama) aur Gemini backup free tier pe hain. Dono slow hon to labelled offline summary."
 
 ---
 
 ## 6. AI tools ka sach (koi pooche to seedha bolo)
-"Code Sagar ne Claude Code (AI coding assistant) ke saath likha: Claude ne zyada code likha, Sagar ne problem, scope, rules ka design aur test cases decide kiye, aur har change ko build, eval aur browser test se check kiya. App ke andar summary Gemini aur Cloudflare Workers AI likhte hain. Krishraj presentation aur demo karte hain."
+"Code Sagar ne Claude Code (AI coding assistant) ke saath likha: Claude ne zyada code likha, Sagar ne problem, scope, rules ka design aur test cases decide kiye, aur har change ko build, eval aur browser test se check kiya. App ke andar summary open-weight Llama 3.1 8B (Cloudflare Workers AI) likhta hai; Gemini sirf backup hai. Krishraj presentation aur demo karte hain."
 
 ---
 

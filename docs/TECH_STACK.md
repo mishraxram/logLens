@@ -10,8 +10,9 @@
  │ chain.ts   -> attack chain        │           │  - rate limit, 413 / 415 checks                │
  │ evidence.ts-> SHA-256 (Web Crypto)│           │                                                │
  │            local hash-chained log │ /api/analyze│ functions/api/analyze.ts                     │
- │ report.ts  -> HTML / PDF report   │──────────▶│  Gemini flash-lite x3 (raced) ──▶ Google API    │
- │ crosscheck.ts -> AI vs rules      │           │  Workers AI llama-3.1-8b (backup after 2.5 s)   │
+ │ report.ts  -> HTML / PDF report   │──────────▶│  PRIMARY: open-weight Llama 3.1 8B (Workers AI) │
+ │ crosscheck.ts -> AI vs rules      │           │  backup: Gemini flash-lite (only if Llama fails │
+ │                                   │           │  or is slow after 4 s; off without its key)    │
  │                                   │           │  checks: real event numbers, language, verdict │
  │                                   │ /api/seal │ functions/api/seal.ts                          │
  │ ledger.ts  -> signed receipt      │──────────▶│  HMAC-SHA256 (secret) + hash chain ──▶ D1 SQLite│
@@ -29,8 +30,9 @@ and server time go to the ledger.
 | Web Crypto `crypto.subtle` | SHA-256 of evidence, HMAC-SHA256 receipts | Built into every browser and the Worker; no crypto library to trust or update |
 | Cloudflare Worker | Pages + API in one deploy | No server to maintain, HTTPS by default, free tier, runs close to the user |
 | Cloudflare D1 (SQLite) | Server evidence ledger | The PS suggests SQLite/PostgreSQL; D1 is SQLite with no server to run. UNIQUE(prev_hash) keeps the hash chain linear |
-| Google Gemini flash-lite | Investigation summary (EN / Hindi) | Free tier, JSON output mode, good Hindi |
-| Cloudflare Workers AI (llama-3.1-8b-instruct-fast) | Backup AI when Gemini is slow | Runs inside Cloudflare, no extra key; JSON mode supported (Workers AI docs) |
+| **Open-weight Llama 3.1 8B (Meta, Llama licence)** on Cloudflare Workers AI (`@cf/meta/llama-3.1-8b-instruct-fast`) | PRIMARY investigation summary (EN / Hindi) | Open-weight model (weights public under the Llama 3.1 Community Licence; not an OSI open-source licence); runs inside Cloudflare, no extra key; JSON mode. The bigger 70B open model costs ~6x the neurons (Workers AI pricing page, checked 25 Oct) |
+| Google Gemini flash-lite | Optional backup only | Starts only if Llama fails or has no answer after 4 s; off when no `GEMINI_API_KEY` is set |
+| Rule guard on the AI | Caps the 8B model's verdict | Small model over-calls: without a HIGH rule flag it may say at most "suspicious", without any flag at most "unsure" (eval cases 5, 16) |
 | Rules in TypeScript | 16 detections | Explainable, instant, work offline; the AI is checked against them |
 
 ## Versus the suggested stack (Python, Pandas, Scikit-learn, NLP, YARA, SQLite/PostgreSQL, FastAPI, React)
@@ -41,10 +43,11 @@ and server time go to the ledger.
 | Pandas / Scikit-learn | Rules in TypeScript + LLM summary | + explainable, works in the browser, no training data needed. − no learned anomaly model; we have no labelled college log dataset to train one honestly |
 | SQLite / PostgreSQL | D1 (SQLite) | Same SQL model; − one region-primary database, fine at college scale |
 | YARA | Not used | YARA is for file/malware patterns; our input is logs. Possible next step for uploaded files |
-| NLP | LLM (Gemini / Llama) | Handles Hinglish notes and Hindi output without our own NLP pipeline |
+| NLP | Open-weight LLM (Llama 3.1 8B), Gemini backup | Handles Hinglish notes and Hindi output without our own NLP pipeline |
 
 ## Scale and limits
 - Browser parses up to 2 MB logs (case 11: 4,999 events parsed and flagged in about 14 ms locally).
 - AI sees at most 200 events per request (flagged first); 8 s budget, then the labelled offline summary.
-- Free tiers: Gemini per-minute limits (429 seen when 17 calls fired back to back), Workers AI 10,000 neurons/day.
+- Free tiers: Workers AI 10,000 neurons/day (the primary Llama model), Gemini per-minute limits for the backup (429 seen when 17 calls fired back to back).
+- Llama 3.1 8B eval (25 Oct, docs/TESTSET.md): 16/17 on the live preview; the one fail is "unsure" on a normal log where "normal" was expected.
 - Latency and cost numbers above are what we measured on 22 Oct; they are not guarantees.

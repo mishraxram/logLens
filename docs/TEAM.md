@@ -17,7 +17,7 @@ Both must be able to explain the 8-step flow in docs/DEFENSE.md and say the hone
 | Problem + research | ABCS-02 needs, existing tools, Indian law (BSA s.63, CERT-In), MITRE mapping | docs/PROBLEM.md, docs/RESEARCH-DEEP.md |
 | Detection rules | 16 rules, attack chain, change register | src/lib/rules.ts, src/lib/chain.ts, src/lib/changes.ts |
 | Evidence integrity | SHA-256, local hash chain, signed server receipts (D1) | src/lib/evidence.ts, functions/api/seal.ts |
-| AI | Prompt, Gemini + Workers AI backup, checks on the AI answer, injection guard | src/lib/prompts.ts, functions/api/analyze.ts |
+| AI | Prompt, open-weight Llama 3.1 8B (Workers AI) primary + Gemini backup, checks and verdict caps on the AI answer, injection guard | src/lib/prompts.ts, functions/api/analyze.ts |
 | Backend + security | Worker routes, CSP, rate limit, size limits | worker/index.ts, wrangler.jsonc |
 | UI | Main desk, cases dashboard | src/pages/index.astro, src/pages/cases.astro |
 | Testing | eval (17 cases), rules / hash / chain / report / seal / browser checks | tests/eval.ts, scripts/*.ts |
@@ -28,7 +28,7 @@ Both must be able to explain the 8-step flow in docs/DEFENSE.md and say the hone
   checked every result, ran the demo, and can explain each file above.
 - **Claude Code (AI coding assistant):** wrote most of the code and docs under my direction; every change was
   checked with the build, the eval and the browser test before it was kept.
-- **Gemini / Workers AI:** only inside the app, to write the investigation summary.
+- **Llama 3.1 8B (open-weight, Workers AI) and Gemini (backup):** only inside the app, to write the investigation summary.
 
 ## Judge question: "Who did what?"
 "Sagar built it and answers the technical side; Krishraj presents and owns the story and the demo. On the

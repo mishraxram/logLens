@@ -26,7 +26,7 @@ After an incident (example: college ERP marks changed at 2 AM), a college IT or 
 ## How to run (3 commands, from a clean clone)
 ```bash
 npm install
-cp .env.example .dev.vars        # put GEMINI_API_KEY and SEAL_SECRET in .dev.vars (both optional)
+cp .env.example .dev.vars        # put SEAL_SECRET (and optional GEMINI_API_KEY for the backup AI) in .dev.vars
 npm start                        # build + local D1 table + local Worker
 ```
 Open http://localhost:8787. Without keys everything works except the AI summary (offline rules summary instead) and server receipts (local hash only).
