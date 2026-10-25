@@ -70,6 +70,7 @@ label:has(input.sr-only:focus-visible) { outline: 3px solid var(--color-tag); ou
   /* Segmented control: Desk | Cases */
   .segnav { display: inline-flex; padding: 3px; gap: 2px; background: rgba(255,255,255,.09); border-radius: 10px; }
   .navlink { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 76px; padding: 0 .9rem; border-radius: 8px; color: #B9C0C7; font-weight: 600; font-size: .95rem; text-decoration: none; }
+  @media (max-width: 359px) { .navlink { min-width: 64px; padding: 0 .6rem; } }
   .navlink:hover { color: #fff; }
   .navlink[aria-current="page"] { color: var(--color-ink); background: var(--color-tag); }
 

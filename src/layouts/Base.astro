@@ -33,14 +33,15 @@ const { title = 'LogLens', current = 'desk', description = 'AI-assisted digital 
   <body class="font-sans min-h-screen flex flex-col">
     <!-- App bar: frosted, sticky, the same on every page; Desk | Cases is a segmented control -->
     <header class="appbar">
-      <div class="max-w-[1400px] mx-auto px-4 lg:px-6 flex items-center gap-3 min-h-14">
-        <a href="/" class="flex items-center gap-2 font-cond font-bold text-xl tracking-wide no-underline">
+      <div class="max-w-[1400px] mx-auto px-4 lg:px-6 flex items-center gap-2 min-[360px]:gap-3 min-h-14">
+        <a href="/" class="flex shrink-0 items-center gap-2 font-cond font-bold text-xl tracking-wide no-underline">
           <!-- Logo: a magnifier with an eye that blinks every 5 s (still under prefers-reduced-motion) -->
-          <picture>
+          <picture class="shrink-0">
             <source media="(prefers-reduced-motion: reduce)" srcset="/brand/loglens-mark-dark-still.svg" />
             <img src="/brand/loglens-mark-dark.svg" alt="" width="38" height="38" class="w-[38px] h-[38px]" />
           </picture>
-          LogLens
+          <!-- Under 360px there is room for the mark, Desk | Cases and the theme switch only: the word stays for screen readers -->
+          <span class="max-[359px]:sr-only">LogLens</span>
         </a>
         <span class="hidden sm:inline text-sm text-[#9AA3AB] border-l border-white/20 pl-3">AI-assisted digital forensics console</span>
         <nav class="segnav ml-auto" aria-label="Main">
