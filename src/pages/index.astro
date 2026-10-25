@@ -620,6 +620,23 @@ const samples = [
     // Closed by the button or Esc: drop the "#intake" entry so the next Back is not swallowed by it
     else if (location.hash === '#intake') history.replaceState(null, '', location.pathname + location.search);
   }
+  // Section links (desktop case bar, phone tab bar): jump in script, not by the browser's anchor jump.
+  // scrollIntoView cancels a smooth scroll still running (opening a case scrolls to the result on phones),
+  // and a second pass after layout settles keeps the section at the top. The hash is replaced, not pushed,
+  // so Back still leaves the case instead of stepping through sections.
+  document.querySelectorAll<HTMLAnchorElement>('.secnav a, .casenav a').forEach((a) => a.addEventListener('click', (ev) => {
+    const target = document.querySelector<HTMLElement>(a.hash);
+    if (!target) return;
+    ev.preventDefault();
+    history.replaceState(history.state, '', location.pathname + location.search + a.hash);
+    target.scrollIntoView({ block: 'start' });
+    if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+    target.focus({ preventScroll: true });
+    setTimeout(() => {
+      const top = target.getBoundingClientRect().top;
+      if (top < 0 || top > 160) target.scrollIntoView({ block: 'start' });
+    }, 400);
+  }));
   $('stripEdit').addEventListener('click', () => {
     const open = !document.body.classList.contains('show-intake');
     setIntake(open);
