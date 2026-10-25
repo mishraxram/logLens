@@ -3,7 +3,7 @@ import Base from '../layouts/Base.astro';
 ---
 <Base wide current="cases" title="Cases dashboard · LogLens" description="Investigation dashboard: every evidence item sealed on the LogLens server, its status, investigator and a re-check of the signed, hash-chained ledger.">
   <header class="mb-5">
-    <p class="kicker mb-2">PS6 · investigation dashboard</p>
+    <p class="kicker mb-2">Evidence ledger · chain of custody</p>
     <h1 class="font-cond font-bold text-2xl sm:text-3xl leading-tight">Cases dashboard</h1>
     <p class="mt-2 max-w-2xl text-ink/80">Every evidence item sealed on the server, who handled it and its latest status. Each row is re-checked now: signature and chain link.</p>
     <p class="mt-2 max-w-2xl text-sm text-muted">Demo ledger: shared by everyone who uses this site, no login. A real deployment would put this page behind an access gate for authorised investigators only.</p>
@@ -87,7 +87,7 @@ import Base from '../layouts/Base.astro';
     }
     const bad = data.rows.filter((r) => !r.valid || !r.linkOk).length;
     $('chainState').textContent = data.intact ? `✓ Ledger intact: all ${data.rows.length} rows signed and chained correctly.` : `▲ LEDGER PROBLEM: ${bad} row(s) failed the signature or chain check.`;
-    $('chainState').className = `font-semibold px-2 py-1 rounded min-h-[3.5rem] sm:min-h-0 ${data.intact ? 'bg-match text-white' : 'bg-flag text-white'}`;
+    $('chainState').className = `font-semibold px-2 py-1 rounded min-h-[3.5rem] sm:min-h-0 ${data.intact ? 'ledger-ok' : 'ledger-bad'}`;
 
     // Ledger head = newest entry hash. Write it down (case notes, screenshot): if newest rows are ever deleted,
     // the head written down earlier will no longer be in the ledger. Row links alone cannot show a cut-off end.

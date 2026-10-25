@@ -465,8 +465,13 @@ h1 { font-weight: 650; }
 .strip[data-state="sealed"] .chip { background: #FEF7E6; color: #7A4E00; border-color: #F3D9A0; }
 .strip[data-state="match"] .chip { background: #ECFDF3; color: #11603A; border-color: #B7E4C7; }
 .strip[data-state="tampered"] .chip { background: #FEF2F2; color: #A3221A; border-color: #F5C2BD; }
-:root[data-theme="dark"] .strip[data-state] .chip { background: var(--soft); color: var(--color-ink); border-color: var(--color-line); }
+:root[data-theme="dark"] .strip[data-state="sealed"] .chip { background: color-mix(in srgb, var(--color-tag) 14%, transparent); color: var(--color-tag); border-color: color-mix(in srgb, var(--color-tag) 40%, transparent); }
+:root[data-theme="dark"] .strip[data-state="match"] .chip { background: color-mix(in srgb, var(--color-match) 14%, transparent); color: var(--color-match); border-color: color-mix(in srgb, var(--color-match) 40%, transparent); }
+:root[data-theme="dark"] .strip[data-state="tampered"] .chip { background: color-mix(in srgb, var(--color-flag) 16%, transparent); color: var(--color-flag); border-color: color-mix(in srgb, var(--color-flag) 45%, transparent); }
 .strip .dot { background: #A1A1AA; }
+.strip[data-state="sealed"] .dot { background: var(--color-tag); }
+.strip[data-state="match"] .dot { background: var(--color-match); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-match) 25%, transparent); }
+.strip[data-state="tampered"] .dot { background: var(--color-flag); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-flag) 30%, transparent); }
 .strip[data-state="sealed"] .dot { box-shadow: 0 0 0 3px rgba(217,154,30,.22); }
 .secnav a { color: var(--color-muted); font-weight: 550; min-height: 34px; }
 .secnav a:hover, .secnav a:focus-visible { background: var(--soft); color: var(--color-ink); }
@@ -479,7 +484,9 @@ h1 { font-weight: 650; }
 .verdict.is-high .level { background: #FEF2F2; color: #A3221A; border-color: #F5C2BD; }
 .verdict.is-med .level { background: #FEF7E6; color: #7A4E00; border-color: #F3D9A0; }
 .verdict.is-ok .level { background: #ECFDF3; color: #11603A; border-color: #B7E4C7; }
-:root[data-theme="dark"] .verdict .level { background: var(--soft) !important; color: var(--color-ink) !important; border-color: var(--color-line) !important; }
+:root[data-theme="dark"] .verdict.is-high .level { background: color-mix(in srgb, var(--color-flag) 14%, transparent); color: var(--color-flag); border-color: color-mix(in srgb, var(--color-flag) 40%, transparent); }
+:root[data-theme="dark"] .verdict.is-med .level { background: color-mix(in srgb, var(--color-tag) 14%, transparent); color: var(--color-tag); border-color: color-mix(in srgb, var(--color-tag) 40%, transparent); }
+:root[data-theme="dark"] .verdict.is-ok .level { background: color-mix(in srgb, var(--color-match) 14%, transparent); color: var(--color-match); border-color: color-mix(in srgb, var(--color-match) 40%, transparent); }
 .verdict .headline, .case-sum .verdict .headline { font-weight: 600; letter-spacing: -.025em; margin-top: .35rem; }
 .meter, .case-sum .meter { height: 6px; background: var(--soft); }
 .case-sum .kpi { padding: .7rem 1.1rem; }
@@ -491,7 +498,7 @@ h1 { font-weight: 650; }
 /* Attack chain: stage cards with a coloured top edge, technique IDs as badges */
 .chain li { border: 1px solid var(--color-line); border-radius: 10px; box-shadow: var(--shadow-sm); padding: .6rem .75rem; }
 .chain li::after { content: ""; position: absolute; top: -1px; left: 12px; width: 32px; height: 2px; border-radius: 0 0 2px 2px; background: var(--color-flag); }
-.chain li + li::before { color: #A1A1AA; }
+.chain li + li::before { color: var(--color-muted); }
 .step-n { background: var(--soft); color: var(--color-ink); border: 1px solid var(--color-line); font-weight: 600; }
 .mitre-chip { border-color: var(--color-line); background: var(--soft); color: var(--color-ink); border-radius: 6px; font-weight: 500; }
 .mitre-chip:hover, .mitre-chip:focus-visible { background: var(--color-ink); color: var(--color-sheet); border-color: var(--color-ink); }
@@ -516,7 +523,6 @@ h1 { font-weight: 650; }
 /* Sample cases: cards that lift on hover */
 .sample-card { background: var(--color-sheet); border-color: var(--color-line); border-radius: 10px; box-shadow: var(--shadow-sm); }
 .sample-card:hover { border-color: #D4D4D8; box-shadow: var(--shadow-md); transform: translateY(-1px); }
-:root[data-theme="dark"] .sample-card:hover { border-color: #3F3F46; }
 .sample-n { display: inline-block; justify-self: start; padding: 0 .4rem; border-radius: 5px; background: var(--soft); border: 1px solid var(--color-line); color: var(--color-muted); font-weight: 500; }
 :root[data-theme="dark"] .sample-n { color: var(--color-muted); }
 .sample-t { font-weight: 600; letter-spacing: -.01em; }
@@ -583,7 +589,7 @@ body::after { content: ""; position: fixed; z-index: -1; pointer-events: none; l
 /* Cards: hairline edge with a lit top, deep soft shadow in dark */
 .panel, .side-card, .intake, .case-sum, .rail, .strip { box-shadow: var(--shadow-md); }
 :root[data-theme="dark"] .panel, :root[data-theme="dark"] .side-card, :root[data-theme="dark"] .intake, :root[data-theme="dark"] .case-sum {
-  background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,0) 120px), var(--color-sheet); border-color: rgba(255,255,255,.07); }
+  box-shadow: var(--shadow-md); background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,0) 120px), var(--color-sheet); border-color: rgba(255,255,255,.07); }
 :root[data-theme="dark"] .appbar { background: rgba(6,8,11,.72); border-bottom-color: rgba(255,255,255,.06); }
 :root[data-theme="dark"] .strip { background: rgba(13,16,21,.82); border-color: rgba(255,255,255,.08); }
 
@@ -594,7 +600,7 @@ body::after { content: ""; position: fixed; z-index: -1; pointer-events: none; l
   border: 1px solid var(--color-line); background: color-mix(in srgb, var(--color-sheet) 80%, transparent); box-shadow: var(--shadow-sm); }
 .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-tag); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-tag) 25%, transparent); }
 .shiny { color: var(--color-muted); background: linear-gradient(110deg, var(--color-muted) 35%, var(--color-ink) 50%, var(--color-muted) 65%) 0 0 / 250% 100%;
-  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: shiny 3.5s linear infinite; }
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: shiny 3.5s linear 2; }
 @keyframes shiny { from { background-position: 150% 0; } to { background-position: -100% 0; } }
 
 /* Primary action: amber with a shimmer sweep on hover (the one action colour) */
@@ -622,7 +628,7 @@ body::after { content: ""; position: fixed; z-index: -1; pointer-events: none; l
 .case-sum { position: relative; }
 .case-sum:has(.verdict.is-high)::after { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none;
   background: conic-gradient(from var(--beam), transparent 0 70%, color-mix(in srgb, var(--color-flag) 60%, transparent) 82%, var(--color-flag) 90%, transparent 100%);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: beam 5s linear infinite; }
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: beam 5s linear 3; }
 @keyframes beam { to { --beam: 360deg; } }
 .case-sum:has(.verdict.is-high) { box-shadow: var(--shadow-md), 0 0 60px -20px var(--glow-red); }
 .kpi.is-bad dd { text-shadow: 0 0 22px var(--glow-red); }
@@ -633,7 +639,7 @@ body::after { content: ""; position: fixed; z-index: -1; pointer-events: none; l
 @container (min-width: 680px) {
   .chain::before { content: ""; position: absolute; left: 3%; right: 3%; top: 50%; height: 2px; transform: translateY(-50%);
     background: linear-gradient(90deg, transparent, var(--color-flag), transparent) 0 0 / 25% 100% no-repeat, color-mix(in srgb, var(--color-flag) 22%, transparent);
-    animation: trace 2.6s linear infinite; }
+    animation: trace 2.6s linear 3; }
   .chain li + li::before { content: ""; }
 }
 @keyframes trace { from { background-position: -25% 0, 0 0; } to { background-position: 125% 0, 0 0; } }
@@ -644,3 +650,34 @@ body::after { content: ""; position: fixed; z-index: -1; pointer-events: none; l
   .case-sum:has(.verdict.is-high)::after, .chain::before { animation: none !important; }
   .btn-primary::before { display: none; }
 }
+
+/* ---- Review fixes (5-agent review, 26 Oct) ---- */
+/* App bar is 57 px since the border went from 3 px to 1 px: sticky case bar and sidebar sit right under it */
+:root { --appbar-h: 57px; }
+@media (min-width: 1024px) {
+  .strip { top: var(--appbar-h); }
+  .case-aside { top: calc(var(--appbar-h) + 52px + 2rem); max-height: calc(100vh - var(--appbar-h) - 52px - 3rem); }
+  #result, #chainPanel, #aiPanel, #changesPanel, #timelinePanel, #intake { scroll-margin-top: calc(var(--appbar-h) + 52px + 2rem); }
+}
+/* Segmented controls: ink focus ring (the amber one was 2.4:1 on white) */
+.seg label:has(input:focus-visible) { outline: 2px solid var(--color-ink); outline-offset: -2px; }
+/* Narrow phones: icons in Desk | Cases would push the theme switch off screen */
+@media (max-width: 419px) { .navlink .ico { display: none; } }
+/* Phone tab bar: solid, no blur (cheaper scrolling, older Android GPUs) */
+@media (max-width: 1023px) { body:has(#result:not(.hidden)) .casenav { backdrop-filter: none; -webkit-backdrop-filter: none; } .casenav a { font-size: .78rem; } }
+/* Phone attack chain: one red rail on the left instead of arrows that hit the cards */
+@container (max-width: 679px) {
+  .chain { border-left: 2px solid color-mix(in srgb, var(--color-flag) 35%, transparent); padding-left: .75rem; }
+  .chain li + li::before { content: none; }
+}
+@media (max-width: 479px) { #chainPanel .panel-h .kicker { display: none; } }
+/* Shimmer stays under the button label */
+.btn-primary { isolation: isolate; }
+.btn-primary::before { z-index: -1; }
+/* Reduced motion: also stop the busy spinner (pseudo-elements are not matched by *) */
+@media (prefers-reduced-motion: reduce) { .btn[aria-busy]::after { animation: none; } *::before, *::after { animation: none !important; transition: none !important; } }
+@media (forced-colors: active) { .shiny { -webkit-text-fill-color: CanvasText; background: none; } }
+/* Cases: ledger state as a tinted status banner, not a solid slab */
+.ledger-ok, .ledger-bad { display: block; border: 1px solid; }
+.ledger-ok { color: var(--color-match); background: color-mix(in srgb, var(--color-match) 10%, transparent); border-color: color-mix(in srgb, var(--color-match) 40%, transparent); }
+.ledger-bad { color: var(--color-flag); background: color-mix(in srgb, var(--color-flag) 10%, transparent); border-color: color-mix(in srgb, var(--color-flag) 45%, transparent); }
