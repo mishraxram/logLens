@@ -15,6 +15,8 @@ const chrome = spawn('google-chrome', ['--headless=new', '--disable-gpu', '--no-
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const problems: string[] = [];
+const dialogs: string[] = [];
+let dialogAnswer = true;
 const steps: string[] = [];
 
 async function main() {
@@ -33,6 +35,8 @@ async function main() {
     const msg = JSON.parse(String(m.data));
     if (msg.id && waiting.has(msg.id)) { waiting.get(msg.id)!(msg.result); waiting.delete(msg.id); }
     if (msg.method === 'Runtime.exceptionThrown') problems.push('JS exception: ' + msg.params.exceptionDetails.exception?.description);
+    // "New case" asks before clearing: answer with whatever the test set in dialogAnswer, and remember that it asked
+    if (msg.method === 'Page.javascriptDialogOpening') { dialogs.push(msg.params.message); send('Page.handleJavaScriptDialog', { accept: dialogAnswer }); }
     if (msg.method === 'Runtime.consoleAPICalled' && msg.params.type === 'error') problems.push('console.error: ' + msg.params.args.map((a: any) => a.value ?? a.description).join(' '));
     if (msg.method === 'Log.entryAdded' && msg.params.entry.level === 'error') problems.push(`${msg.params.entry.source}: ${msg.params.entry.text}`);
   });
@@ -112,12 +116,22 @@ async function main() {
   // A failed check must not look like success anywhere: the progress strip shows it in red, not as a green tick
   step(await waitFor(`[...document.querySelectorAll('#progress li.is-bad')].some((l) => /Tampered/.test(l.textContent)) && ![...document.querySelectorAll('#progress li.is-done')].some((l) => /Verified/.test(l.textContent))`, 3000), 'progress strip shows "Tampered" in red, not a green "Verified"');
   step(await js(`!!document.getElementById('report') && !document.getElementById('report').disabled`), 'report button ready');
+  // Switching to another sample must not carry the previous case's TAMPERED result or timeline filter over
+  await js(`document.querySelector('input[name=tlf][value=high]').click()`);
+  await js(`document.querySelectorAll('[data-sample]')[1].click()`);
+  step(await waitFor(`document.getElementById('stripName').textContent === 'ssh-bruteforce.log' && document.getElementById('verifyOut').textContent.trim() === '' && document.querySelector('input[name=tlf]:checked').value === 'all'`, 6000), 'switching sample clears the old verify result and filter');
 
   // PS1: upload a real log file -> its metadata (type, last modified) is shown on the evidence tag
   await send('DOM.enable');
   const { root } = await send('DOM.getDocument');
   const { nodeId } = await send('DOM.querySelector', { nodeId: root.nodeId, selector: '#file' });
-  await js(`document.getElementById('newCase').click()`);
+  // New case: Cancel keeps the case; OK clears it (a confirm dialog must appear first)
+  dialogAnswer = false;
+  await js(`setTimeout(() => document.getElementById('newCase').click(), 0)`); await sleep(700);
+  step(dialogs.length === 1 && await js(`!document.getElementById('result').classList.contains('hidden')`), 'New case asks first; Cancel keeps the case');
+  dialogAnswer = true;
+  await js(`setTimeout(() => document.getElementById('newCase').click(), 0)`); await sleep(700);
+  step(dialogs.length === 2 && await js(`document.getElementById('result').classList.contains('hidden') && document.getElementById('caseStrip').dataset.state === 'none'`), 'New case -> OK clears the case');
   await send('DOM.setFileInputFiles', { nodeId, files: [join(process.cwd(), 'tests/cases/15-web-attack.log')] });
   step(await waitFor(`/15-web-attack\\.log/.test(document.getElementById('evName').textContent) && /file last modified/.test(document.getElementById('evName').textContent)`, 5000), 'file upload -> metadata on evidence tag');
 

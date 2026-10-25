@@ -222,15 +222,34 @@ const samples = [
     return n;
   }
 
+  // A new piece of evidence starts a clean view: the previous case's verify result, AI answer and timeline filter
+  // must not be shown against the new evidence (a stale "TAMPERED" would misreport its integrity)
+  function resetCaseView() {
+    lastVerify = null; lastAi = null;
+    $('verifyOut').replaceChildren(); $('aiOut').replaceChildren(); $('aiMsg').textContent = '';
+    const all = document.querySelector<HTMLInputElement>('input[name=tlf][value=all]'); if (all) all.checked = true;
+    setIntake(false);
+  }
+
   // Sample buttons: load the file into the box and run
   document.querySelectorAll<HTMLButtonElement>('.sample-btn').forEach((b) =>
     b.addEventListener('click', async () => {
-      const res = await fetch(b.dataset.sample!);
-      logBox.value = await res.text();
-      lastVerify = null;
+      let text = '';
+      try {
+        const res = await fetch(b.dataset.sample!);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        text = await res.text();
+      } catch (err) {
+        msg.textContent = `Could not load the sample (${(err as Error).message}). Check the connection and try again.`;
+        return;
+      }
+      msg.textContent = '';
+      logBox.value = text;
+      resetCaseView();
       await lockEvidence(b.dataset.sample!.split('/').pop()!, logBox.value);
       void sealNow('SEALED');
       run(true);
+      openedCase();
     }),
   );
 
@@ -244,18 +263,20 @@ const samples = [
     if (!isTextLog(f)) {
       if (f.size > 50_000_000) { msg.textContent = 'File too big (max 50 MB).'; return; }
       msg.textContent = 'Hashing file…';
+      resetCaseView();
       await lockFile(f);
       void sealNow('SEALED');
       msg.textContent = `${f.name} locked as evidence (not a text log, so no timeline).`;
-      $('verifyOut').replaceChildren(); lastVerify = null;
       showLocker();
       return;
     }
     if (f.size > 2_000_000) { msg.textContent = 'Log too big (max 2 MB).'; return; }
     logBox.value = await f.text();
+    resetCaseView();
     await lockEvidence(f.name, logBox.value, f);
     void sealNow('SEALED');
     run(true);
+    openedCase();
   });
 
   // ---- Evidence locker ----
@@ -427,10 +448,15 @@ const samples = [
     showLocker();
   });
 
+  // New case clears this browser's copy of the case (evidence tag, local audit trail): ask first.
+  // Receipts already on the server stay in the ledger; this does not touch them.
   $('newCase').addEventListener('click', () => {
-    clearCase(); lastAi = null; lastVerify = null; last = null;
-    logBox.value = ''; $('verifyOut').replaceChildren(); $('aiOut').replaceChildren(); $('aiMsg').textContent = '';
+    if (getEvidence() && !confirm('Start a new case?\n\nThis clears the current evidence and its local audit trail in this browser. Receipts already sealed on the server stay in the ledger.')) return;
+    clearCase(); resetCaseView(); last = null;
+    logBox.value = ''; msg.textContent = '';
     $('result').classList.add('hidden'); showLocker();
+    setIntake(true);
+    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
   });
 
   showLocker(); // restore a case saved in this browser
@@ -551,10 +577,32 @@ const samples = [
   }
 
   // Phone: "Change case" in the case strip shows the intake form again
+  // Case selection <-> open case. The button names where it goes; Esc and the browser Back button also return to the case.
+  function setIntake(open: boolean) {
+    document.body.classList.toggle('show-intake', open);
+    const b = $('stripEdit');
+    b.textContent = open ? '← Back to case' : 'Change case';
+    b.setAttribute('aria-expanded', String(open));
+    if (open) $('intake').scrollIntoView({ block: 'start' });
+    // Closed by the button or Esc: drop the "#intake" entry so the next Back is not swallowed by it
+    else if (location.hash === '#intake') history.replaceState(null, '', location.pathname + location.search);
+  }
   $('stripEdit').addEventListener('click', () => {
-    document.body.classList.toggle('show-intake');
-    if (document.body.classList.contains('show-intake')) $('intake').scrollIntoView({ block: 'start' });
+    const open = !document.body.classList.contains('show-intake');
+    setIntake(open);
+    if (open) history.pushState({ intake: true }, '', location.pathname + location.search + '#intake');
   });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.body.classList.contains('show-intake') && !$('result').classList.contains('hidden')) setIntake(false);
+  });
+  window.addEventListener('popstate', () => {
+    // Back from case selection returns to the case (the case itself is kept)
+    if (document.body.classList.contains('show-intake') && location.hash !== '#intake') setIntake(false);
+  });
+  // Opening a case from case selection: drop the "#intake" history entry so Back does not re-open the list
+  function openedCase() {
+    if (location.hash === '#intake') history.replaceState(null, '', location.pathname + location.search);
+  }
 
   async function run(scrollToResult = false) {
     const text = logBox.value;
@@ -736,7 +784,7 @@ const samples = [
       list.append(d);
     }
     $('result').classList.remove('hidden');
-    document.body.classList.remove('show-intake');
+    setIntake(false);
     await audit('TIMELINE_BUILT', `${events.length} events · ${v.high} high · ${v.medium} medium · ${parsed.unparsed.length} not understood`);
     showLocker();
     // On phones the result is below the input: bring it into view after a new case
