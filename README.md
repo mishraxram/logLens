@@ -109,8 +109,8 @@ phone / dark UI; the list with commits is in [docs/MASTER_LOG.md](docs/MASTER_LO
 git history before the 25 Oct 2026 cleanup (commit 636c098). The AI-assisted workflow loop is `docs/ai-workflow/LOOP-MASTER.md`.
 
 ## Team
-SOLAR FLARES: **Sagar Mishra** (builder, B.Tech CSE) and **Krishraj Shukla**
-([@krishrajshukla-eng](https://github.com/krishrajshukla-eng), presenter). Roles and the human vs AI-tool split:
+SOLAR FLARES: **Rameshvar Mishra** (builder, B.Tech CSE) , **harshit Prajapati** and **Krishraj Shukla**
+([@krishrajshukla-eng](https://github.com/krishrajshukla-eng), ). Roles and the human vs AI-tool split:
 [docs/TEAM.md](docs/TEAM.md). Contributions welcome: [CONTRIBUTING.md](CONTRIBUTING.md) · security: [SECURITY.md](SECURITY.md).
 
 ## License
