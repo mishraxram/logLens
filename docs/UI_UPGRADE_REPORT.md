@@ -97,5 +97,6 @@ Measured (local + preview 12795f19): no overflow at 360-1440 px light and dark; 
 empty page 1,458 -> 1,035 px tall at 1366; e2e 360 / 1366 / 1920 PASS incl. new laptop steps; preview Lighthouse
 home mobile 99 / 100 / 100 (perf / a11y / best practices), desktop 97 / 100 / 100.
 Not fixed: /cases Lighthouse CLS varies between runs (0.029 to 0.195 locally) while Chrome's PerformanceObserver measures
-0.02-0.03; cause not found. Research references from the brief (shadcn-admin, Tremor, TailAdmin) are React; none were
-installed (the app stays Astro + Tailwind); only layout patterns were taken (sidebar + sticky header + data table).
+0.02-0.03; cause not found. The reference repos named in the brief (shadcn-admin, Tremor, TailAdmin and others) were NOT opened
+in this round; nothing was installed (the app stays Astro + Tailwind). The layout pattern used (sticky header + sidebar +
+data table) comes from the earlier research rounds (Elastic, Better Stack, Linear, Timesketch; see git history).
