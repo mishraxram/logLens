@@ -796,17 +796,27 @@ const samples = [
     kpi('Attack chain stages', chains[0]?.steps.length ?? 0, chains.length ? 'is-warn' : '');
     $('changeCount').textContent = changes.length ? `${changes.length} change${changes.length === 1 ? '' : 's'}, ${bad} unauthorized` : 'No data changes in this log';
     const chList = $('changes'); chList.replaceChildren();
-    const chip: Record<string, string> = { unauthorized: 'bg-flag text-white', suspicious: 'bg-tag', blocked: 'bg-ink/10', normal: 'bg-match text-white' };
+    const chip: Record<string, string> = { unauthorized: 'badge-bad', suspicious: 'badge-warn', blocked: 'badge-muted', normal: 'badge-ok' };
     for (const c of changes) {
-      const li = el('li', `rounded-lg border p-3 ${c.status === 'unauthorized' ? 'border-flag/50 bg-flag/5' : 'border-line'}`);
+      const li = el('li', `chg ${c.status === 'unauthorized' ? 'chg-bad' : ''}`);
       const head = el('div', 'flex flex-wrap items-center gap-2');
       const ico: Record<string, string> = { unauthorized: '▲ ', suspicious: '● ', blocked: '⊘ ', normal: '✓ ' };
-      head.append(el('span', `text-xs font-semibold rounded px-2 py-0.5 ${chip[c.status]}`, ico[c.status] + STATUS_TEXT[c.status]),
+      head.append(el('span', `badge ${chip[c.status]}`, ico[c.status] + STATUS_TEXT[c.status]),
         el('span', 'font-mono text-sm font-semibold', c.timeText), el('span', 'font-mono text-xs text-muted', `#${c.n}`));
       li.append(head);
       li.append(el('p', 'mt-1', `${c.user}${c.role ? ` (${c.role})` : ''} from ${c.ip || 'unknown IP'}: ${c.action} ${c.target}`));
-      if (c.before) li.append(el('p', 'font-mono text-sm mt-1', `Before ${c.before}  →  After ${c.after}`));
-      else li.append(el('p', 'font-mono text-sm mt-1', c.after));
+      // The change itself, big: old value struck through -> new value, and the jump when both are numbers
+      if (c.before) {
+        const d = el('p', 'diff mt-1.5');
+        d.append(el('span', 'sr-only', 'Before '), el('span', 'diff-old', c.before), el('span', 'diff-arrow', '→'), el('span', 'sr-only', ' after '), el('span', 'diff-new', c.after));
+        const delta = Number(c.after) - Number(c.before);
+        if (c.before.trim() !== '' && Number.isFinite(delta) && /^\s*-?\d+(\.\d+)?\s*$/.test(c.before) && /^\s*-?\d+(\.\d+)?\s*$/.test(c.after))
+          d.append(el('span', 'diff-delta', `${delta > 0 ? '+' : ''}${delta}`));
+        li.append(d);
+      } else li.append(el('p', 'font-mono text-sm mt-1', c.after));
+      // Incriminating reasons first; the off-hours note (true for every 2 AM row) goes last
+      const reasons = [...c.reasons].sort((a, b) => Number(/outside working hours/.test(a)) - Number(/outside working hours/.test(b)));
+      c.reasons = reasons;
       // First 2 reasons in view; the rest fold behind "N more reasons" (still in the page, one click away)
       c.reasons.slice(0, 2).forEach((r) => li.append(el('p', 'text-sm text-ink/80 mt-0.5', r)));
       if (c.reasons.length > 2) {
@@ -827,6 +837,7 @@ const samples = [
     $('nHigh').textContent = String(events.filter(isHigh).length);
     $('nFlag').textContent = String(events.filter((e) => e.flags.length).length);
     $('nChg').textContent = String(changed.size);
+    let prevShown: Map<string, number> = new Map(); // flag reason -> event number of the row above that showed it
     for (const e of events) {
       if (show === 'high' && !isHigh(e)) continue;
       if (show === 'flagged' && !e.flags.length) continue;
@@ -835,18 +846,28 @@ const samples = [
       // Each row = one event on the rail; red seal for high risk, amber for medium
       const li = el('li', `row ${high ? 'is-high' : e.flags.length ? 'is-med' : ''}`);
       const top = el('div', 'ev-top');
-      top.append(el('span', 'font-mono text-xs text-muted', `#${e.n}`), el('span', 'font-mono text-sm font-semibold', e.timeText),
-        el('span', 'font-semibold', e.user || '-'), el('span', 'text-sm text-muted', e.role), el('span', 'font-mono text-sm', e.ip),
-        el('span', 'font-mono text-sm font-semibold', e.action));
+      const offHours = e.flags.find((f) => f.code === 'off-hours');
+      const time = el('span', 'ev-time', e.timeText);
+      if (offHours) { const c = el('span', 'flag-chip', 'off-hours'); c.title = offHours.reason; time.append(' ', c); }
+      top.append(el('span', 'font-mono text-xs text-muted', `#${e.n}`), time,
+        el('span', 'ev-user', e.user || '-'), el('span', 'text-sm text-muted', e.role), el('span', 'font-mono text-sm text-muted', e.ip),
+        el('span', `ev-act ${high ? 'is-high' : ''}`, e.action));
       li.append(top, el('p', 'font-mono text-xs text-ink/70 break-all mt-0.5', `${e.target} ${e.detail}`));
       // High-risk flags always in view; with 3+ flags, the first medium one shows and the rest fold behind "+N more"
-      const order = [...e.flags.filter((f) => f.severity === 'high'), ...e.flags.filter((f) => f.severity !== 'high')];
+      // off-hours is shown as the chip by the time (its full reason is the chip's tooltip and stays in the report)
+      const order = [...e.flags.filter((f) => f.severity === 'high'), ...e.flags.filter((f) => f.severity !== 'high' && f.code !== 'off-hours')];
+      const nowShown: Map<string, number> = new Map();
       const inView = order.length > 2 ? order.filter((f, i) => f.severity === 'high' || i === order.findIndex((g) => g.severity !== 'high')) : order;
       const folded = order.filter((f) => !inView.includes(f));
       const fold = folded.length ? el('details', 'more mt-1') : null;
       if (fold) fold.append(el('summary', '', `+${folded.length} more flag${folded.length === 1 ? '' : 's'}: ${folded.map((f) => f.code).join(', ')}`));
       for (const f of order) {
-        const p = el('p', `mt-1 text-sm ${f.severity === 'high' ? 'text-flag font-semibold' : 'text-ink'}`, f.reason);
+        // Same reason as the row just above (a burst spans several rows): say so in one short muted line
+        const same = prevShown.get(f.reason);
+        nowShown.set(f.reason, same ?? e.n);
+        const p = same
+          ? el('p', 'mt-1 text-sm text-muted', `Same as #${same}: ${f.code}`)
+          : el('p', `mt-1 text-sm ${f.severity === 'high' ? 'text-flag font-semibold' : 'text-ink'}`, f.reason);
         p.prepend(el('span', 'pill-ico', f.severity === 'high' ? '▲ ' : '● '));
         p.firstElementChild!.setAttribute('aria-hidden', 'true');
         // MITRE ATT&CK chip(s): standard name for the technique this flag points to
@@ -858,6 +879,7 @@ const samples = [
         (fold && folded.includes(f) ? fold : li).append(p);
       }
       if (fold) li.append(fold);
+      prevShown = nowShown;
       list.append(li);
     }
     if (parsed.unparsed.length) {
