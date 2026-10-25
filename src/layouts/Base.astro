@@ -7,7 +7,7 @@ import { THEME_JS } from '../lib/theme-inline.ts';
 
 // QR code of the live URL, made at build time (no extra script in the browser)
 const LIVE_URL = 'https://loglens-v2.loglens.workers.dev';
-const FONTS_URL = 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Sans+Condensed:wght@600;700&family=Noto+Sans+Devanagari:wght@400;600&display=swap';
+const FONTS_URL = 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@600;700&family=Noto+Sans+Devanagari:wght@400;600&display=swap';
 const qrSvg = await QRCode.toString(LIVE_URL, { type: 'svg', margin: 1, color: { dark: '#14161A', light: '#F4F1EA' } });
 // wide: the Desk workspace uses up to 1400 px (sidebar + investigation area); other pages stay at 1152 px
 const { title = 'LogLens', current = 'desk', description = 'AI-assisted digital forensics: log timeline, AI summary and SHA-256 evidence check.', wide = false } = Astro.props;

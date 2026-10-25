@@ -65,10 +65,6 @@ const counts = samples.map((s) => {
           <div id="verifyOut" class="mt-3" aria-live="polite"></div>
         </div>
         <div class="side-block">
-          <p class="side-h">Case progress</p>
-          <ol id="progress" class="progress" aria-label="Case progress"></ol>
-        </div>
-        <div class="side-block">
           <p class="side-h">Evidence <span class="kicker">chain of custody</span></p>
           <div class="evtag">
             <p class="font-semibold">Evidence tag</p>
@@ -81,6 +77,10 @@ const counts = samples.map((s) => {
             <p id="evHash" class="font-mono text-xs break-all"></p>
           </div>
           <div id="receipt" class="mt-3 text-sm" aria-live="polite"></div>
+        </div>
+        <div class="side-block side-progress">
+          <p class="side-h">Case progress</p>
+          <ol id="progress" class="progress" aria-label="Case progress"></ol>
         </div>
         <details class="side-block text-sm">
           <summary class="cursor-pointer min-h-11 flex items-center gap-2"><span class="font-semibold">Audit trail</span><span id="chain"></span></summary>
@@ -141,11 +141,10 @@ const counts = samples.map((s) => {
           <div id="verdict" class="verdict"></div>
           <dl id="kpis" class="kpis"></dl>
         </div>
-        <p id="stats" class="text-xs text-muted !mt-2"></p>
 
         <!-- Attack chain: flagged events linked by shared IP / account, in MITRE ATT&CK tactic stages -->
         <div id="chainPanel" class="panel p-4 hidden">
-          <div class="panel-h !mb-2 !pb-2"><h2 class="!mr-0">Attack chain</h2><details class="tip"><summary aria-label="What is MITRE ATT&amp;CK?">?</summary><p>MITRE ATT&amp;CK is a public catalogue of attacker tactics (like Credential Access) and techniques (like T1110 password guessing). Each stage here links to its page.</p></details><span class="kicker ml-auto">MITRE ATT&amp;CK · built by rules, not AI</span></div>
+          <div class="panel-h !mb-2 !pb-2"><h2 class="!mr-0">Attack chain</h2><details class="tip"><summary aria-label="What is MITRE ATT&amp;CK?">?</summary><p>MITRE ATT&amp;CK is a public catalogue of attacker tactics (like Credential Access) and techniques (like T1110 password guessing). Each stage here links to its page.</p></details><span id="chainCount" class="chain-count"></span><span class="kicker ml-auto">MITRE ATT&amp;CK · built by rules, not AI</span></div>
           <p class="sr-only">Flagged events joined when they share an IP or an account, then put in MITRE ATT&CK tactic order of first appearance.</p>
           <div id="chains" class="space-y-3"></div>
         </div>
@@ -764,38 +763,69 @@ const counts = samples.map((s) => {
     const verdict = $('verdict');
     // Status = colour + icon + word, never colour alone
     const ICON: Record<string, string> = { 'is-high': '▲', 'is-med': '●', 'is-ok': '✓', '': '?' };
-    const setVerdict = (cls: string, level: string, headline: string) => {
+    const setVerdict = (cls: string, level: string, headline: string, sub = '') => {
       verdict.className = `verdict ${cls}`;
       const lv = el('p', 'level', level);
       lv.prepend(el('span', 'pill-ico', ICON[cls]));
       lv.firstElementChild!.setAttribute('aria-hidden', 'true');
       verdict.replaceChildren(lv, el('p', 'headline', headline));
+      if (sub) verdict.append(el('p', 'verdict-sub', sub));
     };
+    // The verdict as a story: what happened, in time order, from the rules' attack chain (plain words for rule codes).
+    // Listed most incriminating first: each stage contributes its most serious reason.
+    const PLAIN: Record<string, string> = { 'login-after-burst': 'login after password guessing', 'root-login': 'direct root login', 'marks-jump': 'marks changed',
+      'log-clear': 'audit log deleted', 'admin-group': 'account made admin', 'sudo-root-shell': 'root shell via sudo', 'new-account': 'new account created',
+      'attack-success': 'attacker reached an admin page', 'burst-fail': 'failed-login burst', 'web-attack': 'attack requests', 'scan-burst': 'page scanning',
+      'role-misuse': 'student tried to edit records', 'impossible-travel': 'same account from two IPs', 'new-ip': 'login from a new IP', 'shared-ip': 'one IP, two accounts' };
+    const storyChains = buildChains(events);
+    const story = (() => {
+      const c = storyChains[0];
+      if (!c) return '';
+      // Each event of the chain gives its most serious reason; the 4 most serious reasons are then told in time order
+      const keys = Object.keys(PLAIN), firstSeen = new Map<string, number>();
+      const inChain = new Set(c.steps.flatMap((st) => st.events));
+      for (const e of events) {
+        if (!inChain.has(e.n)) continue;
+        const k = keys.find((x) => e.flags.some((f) => f.code === x));
+        if (k && !firstSeen.has(k)) firstSeen.set(k, e.n);
+      }
+      const top = [...firstSeen.keys()].sort((x, y) => keys.indexOf(x) - keys.indexOf(y)).slice(0, 4).sort((x, y) => firstSeen.get(x)! - firstSeen.get(y)!);
+      const who = c.ips[0] ?? c.users[0];
+      return top.length >= 2 ? `${who ? `From ${who}: ` : ''}${top.map((k) => PLAIN[k]).join(' → ')}` : '';
+    })();
     if (events.length === 0) {
       setVerdict('', 'Unsupported input', 'Not a supported log. Use ERP audit CSV, Linux auth.log, an Apache/Nginx access log or an Apache error log, or try a sample.');
     } else if (v.level === 'none') {
       setVerdict('is-ok', 'Rule verdict · low', 'No suspicious pattern found by the rules. Rules can miss things: run the AI summary or check more logs.');
     } else {
-      setVerdict(v.level === 'high' ? 'is-high' : 'is-med', `Rule verdict · ${v.level === 'high' ? 'high' : 'medium'} risk`,
-        `${v.high} high-risk and ${v.medium} medium-risk events flagged by the rules`);
+      const counts = `${v.high} high-risk and ${v.medium} medium-risk events flagged by the rules`;
+      setVerdict(v.level === 'high' ? 'is-high' : 'is-med', `Rule verdict · ${v.level === 'high' ? 'high' : 'medium'} risk`, story || counts, story ? counts : '');
     }
-    // Risk meter: share of events by severity
+    // Event tracker: one cell per event in time order (long logs: up to 120 buckets, each shows its worst event),
+    // so the burst at 2 AM is visible at a glance. Tooltips name the event(s); the caption carries the numbers.
     if (events.length) {
       const normal = Math.max(0, events.length - v.high - v.medium);
-      const bar = el('div', 'meter'); bar.setAttribute('aria-hidden', 'true');
-      ([[v.high, '#B42318'], [v.medium, '#E3A72F'], [normal, '#1F7A4D']] as [number, string][]).forEach(([n, c]) => {
-        const seg = document.createElement('span'); seg.style.width = `${(n / events.length) * 100}%`; seg.style.background = c; bar.append(seg);
-      });
-      const legend = el('p', 'meter-legend');
-      ([['High', v.high, '#B42318'], ['Medium', v.medium, '#E3A72F'], ['Normal', normal, '#1F7A4D']] as [string, number, string][]).forEach(([l, n, c]) => {
-        const t = el('span', '', `${l} ${n}`); const sw = document.createElement('i'); sw.style.background = c; t.prepend(sw); legend.append(t);
-      });
-      verdict.append(bar, legend);
+      const sev = (e: (typeof events)[number]) => (e.flags.some((f) => f.severity === 'high') ? 2 : e.flags.length ? 1 : 0);
+      const n = Math.min(events.length, 120);
+      const track = el('div', 'tracker'); track.setAttribute('aria-hidden', 'true');
+      for (let b = 0; b < n; b++) {
+        const group = events.slice(Math.floor((b * events.length) / n), Math.floor(((b + 1) * events.length) / n));
+        const worst = Math.max(...group.map(sev));
+        const cell = el('span', ['', 'is-med', 'is-high'][worst]);
+        cell.title = group.length === 1 ? `#${group[0].n} ${group[0].timeText} ${group[0].action}` : `#${group[0].n}-#${group[group.length - 1].n}`;
+        track.append(cell);
+      }
+      const cap = el('p', 'tracker-cap');
+      const ends = el('span', 'font-mono', `${events[0].timeText.slice(0, 16)} → ${events[events.length - 1].timeText.slice(0, 16)}`);
+      const legend = el('span', 'tracker-legend');
+      legend.append(el('span', 'lg-high', `▲ High ${v.high}`), el('span', 'lg-med', `● Medium ${v.medium}`), el('span', '', `Normal ${normal}`));
+      cap.append(ends, el('span', '', `${events.length} events · ${parsed.unparsed.length} lines not understood`), legend);
+      verdict.append(track, cap);
     }
-    $('stats').textContent = `${events.length} events, sorted by time. ${parsed.unparsed.length} lines not understood.`;
+
 
     // Attack chain(s)
-    const chains = buildChains(events);
+    const chains = storyChains;
     $('chainPanel').classList.toggle('hidden', !chains.length);
     const chainBox = $('chains'); chainBox.replaceChildren();
     for (const c of chains.slice(0, 3)) {
@@ -813,7 +843,9 @@ const counts = samples.map((s) => {
         a.href = `https://attack.mitre.org/tactics/${st.tactic}/`; a.target = '_blank'; a.rel = 'noopener'; a.title = `MITRE ATT&CK tactic ${st.tactic}: ${st.name}`;
         const head = el('span', 'flex flex-wrap items-center gap-x-2 gap-y-1');
         head.append(el('span', 'step-n', String(i + 1)), el('span', 'font-semibold leading-tight', st.name), a);
-        const why = el('span', 'text-xs text-ink/75 mt-0.5 clamp-1', st.reasons.join(', '));
+        // Plain words for the rule codes (the code stays in the tooltip for anyone checking the rules)
+        const words = st.reasons.map((x) => PLAIN[x] ?? x);
+        const why = el('span', 'text-xs text-ink/75 mt-0.5 clamp-1', words.join(', '));
         why.title = st.reasons.join(', ');
         li.append(head,
           el('span', 'block font-mono text-xs mt-1', `${st.from.slice(11, 16) || st.from} · ${st.events.map((n) => `#${n}`).join(' ')}`),
@@ -823,21 +855,8 @@ const counts = samples.map((s) => {
       box.append(ol);
       chainBox.append(box);
     }
-    // Mini stage strip in the case summary: all tactic stages in order, the ones this case reached are filled
-    if (chains.length) {
-      const hit = new Set(chains.flatMap((c) => c.steps.map((s) => s.tactic)));
-      const strip = el('div', 'stage-strip');
-      strip.append(el('span', 'text-xs font-semibold', 'Attack chain'));
-      const dots = el('span', 'dots');
-      for (const s of STAGES) {
-        const d = el('span', hit.has(s.tactic) ? 'is-hit' : '');
-        d.title = `${s.name} (${s.tactic})${hit.has(s.tactic) ? ': reached' : ''}`;
-        dots.append(d);
-      }
-      dots.setAttribute('aria-hidden', 'true');
-      strip.append(dots, el('span', 'text-xs text-muted', `${hit.size} of ${STAGES.length} MITRE stages reached`));
-      verdict.append(strip);
-    }
+    // Stages reached, as text in the chain panel (the dot strip in the verdict was a duplicate of the chain)
+    if (chains.length) $('chainCount').textContent = `${new Set(chains.flatMap((c) => c.steps.map((s) => s.tactic))).size} of ${STAGES.length} MITRE stages reached`;
 
     // Change register
     const changes = extractChanges(events);
