@@ -13,10 +13,11 @@ const samples = [
 ---
 <Base wide>
   <!-- Page intro: only before a case is open -->
-  <header class="page-head mb-5 flex flex-wrap items-end justify-between gap-x-8 gap-y-2">
+  <header class="page-head hero mb-6 flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
     <div>
-      <p class="kicker mb-1">ABCS-02 · AI-assisted digital forensics</p>
-      <h1 class="font-cond font-bold text-3xl sm:text-4xl leading-tight">Find who changed what.<span class="block text-muted">Prove the log was not touched.</span></h1>
+      <!-- Shiny badge (Magic UI "animated shiny text" pattern, CSS only): what powers the console -->
+      <p class="shiny-badge"><span class="badge-dot" aria-hidden="true"></span><span class="shiny">Open-weight Llama 3.1 8B · SHA-256 sealed · MITRE ATT&amp;CK</span></p>
+      <h1 class="hero-h">Find who changed what.<span class="block hero-accent">Prove the log was not touched.</span></h1>
     </div>
     <p class="text-sm text-muted max-w-md">Rules flag events, open-weight AI (Llama 3.1 8B by Meta, Llama licence) explains them, a SHA-256 hash with a signed server receipt seals the evidence.</p>
   </header>
@@ -621,6 +622,12 @@ const samples = [
     // Closed by the button or Esc: drop the "#intake" entry so the next Back is not swallowed by it
     else if (location.hash === '#intake') history.replaceState(null, '', location.pathname + location.search);
   }
+  // Sample cards: a soft light follows the pointer (Magic UI "magic card" pattern; CSS reads --mx / --my)
+  document.querySelectorAll<HTMLElement>('.sample-card').forEach((c) => c.addEventListener('pointermove', (ev) => {
+    const r = c.getBoundingClientRect();
+    c.style.setProperty('--mx', `${ev.clientX - r.left}px`); c.style.setProperty('--my', `${ev.clientY - r.top}px`);
+  }));
+
   // Key numbers count up from 0 once, so the eye lands on them (like Magic UI's number ticker, no library).
   // Ends exactly on the real value; screen readers get the final number at once; off under reduced motion.
   function countUp(dd: HTMLElement, value: number) {

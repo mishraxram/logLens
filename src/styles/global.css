@@ -557,3 +557,90 @@ footer.bg-night { background: var(--color-sheet) !important; color: var(--color-
 @media (prefers-reduced-motion: reduce) { @view-transition { navigation: none; } }
 /* Key numbers keep their width while counting */
 .kpi dd { min-width: 2ch; }
+
+/* ===================================================================================================
+   Evidence-room layer (26 Oct, round 2): dark console by default, depth and purposeful motion.
+   Patterns from Magic UI (grid pattern, border beam, shimmer button, magic card, shiny text) and
+   Aceternity (spotlight, tracing beam), rebuilt in CSS. Every effect is off under reduced motion.
+   =================================================================================================== */
+:root { --color-tag: #D99A1E; --grid-line: rgba(9,9,11,.045); --spot: rgba(217,154,30,.16); --accent-text: #9A5F00;
+  --card-hi: rgba(255,255,255,.9); --glow-red: rgba(196,43,28,.18); }
+:root[data-theme="dark"] {
+  --color-ink: #F2F4F7; --color-paper: #06080B; --color-sheet: #0D1015; --color-line: #1E232B; --soft: #151A21;
+  --color-muted: #98A2B3; --color-flag: #FF6B5E; --color-match: #3DDC97; --color-tag: #F5B53D;
+  --grid-line: rgba(255,255,255,.04); --spot: rgba(245,181,61,.13); --accent-text: #F5B53D;
+  --card-hi: rgba(255,255,255,.06); --glow-red: rgba(255,107,94,.28);
+  --shadow-sm: 0 1px 0 rgba(255,255,255,.03) inset; --shadow-md: 0 1px 0 rgba(255,255,255,.04) inset, 0 16px 40px -12px rgba(0,0,0,.7);
+}
+/* Background: fine grid fading out from the top + an amber spotlight (fixed, behind everything) */
+body { position: relative; isolation: isolate; }
+body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-image: linear-gradient(to right, var(--grid-line) 1px, transparent 1px), linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 44px 44px; -webkit-mask-image: radial-gradient(ellipse 85% 65% at 50% 0%, #000 35%, transparent 78%); mask-image: radial-gradient(ellipse 85% 65% at 50% 0%, #000 35%, transparent 78%); }
+body::after { content: ""; position: fixed; z-index: -1; pointer-events: none; left: 50%; top: -38vh; width: min(1400px, 140vw); height: 80vh; transform: translateX(-50%);
+  background: radial-gradient(closest-side, var(--spot), transparent); }
+
+/* Cards: hairline edge with a lit top, deep soft shadow in dark */
+.panel, .side-card, .intake, .case-sum, .rail, .strip { box-shadow: var(--shadow-md); }
+:root[data-theme="dark"] .panel, :root[data-theme="dark"] .side-card, :root[data-theme="dark"] .intake, :root[data-theme="dark"] .case-sum {
+  background: linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,0) 120px), var(--color-sheet); border-color: rgba(255,255,255,.07); }
+:root[data-theme="dark"] .appbar { background: rgba(6,8,11,.72); border-bottom-color: rgba(255,255,255,.06); }
+:root[data-theme="dark"] .strip { background: rgba(13,16,21,.82); border-color: rgba(255,255,255,.08); }
+
+/* Hero: large tight headline, accent second line, shiny badge */
+.hero-h { font-weight: 650; font-size: clamp(2rem, 4.6vw, 3.4rem); line-height: 1.04; letter-spacing: -.035em; }
+.hero-accent { color: var(--accent-text); }
+.shiny-badge { display: inline-flex; align-items: center; gap: .5rem; margin-bottom: .9rem; padding: .3rem .75rem; border-radius: 999px; font-size: .8rem; font-weight: 500;
+  border: 1px solid var(--color-line); background: color-mix(in srgb, var(--color-sheet) 80%, transparent); box-shadow: var(--shadow-sm); }
+.badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-tag); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-tag) 25%, transparent); }
+.shiny { color: var(--color-muted); background: linear-gradient(110deg, var(--color-muted) 35%, var(--color-ink) 50%, var(--color-muted) 65%) 0 0 / 250% 100%;
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: shiny 3.5s linear infinite; }
+@keyframes shiny { from { background-position: 150% 0; } to { background-position: -100% 0; } }
+
+/* Primary action: amber with a shimmer sweep on hover (the one action colour) */
+.btn-primary { position: relative; overflow: hidden; background: linear-gradient(180deg, #F7C25A, #E9A428); color: #1A1206; border: 1px solid #C98A12;
+  box-shadow: 0 1px 0 rgba(255,255,255,.45) inset, 0 6px 18px -6px rgba(217,154,30,.55); }
+.btn-primary:hover { background: linear-gradient(180deg, #F9CB6E, #EDAC36); }
+.btn-primary::before { content: ""; position: absolute; inset: 0; transform: translateX(-120%); pointer-events: none;
+  background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.55) 50%, transparent 70%); transition: transform .7s ease; }
+.btn-primary:hover::before { transform: translateX(120%); }
+:root[data-theme="dark"] .btn-primary { color: #1A1206; }
+.strip-edit { background: var(--color-sheet); color: var(--color-ink); border: 1px solid var(--color-line); }
+.strip-edit:hover { background: var(--soft); }
+.navlink[aria-current="page"] .ico { color: var(--color-tag); }
+
+/* Sample cards: light follows the pointer (magic card) */
+.sample-card { position: relative; overflow: hidden; }
+.sample-card::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .25s ease;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--color-tag) 16%, transparent), transparent 65%); }
+.sample-card:hover::before { opacity: 1; }
+.sample-card:hover { border-color: color-mix(in srgb, var(--color-tag) 55%, var(--color-line)); }
+.sample-card > * { position: relative; }
+
+/* Verdict card: a red beam runs round the border while the case is high risk (border beam) */
+@property --beam { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.case-sum { position: relative; }
+.case-sum:has(.verdict.is-high)::after { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none;
+  background: conic-gradient(from var(--beam), transparent 0 70%, color-mix(in srgb, var(--color-flag) 60%, transparent) 82%, var(--color-flag) 90%, transparent 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: beam 5s linear infinite; }
+@keyframes beam { to { --beam: 360deg; } }
+.case-sum:has(.verdict.is-high) { box-shadow: var(--shadow-md), 0 0 60px -20px var(--glow-red); }
+.kpi.is-bad dd { text-shadow: 0 0 22px var(--glow-red); }
+
+/* Attack chain: a beam travels along the line that joins the stages (tracing beam) */
+.chain { position: relative; }
+.chain li { z-index: 1; background: var(--color-sheet); }
+@container (min-width: 680px) {
+  .chain::before { content: ""; position: absolute; left: 3%; right: 3%; top: 50%; height: 2px; transform: translateY(-50%);
+    background: linear-gradient(90deg, transparent, var(--color-flag), transparent) 0 0 / 25% 100% no-repeat, color-mix(in srgb, var(--color-flag) 22%, transparent);
+    animation: trace 2.6s linear infinite; }
+  .chain li + li::before { content: ""; }
+}
+@keyframes trace { from { background-position: -25% 0, 0 0; } to { background-position: 125% 0, 0 0; } }
+.chain li::after { box-shadow: 0 0 12px var(--glow-red); }
+
+@media (prefers-reduced-motion: reduce) {
+  .shiny { animation: none; -webkit-text-fill-color: currentColor; background: none; }
+  .case-sum:has(.verdict.is-high)::after, .chain::before { animation: none !important; }
+  .btn-primary::before { display: none; }
+}

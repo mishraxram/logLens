@@ -21,7 +21,7 @@ type Env = {
 // If the onload text changes, recompute: printf "%s" "<handler>" | openssl dgst -sha256 -binary | base64
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-hashes' 'sha256-1jAmyYXcRq6zFldLe/GCgIDJBiOONdXjTLgEFMDnDSM=' 'sha256-B9MK+uDUvLSw4Z6YwRVhsSH7I+f97JGZsYsojsmlmPI='",
+  "script-src 'self' 'unsafe-hashes' 'sha256-1jAmyYXcRq6zFldLe/GCgIDJBiOONdXjTLgEFMDnDSM=' 'sha256-tQkG9whc/n4L5gsyVfChnAP0X8ZjSYigRwuqB/iRAH8='",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src https://fonts.gstatic.com",
   "img-src 'self' data: blob:",
