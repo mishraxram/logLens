@@ -100,3 +100,23 @@ Not fixed: /cases Lighthouse CLS varies between runs (0.029 to 0.195 locally) wh
 0.02-0.03; cause not found. The reference repos named in the brief (shadcn-admin, Tremor, TailAdmin and others) were NOT opened
 in this round; nothing was installed (the app stays Astro + Tailwind). The layout pattern used (sticky header + sidebar +
 data table) comes from the earlier research rounds (Elastic, Better Stack, Linear, Timesketch; see git history).
+
+## Product hardening (25 Oct, 14:30-15:10): fix functionality before decoration
+Bugs reproduced with a scripted browser flow first, then fixed (commits b2c5d01, 345bfee, 4f2e746):
+| Bug (priority) | Root cause | Fix | Guard |
+|---|---|---|---|
+| P0: after a TAMPERED check, opening another sample still showed "TAMPERED" for the new evidence | sample/upload handlers never cleared `verifyOut` | `resetCaseView()` on every new evidence (verify result, AI answer, filter) | e2e "switching sample clears the old verify result and filter" |
+| P0: New case wiped the local audit trail with no question | `clearCase()` ran directly | confirm dialog (server receipts stay in the ledger) | e2e "New case asks first; Cancel keeps the case" + "OK clears" |
+| P1: no way back from case selection except the same unlabelled button; browser Back left the app | no back flow | button reads "← Back to case"; Esc and browser Back return to the case | scripted flow D-F |
+| P1: High filter stayed on for the next case (looked like fewer events) | filter state not reset | reset to All per case | same e2e step |
+| P1: PDF "pop-up blocked" error written into the hidden intake line | message target | toast | manual flow |
+| P1: sample fetch failure did nothing | no try/catch | message with the reason | code review |
+| P1: explainer popovers ran 73-101 px off the right edge on phones | absolute popover | sheet above the tab bar on phones | measured 33-327 px at 360 |
+Added: term explainers (SHA-256, MITRE ATT&CK, open-weight AI; native details, Esc / outside click close), toasts (copy, report, PDF),
+copy full SHA-256, busy spinner on Analyze with AI, ledger disclosure next to the investigator field.
+Acceptance checks run (local and preview f266fcbc): samples open; case switch; Back / Esc / browser Back; New case confirm;
+own pasted log; invalid and empty input messages; AI failure -> labelled rules summary (request blocked in the browser);
+Hindi (earlier, 301 Devanagari characters at 360 px); report HTML downloaded (7.2 KB file on disk); copy hash (clipboard read back);
+tooltip opens with Enter; e2e 360 / 1366 / 1920. Flaky: the phone "Evidence tab" step failed 3 times out of ~11 runs on
+deployed URLs and passed on re-run. Preview Lighthouse: home mobile 99 / 100 / 100, desktop 99 / 100 / 100, /cases 90 / 100 / 100.
+No dependency added. Not tested: real phones, iOS Safari, Firefox, a screen reader.
