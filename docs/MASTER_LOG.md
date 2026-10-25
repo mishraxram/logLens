@@ -12,7 +12,7 @@ Phase: **P3 Audit** (P0, P1 assumed, P2 UI research done; 2 UI slices built earl
 | 3 | `deep-research` + `perplexity-deep-research` denied in `.claude/settings.json` | Kept denied (quota). Fallback: `competitor-scout` agent + WebSearch |
 | 4 | Workers AI free (10,000 neurons/day) vs Paid ($5/month). Now more important: Llama is the PRIMARY AI | OPEN. Stay free; eval max once per hour; never full eval on demo morning |
 | 5 | Krishraj still on team? New members? | OPEN. docs/TEAM.md kept as is |
-| 6 | Promote Worker version 33bbb466 (Llama primary) from preview alias `llama` to production? | OPEN (asked 25 Oct 01:16) |
+| 6 | Production deploy | User said "deploy" 25 Oct 08:58. Version **29a87ce7** (code of baf6afc) uploaded as preview alias `hackday`, verified (e2e 360/1366/1920 PASS, masking: 0 leaks, Lighthouse mobile perf 96/94). `wrangler versions deploy` was blocked by the auto-mode safety check: the user runs it. Rollback version: 23a0e835 |
 | 7 | Eval case 2: accept "unsure" for the normal faculty log, or keep it a fail? | OPEN |
 
 ## Tools (P0, checked 25 Oct 01:20)
@@ -63,6 +63,8 @@ Conflicts found:
 | 9 | 02:06 | P5 | F3 parser + F2 real Loghub sample | done | Loghub: OpenSSH SSHD 1480->275, Linux 0->849 events, Apache error 0->2000 | e39d990 |
 | 10 | 02:08 | P5 | dark mode (F7 rest) | done | contrast all >= 4.5:1 computed; fold 1366 dark 458-712 | 0735e66 |
 | 11 | 02:13 | P6 | audit: Lighthouse, eval, keyboard, report | done | docs/UI_UPGRADE_REPORT.md; eval 16/17; LH desktop 100x4, mobile 83/83/99 local | (this commit) |
+| 12 | 02:20 | P6 | Hack Day pitch + masking before AI (F8) | done | check-redact PASS; live preview request: 0 real names/IPs | 4fc1c1e, baf6afc |
+| 13 | 09:05 | P7 | preview deploy + professional repo (README, LICENSE, CI, CONTRIBUTING, SECURITY, loghub fetch) | done | GitHub CI run 40158785228 success | 5a8e704 |
 
 ## Backlog (seed from LOOP-MASTER 4.2 + 9.1; re-ranked in P3)
 | rank | id | item | rubric line | impact | effort | status |
@@ -72,7 +74,7 @@ Conflicts found:
 | 2 | F2 | real-data mode: Loghub sample button + README real-data table (D14) | Prototype, Domain | H | S | done e39d990 |
 | 3 | F3 | parser: Invalid user, POSSIBLE BREAK-IN, pam_unix rhost, message repeated, Apache error log (D2-D4) | PS1, Prototype | H | S-M | done e39d990 |
 | 4 | F1 | linear-time rules + Web Worker parse with progress (D1, D13) | Prototype | H | S-M | todo |
-| 5 | F8 | redact users/IPs before AI (D12) | Domain, Stack | M | M | todo |
+| 5 | F8 | redact users/IPs before AI (D12) | Domain, Stack | M | M | done baf6afc |
 | 6 | F4 | mobile: sticky verdict bar + tabs (D7); 360 page still 8,702 px | Prototype | H | M | done 616cba5 |
 | 7 | F5 | attack story card + actor chips filter (D10) | PS2, Prototype | H | M | todo |
 | 8 | F6 | events-per-minute strip + actor graph, plain SVG (D10) | PS2/PS3 | H | M | todo |
