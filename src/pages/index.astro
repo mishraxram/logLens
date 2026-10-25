@@ -413,7 +413,7 @@ const samples = [
 
   $('newCase').addEventListener('click', () => {
     clearCase(); lastAi = null; lastVerify = null; last = null;
-    logBox.value = ''; $('verifyOut').replaceChildren(); $('aiOut').replaceChildren();
+    logBox.value = ''; $('verifyOut').replaceChildren(); $('aiOut').replaceChildren(); $('aiMsg').textContent = '';
     $('result').classList.add('hidden'); showLocker();
   });
 
@@ -458,7 +458,8 @@ const samples = [
       $('aiMsg').textContent = '';
     } catch (err) {
       result = offlineSummary();
-      $('aiMsg').textContent = `AI unavailable (${(err as Error).message}).`;
+      // Plain words first, the technical reason in brackets for whoever debugs it
+      $('aiMsg').textContent = `The AI could not answer, so the rules summary below is shown instead (${(err as Error).message}).`;
     }
     btn.disabled = false;
     lastAi = result;
@@ -546,7 +547,8 @@ const samples = [
     if (!getEvidence()) { await lockEvidence('pasted-log.txt', text); void sealNow('SEALED'); } // pasted text becomes evidence on first run
     const parsed = parseLog(text);
     const events = applyRules(parsed.events);
-    if (last?.events.map((e) => e.raw).join() !== events.map((e) => e.raw).join()) $('aiOut').replaceChildren();
+    // New log: the old AI answer and its status line no longer apply
+    if (last?.events.map((e) => e.raw).join() !== events.map((e) => e.raw).join()) { $('aiOut').replaceChildren(); $('aiMsg').textContent = ''; }
     last = parsed;
     const v = ruleVerdict(events);
 
@@ -566,7 +568,7 @@ const samples = [
       verdict.replaceChildren(lv, el('p', 'headline', headline));
     };
     if (events.length === 0) {
-      setVerdict('', 'Unsupported input', 'Not a supported log. Use ERP audit CSV, Linux auth.log or Apache/Nginx access log, or try a sample.');
+      setVerdict('', 'Unsupported input', 'Not a supported log. Use ERP audit CSV, Linux auth.log, an Apache/Nginx access log or an Apache error log, or try a sample.');
     } else if (v.level === 'none') {
       setVerdict('is-ok', 'Rule verdict · low', 'No suspicious pattern found by the rules. Rules can miss things: run the AI summary or check more logs.');
     } else {
