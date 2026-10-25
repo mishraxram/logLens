@@ -76,3 +76,11 @@ passed on re-run; a third back-to-back run hit our own 429 rate limit).
 Remaining (not fixed): decorative status glyphs are under 12 px (aria-hidden, next to text); /cases CLS 0.116 in 1 of 2
 local Lighthouse runs (space reserved for cards shrinks after load); local Lighthouse /cases perf 76-77 (local server,
 FCP 3.7 s; live number needs a deploy); no real phone, iOS Safari, Firefox or screen-reader test.
+
+### After the loop (25 Oct, 13:00-13:30)
+- Live check of 14e2f744 found a regression: home mobile Lighthouse 97 -> 73 (FCP 4.4 s) caused by the parser-blocking
+  `/theme.js`. Fixed in 4a96c2a (script inline, allowed by its SHA-256 in the CSP; `scripts/check-csp.ts` in `npm run check`).
+  Live after deploy (35ee976e): home mobile 89 and 98, desktop 91; accessibility / best practices / SEO 100.
+- /cases CLS (live 0.255): reserved room kept after load (52df1bc). Local Lighthouse 0.031 (3 runs). On the preview,
+  Lighthouse still reports 0.206 while Chrome's PerformanceObserver (4x CPU, slow network, 412x823) measures 0.031 there too;
+  the gap is **not explained yet**. The remaining measured shift is the web-font swap of the page header.
