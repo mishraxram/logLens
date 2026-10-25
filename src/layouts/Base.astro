@@ -8,7 +8,8 @@ import { THEME_JS } from '../lib/theme-inline.ts';
 const LIVE_URL = 'https://loglens-v2.loglens.workers.dev';
 const FONTS_URL = 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&family=IBM+Plex+Sans+Condensed:wght@600;700&family=Noto+Sans+Devanagari:wght@400;600&display=swap';
 const qrSvg = await QRCode.toString(LIVE_URL, { type: 'svg', margin: 1, color: { dark: '#14161A', light: '#F4F1EA' } });
-const { title = 'LogLens', current = 'desk', description = 'AI-assisted digital forensics: log timeline, AI summary and SHA-256 evidence check.' } = Astro.props;
+// wide: the Desk workspace uses up to 1400 px (sidebar + investigation area); other pages stay at 1152 px
+const { title = 'LogLens', current = 'desk', description = 'AI-assisted digital forensics: log timeline, AI summary and SHA-256 evidence check.', wide = false } = Astro.props;
 ---
 <!doctype html>
 <html lang="en">
@@ -32,7 +33,7 @@ const { title = 'LogLens', current = 'desk', description = 'AI-assisted digital 
   <body class="font-sans min-h-screen flex flex-col">
     <!-- App bar: frosted, sticky, the same on every page; Desk | Cases is a segmented control -->
     <header class="appbar">
-      <div class="max-w-6xl mx-auto px-4 flex items-center gap-3 min-h-14">
+      <div class="max-w-[1400px] mx-auto px-4 lg:px-6 flex items-center gap-3 min-h-14">
         <a href="/" class="flex items-center gap-2 font-cond font-bold text-xl tracking-wide no-underline">
           <!-- Logo: a magnifier with an eye that blinks every 5 s (still under prefers-reduced-motion) -->
           <picture>
@@ -53,7 +54,7 @@ const { title = 'LogLens', current = 'desk', description = 'AI-assisted digital 
         </button>
       </div>
     </header>
-    <main class="flex-1 w-full max-w-6xl mx-auto px-4 py-5 lg:py-7">
+    <main class={`flex-1 w-full mx-auto px-4 lg:px-6 py-5 lg:py-6 ${wide ? 'max-w-[1400px]' : 'max-w-6xl'}`}>
       <slot />
     </main>
     <footer class="bg-night text-[#B9C0C7] text-sm px-4 py-8 mt-8">

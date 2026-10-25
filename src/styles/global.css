@@ -2,15 +2,15 @@
 
 /* Design tokens from docs/DESIGN.md: a forensic evidence desk */
 @theme {
-  --color-ink: #1B1F24;     /* graphite: text, primary buttons */
-  --color-paper: #E9ECE8;   /* archival grey-green: page background */
-  --color-sheet: #FBFBF8;   /* panels */
-  --color-line: #CDD2CB;    /* borders, timeline rail */
+  --color-ink: #14181D;     /* graphite: text, primary buttons */
+  --color-paper: #F1F3F5;   /* cool neutral: page background */
+  --color-sheet: #FFFFFF;   /* panels */
+  --color-line: #DCE0E5;    /* borders, timeline rail */
   --color-tag: #E3A72F;     /* evidence tape: hashes, the evidence tag */
   --color-flag: #B42318;    /* red seal: high risk, TAMPERED */
   --color-match: #1F7A4D;   /* green: MATCH, normal */
-  --color-muted: #5D6670;   /* secondary text */
-  --color-night: #15191E;   /* console bar: app bar and case strip */
+  --color-muted: #59636E;   /* secondary text */
+  --color-night: #11151A;   /* console bar: app bar and case bar */
   --font-sans: "IBM Plex Sans", "Noto Sans Devanagari", system-ui, sans-serif;
   --font-cond: "IBM Plex Sans Condensed", "IBM Plex Sans", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
@@ -61,8 +61,7 @@ label:has(input.sr-only:focus-visible) { outline: 3px solid var(--color-tag); ou
 
 @layer components {
   /* Panels: sheet of paper on the desk. One soft shadow, same everywhere */
-  .panel { background: var(--color-sheet); border: 1px solid rgba(27,31,36,.08); border-radius: 14px;
-    box-shadow: 0 1px 2px rgba(27,31,36,.05), 0 10px 28px -22px rgba(27,31,36,.35); }
+  .panel { background: var(--color-sheet); border: 1px solid var(--color-line); border-radius: 12px; box-shadow: 0 1px 2px rgba(16,24,40,.04); }
   .panel > h2, .panel > div > h2, .panel h2.font-semibold { font-family: var(--font-cond); font-weight: 700; font-size: 1.25rem; letter-spacing: .005em; }
 
   /* App bar: solid graphite console bar, sticks to the top */
@@ -87,7 +86,7 @@ label:has(input.sr-only:focus-visible) { outline: 3px solid var(--color-tag); ou
 
   /* Panel header: kicker + title on a hairline, same on every panel */
   .panel-h { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; padding-bottom: .65rem; margin-bottom: .75rem; border-bottom: 1px solid var(--color-line); }
-  .panel-h h2 { font-family: var(--font-cond); font-weight: 700; font-size: 1.2rem; margin-right: auto; }
+  .panel-h h2 { font-family: var(--font-sans); font-weight: 700; font-size: 1.05rem; letter-spacing: -.005em; margin-right: auto; }
 
   /* iOS-style grouped list for the sample cases: one card, hairline dividers, chevrons */
   .group-label { font-size: .8rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--color-muted); margin: 0 0 .35rem .25rem; }
@@ -237,6 +236,70 @@ label:has(input.sr-only:focus-visible) { outline: 3px solid var(--color-tag); ou
   }
 }
 
+/* ===== Desk workspace (25 Oct redesign) ===== */
+/* Case bar: hidden before a case; sticky under the app bar once one is open */
+.strip[data-state="none"] { display: none; }
+.strip { margin-bottom: 1.25rem; border-radius: 12px; min-height: 52px; }
+@media (min-width: 1024px) { .strip { position: sticky; top: 59px; z-index: 15; } }
+.strip .strip-k { font-family: var(--font-mono); font-size: .7rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #9AA3AB; }
+.strip .hash { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 22ch; }
+.strip-edit { display: inline-flex; align-items: center; min-height: 40px; padding: 0 .9rem; border-radius: 9px; background: var(--color-tag); color: #1B1F24; font-weight: 700; font-size: .9rem; }
+body:not(:has(#result:not(.hidden))) .strip-edit { display: none; }
+
+/* Workspace grid: one column before a case; sidebar + investigation area once evidence is open (laptop and up) */
+.ws { display: grid; gap: 1.25rem; align-items: start; }
+.case-aside:not(:has(#locker:not(.hidden))) { display: none; }
+@media (min-width: 1024px) {
+  body:has(#locker:not(.hidden)) .ws { grid-template-columns: 300px minmax(0, 1fr); }
+  .case-aside { position: sticky; top: calc(59px + 52px + 2rem); max-height: calc(100vh - 59px - 52px - 3rem); overflow: auto; scrollbar-width: thin; }
+}
+/* Before a case the intake is the first screen; once a case is open it folds behind "Change case" */
+body:has(#result:not(.hidden)):not(.show-intake) #intake { display: none; }
+
+/* Case sidebar */
+.side-card { background: var(--color-sheet); border: 1px solid var(--color-line); border-radius: 12px; }
+.side-block { padding: 1rem; }
+.side-block + .side-block { border-top: 1px solid var(--color-line); }
+.side-h { display: flex; align-items: baseline; justify-content: space-between; gap: .5rem; font-weight: 700; font-size: .9rem; margin-bottom: .6rem; }
+/* Section links in the case bar (laptop and up); the phone has the bottom tab bar instead */
+.secnav { display: none; gap: .15rem; margin-left: auto; }
+@media (min-width: 1024px) { body:has(#result:not(.hidden)) .secnav { display: flex; } body:has(#result:not(.hidden)) .strip #stripChip { margin-left: 0; } }
+@media (min-width: 1024px) and (max-width: 1279px) { .strip .hash { display: none; } }
+.secnav a { display: inline-flex; align-items: center; min-height: 36px; padding: 0 .7rem; border-radius: 8px; font-size: .875rem; font-weight: 600; color: #B9C0C7; text-decoration: none; }
+.secnav a:hover, .secnav a:focus-visible { background: rgba(255,255,255,.1); color: #fff; }
+.case-aside .evtag { margin-left: .9rem; }
+.btn-ghost { background: transparent; color: var(--color-muted); border: 1px solid var(--color-line); }
+.btn-ghost:hover { color: var(--color-ink); border-color: var(--color-ink); }
+
+/* Case progress as a vertical stepper: filled dot = done, red = failed check, outline = not yet */
+.progress { list-style: none; padding: 0; display: grid; grid-template-columns: 1fr; gap: .1rem; }
+.progress li { position: relative; padding: .3rem .5rem .3rem 1.9rem; font-size: .875rem; font-weight: 600; color: var(--color-muted); text-align: left; border: 0; border-radius: 0; background: transparent; }
+.progress li::before { content: ""; position: absolute; left: .45rem; top: 50%; width: .8rem; height: .8rem; border-radius: 50%; border: 2px solid var(--color-line); background: var(--color-sheet); transform: translateY(-50%); }
+.progress li + li::after { content: ""; position: absolute; left: calc(.45rem + .4rem - 1px); top: -.45rem; height: .55rem; width: 2px; background: var(--color-line); }
+.progress li.is-done { color: var(--color-match); border: 0; background: transparent; }
+.progress li.is-done::before { background: var(--color-match); border-color: var(--color-match); }
+.progress li.is-bad { color: var(--color-flag); border: 0; background: transparent; }
+.progress li.is-bad::before { background: var(--color-flag); border-color: var(--color-flag); }
+
+/* Intake workspace: sample cases on the left, your own log on the right */
+.intake { display: grid; gap: 1.5rem; background: var(--color-sheet); border: 1px solid var(--color-line); border-radius: 12px; padding: 1.25rem; }
+@media (min-width: 900px) { .intake { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); padding: 1.5rem; } .intake-own { border-left: 1px solid var(--color-line); padding-left: 1.5rem; } }
+.sec-h { display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; margin-bottom: .35rem; }
+.sec-h h2 { font-weight: 700; font-size: 1.15rem; }
+.field-l { display: block; font-size: .875rem; font-weight: 600; }
+.sample-grid { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); }
+.sample-card { display: grid; align-content: start; gap: .2rem; text-align: left; padding: .9rem 1rem; min-height: 6.5rem; border: 1px solid var(--color-line); border-radius: 10px; background: var(--color-paper); cursor: pointer; transition: border-color .12s ease, transform .12s ease; }
+.sample-card:hover { border-color: var(--color-ink); transform: translateY(-1px); }
+.sample-n { font-family: var(--font-mono); font-size: .75rem; font-weight: 600; color: var(--color-tag); }
+.sample-t { font-weight: 700; font-size: 1rem; color: var(--color-ink); }
+.sample-d { font-size: .875rem; color: var(--color-muted); }
+
+/* "How it works" strip under the intake */
+.how { display: flex; gap: 1.25rem; align-items: flex-start; margin-top: 1.25rem; padding: 1.25rem 0 0; }
+.how-logo { width: 56px; height: 56px; flex: none; }
+.how .steps { flex: 1; margin: 0; }
+@media (max-width: 640px) { .how { flex-direction: column; } }
+
 /* Filter chips on the timeline: wrap on phones, small count after each label */
 .seg-wrap { flex-wrap: wrap; }
 .seg-wrap label { padding: 0 .7rem; font-size: .9rem; }
@@ -246,14 +309,12 @@ label:has(input.sr-only:focus-visible) { outline: 3px solid var(--color-tag); ou
 body:has(#result:not(.hidden)) .page-head { display: none; }
 
 /* Phone and tablet with a case open: findings first, intake folded, a tab bar at the bottom */
-.strip-edit { display: none; }
 .casenav { display: none; }
-#result, #changesPanel, #timelinePanel, #locker, #intake { scroll-margin-top: 4.5rem; }
+#result, #chainPanel, #aiPanel, #changesPanel, #timelinePanel, #locker, #intake { scroll-margin-top: 4.5rem; }
+@media (min-width: 1024px) { #result, #chainPanel, #aiPanel, #changesPanel, #timelinePanel, #intake { scroll-margin-top: calc(59px + 52px + 2rem); } }
 @media (max-width: 1023px) {
   body:has(#result:not(.hidden)) .case-main { order: -1; }
   body:has(#result:not(.hidden)):not(.show-intake) #intake { display: none; }
-  body:has(#result:not(.hidden)) .strip-edit { display: inline-flex; align-items: center; min-height: 44px; padding: 0 .9rem; border-radius: 10px;
-    background: var(--color-tag); color: var(--color-ink); font-weight: 700; font-size: .9rem; }
   body:has(#result:not(.hidden)) .strip .hash { display: none; }
   body:has(#result:not(.hidden)) .casenav { display: grid; grid-template-columns: repeat(4, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
     background: var(--color-night); border-top: 3px solid var(--color-tag); padding: 0 .25rem env(safe-area-inset-bottom); }
@@ -270,3 +331,4 @@ body:has(#result:not(.hidden)) .page-head { display: none; }
 #result:not(.hidden) ~ #empty { display: none; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+.side-btn { padding-inline: .5rem; font-size: .875rem; white-space: nowrap; }

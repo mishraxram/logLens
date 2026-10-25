@@ -68,6 +68,14 @@ async function main() {
   step(await waitFor(`(() => { const r = [...document.querySelectorAll('#timeline > li')]; return r.length > 0 && r.length === +document.getElementById('nHigh').textContent && r.every((li) => li.classList.contains('is-high')); })()`, 3000), 'timeline filter "High" shows only high-risk rows');
   await js(`document.querySelector('input[name=tlf][value=all]').click()`);
   step(await waitFor(`document.querySelectorAll('#timeline > li').length === +document.getElementById('nAll').textContent`, 3000), 'timeline filter "All" shows every event');
+  if (width >= 1024) {
+    // Laptop workspace: intake folds away, section links in the case bar, "Change case" brings the intake back
+    step(await js(`getComputedStyle(document.getElementById('intake')).display === 'none' && getComputedStyle(document.querySelector('.strip .secnav')).display !== 'none' && getComputedStyle(document.getElementById('locker')).display !== 'none'`), 'laptop: intake folded, section links and case sidebar shown');
+    await js(`document.getElementById('stripEdit').click()`);
+    step(await js(`getComputedStyle(document.getElementById('intake')).display !== 'none'`), 'laptop: "Change case" shows the intake');
+    await js(`document.getElementById('stripEdit').click()`);
+    await js(`window.scrollTo(0, 0)`);
+  }
   if (width < 1024) {
     // Phone: intake folds away, tab bar shows, "Change case" brings the form back, "Evidence" tab jumps to the locker
     step(await js(`getComputedStyle(document.getElementById('intake')).display === 'none' && getComputedStyle(document.querySelector('.casenav')).display !== 'none'`), 'phone: intake folded, tab bar shown');

@@ -10,77 +10,63 @@ const samples = [
   { file: '/samples/loghub-openssh-real.log', label: 'Real SSH server log', desc: 'Public research data (Loghub), not made up: 300 real lines' },
 ];
 ---
-<Base>
-  <!-- Page intro: hidden once a case is open, so the verdict and chain fit the first laptop screen -->
-  <header class="page-head mb-4 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+<Base wide>
+  <!-- Page intro: only before a case is open -->
+  <header class="page-head mb-5 flex flex-wrap items-end justify-between gap-x-8 gap-y-2">
     <div>
       <p class="kicker mb-1">ABCS-02 · AI-assisted digital forensics</p>
-      <h1 class="font-cond font-bold text-2xl sm:text-3xl leading-tight">Find who changed what.<span class="block text-muted">Prove the log was not touched.</span></h1>
+      <h1 class="font-cond font-bold text-3xl sm:text-4xl leading-tight">Find who changed what.<span class="block text-muted">Prove the log was not touched.</span></h1>
     </div>
     <p class="text-sm text-muted max-w-md">Rules flag events, open-weight AI (Llama 3.1 8B by Meta, Llama licence) explains them, a SHA-256 hash with a signed server receipt seals the evidence.</p>
   </header>
 
-  <!-- Case strip: which evidence is open and its integrity state (filled by showLocker) -->
-  <div id="caseStrip" class="strip mb-5" data-state="none" role="status">
+  <!-- Case bar: which evidence is open and its integrity state (filled by showLocker). Sticky under the app bar -->
+  <div id="caseStrip" class="strip" data-state="none" role="status">
     <span class="dot" aria-hidden="true"></span>
+    <span class="strip-k">Case</span>
     <span id="stripName" class="font-semibold">No case open</span>
-    <span id="stripHash" class="hash break-all"></span>
+    <span id="stripHash" class="hash"></span>
+    <!-- Laptop and up: jump to a part of the case -->
+    <nav class="secnav" aria-label="Sections of this case">
+      <a href="#result">Overview</a><a href="#chainPanel">Chain</a><a href="#aiPanel">AI</a><a href="#changesPanel">Changes</a><a href="#timelinePanel">Timeline</a>
+    </nav>
     <span id="stripChip" class="chip ml-auto">Waiting for evidence</span>
-    <!-- Phone only, once a case is open: bring the intake form back -->
+    <!-- Once a case is open: bring the intake form back -->
     <button id="stripEdit" type="button" class="strip-edit">Change case</button>
   </div>
 
-  <div class="grid gap-5 lg:grid-cols-[360px_1fr] items-start">
-    <!-- Left: evidence in -->
-    <aside class="case-aside space-y-5">
-      <section id="intake" class="panel p-4">
-        <div class="panel-h"><h2>Open a case</h2><span class="kicker">Intake</span></div>
-        <p class="text-sm text-muted mb-3">Pick a sample case (three made up for the demo, one real public log) or paste your own log.</p>
-        <label for="investigator" class="text-sm font-semibold">Investigator name</label>
-        <input id="investigator" type="text" maxlength="60" autocomplete="name" placeholder="e.g. IT cell, Dr. Sharma"
-          class="field mt-1 mb-4" />
-        <p class="group-label">Sample cases</p>
-        <div class="case-list mb-4">
-          {samples.map((s) => (
-            <button type="button" data-sample={s.file} class="sample-btn case-btn font-semibold">
-              {s.label}<span>{s.desc}</span>
-            </button>
-          ))}
-        </div>
-        <label for="log" class="text-sm font-semibold">Log text</label>
-        <textarea id="log" rows="7" spellcheck="false"
-          class="field mt-1 font-mono text-sm"
-          placeholder="Paste ERP audit CSV (time,user,role,ip,action,target,detail), Linux auth.log or Apache/Nginx access log lines here. Lines starting with # are case notes."></textarea>
-        <div class="flex flex-wrap gap-2 mt-3">
-          <button id="run" type="button" class="btn btn-primary">Build timeline</button>
-          <label class="btn btn-quiet btn-like">
-            Upload a file <input id="file" type="file" class="sr-only" />
-          </label>
-        </div>
-        <p class="text-xs text-muted mt-2">Timelines work for ERP audit CSV, Linux auth.log and Apache/Nginx logs. Any other file (PDF, image) is hashed as evidence.</p>
-        <p id="msg" class="text-sm mt-2" aria-live="polite"></p>
-      </section>
-
+  <!-- Workspace: case sidebar (evidence, progress, actions) + investigation area -->
+  <div class="ws">
+    <aside class="case-aside" aria-label="Case and evidence">
       <!-- Evidence locker: the signature element (an evidence tag carrying the SHA-256) -->
-      <section id="locker" class="hidden panel p-4">
-        <div class="panel-h"><h2>Evidence locker</h2><span class="kicker">Chain of custody</span></div>
-        <ol id="progress" class="progress mb-4" aria-label="Case progress"></ol>
-        <div class="evtag ml-4 mb-4">
-          <p class="font-semibold">Evidence tag</p>
-          <p id="evName" class="text-sm mt-1 whitespace-pre-line"></p>
-          <p class="text-xs font-semibold mt-2">SHA-256</p>
-          <p id="evHash" class="font-mono text-xs break-all"></p>
-        </div>
-        <div id="receipt" class="mb-4 text-sm" aria-live="polite"></div>
-        <div class="flex flex-wrap gap-2">
-          <button id="verify" type="button" class="btn btn-primary">Verify integrity</button>
-          <button id="pdf" type="button" class="btn btn-quiet">Save report as PDF</button>
-          <button id="report" type="button" class="btn btn-quiet">Download report (HTML)</button>
-          <button id="newCase" type="button" class="text-sm text-muted underline px-2">New case</button>
+      <section id="locker" class="hidden side-card">
+        <div class="side-block">
+          <div class="grid gap-2">
+            <button id="verify" type="button" class="btn btn-primary w-full">Verify integrity</button>
+            <div class="grid grid-cols-2 gap-2">
+              <button id="pdf" type="button" class="btn btn-quiet side-btn">PDF report</button>
+              <button id="report" type="button" class="btn btn-quiet side-btn">HTML report</button>
+            </div>
+            <button id="newCase" type="button" class="btn btn-ghost">New case</button>
+          </div>
           <input id="verifyFile" type="file" class="sr-only" tabindex="-1" aria-label="Choose the same file again to verify" />
+          <div id="verifyOut" class="mt-3" aria-live="polite"></div>
         </div>
-        <div id="verifyOut" class="mt-3" aria-live="polite"></div>
-        <details class="mt-4 text-sm">
+        <div class="side-block">
+          <p class="side-h">Case progress</p>
+          <ol id="progress" class="progress" aria-label="Case progress"></ol>
+        </div>
+        <div class="side-block">
+          <p class="side-h">Evidence <span class="kicker">chain of custody</span></p>
+          <div class="evtag">
+            <p class="font-semibold">Evidence tag</p>
+            <p id="evName" class="text-sm mt-1 whitespace-pre-line"></p>
+            <p class="text-xs font-semibold mt-2">SHA-256</p>
+            <p id="evHash" class="font-mono text-xs break-all"></p>
+          </div>
+          <div id="receipt" class="mt-3 text-sm" aria-live="polite"></div>
+        </div>
+        <details class="side-block text-sm">
           <summary class="cursor-pointer min-h-11 flex items-center gap-2"><span class="font-semibold">Audit trail</span><span id="chain"></span></summary>
           <p class="text-xs text-muted mt-1">Each entry stores the hash of the one before it, so editing any entry breaks the chain.</p>
           <button id="tamperAudit" type="button" class="text-sm underline text-muted">Tamper test: secretly edit entry 1</button>
@@ -89,8 +75,41 @@ const samples = [
       </section>
     </aside>
 
-    <!-- Right: findings out -->
     <div class="case-main">
+      <!-- Intake: the first screen before a case; folds behind "Change case" once one is open -->
+      <section id="intake" class="intake">
+        <div class="intake-samples">
+          <div class="sec-h"><h2>Open a case</h2><span class="kicker">Intake</span></div>
+          <p class="text-sm text-muted mb-3">Pick a sample case (three made up for the demo, one real public log) or bring your own log on the right.</p>
+          <div class="sample-grid">
+            {samples.map((s, i) => (
+              <button type="button" data-sample={s.file} class="sample-btn sample-card">
+                <span class="sample-n">{String(i + 1).padStart(2, '0')}</span>
+                <span class="sample-t">{s.label}</span>
+                <span class="sample-d">{s.desc}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div class="intake-own">
+          <label for="investigator" class="field-l">Investigator name</label>
+          <input id="investigator" type="text" maxlength="60" autocomplete="name" placeholder="e.g. IT cell, Dr. Sharma"
+            class="field mt-1 mb-3" />
+          <label for="log" class="field-l">Log text</label>
+          <textarea id="log" rows="7" spellcheck="false"
+            class="field mt-1 font-mono text-sm"
+            placeholder="Paste ERP audit CSV (time,user,role,ip,action,target,detail), Linux auth.log, an Apache/Nginx access log or an Apache error log. Lines starting with # are case notes."></textarea>
+          <div class="flex flex-wrap gap-2 mt-3">
+            <button id="run" type="button" class="btn btn-primary">Build timeline</button>
+            <label class="btn btn-quiet btn-like">
+              Upload a file <input id="file" type="file" class="sr-only" />
+            </label>
+          </div>
+          <p class="text-xs text-muted mt-2">Timelines: ERP audit CSV, Linux auth.log, Apache/Nginx access and Apache error logs. Any other file (PDF, image) is hashed as evidence.</p>
+          <p id="msg" class="text-sm mt-2" aria-live="polite"></p>
+        </div>
+      </section>
+
       <section id="result" class="hidden space-y-5">
         <div id="notes"></div>
         <!-- Case summary: verdict, key numbers and a mini MITRE stage strip in one card -->
@@ -108,7 +127,7 @@ const samples = [
         </div>
 
         <!-- AI investigation summary -->
-        <div class="panel p-4 lg:p-5">
+        <div id="aiPanel" class="panel p-4 lg:p-5">
           <div class="panel-h">
             <h2>What happened</h2>
             <div class="seg" role="radiogroup" aria-label="Summary language">
@@ -149,22 +168,19 @@ const samples = [
         </div>
       </section>
 
-      <section id="empty" class="panel p-5 lg:p-8">
-        <!-- Blinking-eye logo; a still version when the user asks for less motion -->
+      <!-- How it works: under the intake before a case is open -->
+      <section id="empty" class="how">
         <picture class="logo-light">
           <source media="(prefers-reduced-motion: reduce)" srcset="/brand/loglens-mark-still.svg" />
-          <img src="/brand/loglens-mark.svg" alt="" width="96" height="96" class="w-20 h-20 lg:w-24 lg:h-24 mb-3" />
+          <img src="/brand/loglens-mark.svg" alt="" width="56" height="56" class="how-logo" />
         </picture>
         <picture class="logo-dark">
           <source media="(prefers-reduced-motion: reduce)" srcset="/brand/loglens-mark-dark-still.svg" />
-          <img src="/brand/loglens-mark-dark.svg" alt="" width="96" height="96" class="w-20 h-20 lg:w-24 lg:h-24 mb-3" />
+          <img src="/brand/loglens-mark-dark.svg" alt="" width="56" height="56" class="how-logo" />
         </picture>
-        <p class="kicker mb-2">Start here</p>
-        <h2 class="font-cond font-bold text-2xl mb-2">No case open yet</h2>
-        <p class="text-ink/80 max-w-prose">Pick “ERP marks tampering” on the left to watch a 2 AM marks change come apart event by event, or paste your own log.</p>
         <!-- How a case flows, as numbered steps on one rail -->
-        <ol class="steps mt-5">
-          <li><span class="n">01</span><p class="font-semibold">Open the log</p><p class="text-sm text-muted">ERP audit CSV, Linux auth.log or Apache/Nginx access log. It is hashed (SHA-256) the moment it opens.</p></li>
+        <ol class="steps">
+          <li><span class="n">01</span><p class="font-semibold">Open the log</p><p class="text-sm text-muted">ERP audit CSV, Linux auth.log, Apache/Nginx access or Apache error log. It is hashed (SHA-256) the moment it opens.</p></li>
           <li><span class="n">02</span><p class="font-semibold">Rules flag events</p><p class="text-sm text-muted">16 explainable rules, each with a reason and a MITRE ATT&amp;CK ID; flagged events are joined into an attack chain.</p></li>
           <li><span class="n">03</span><p class="font-semibold">Open-weight AI explains</p><p class="text-sm text-muted">Llama 3.1 8B writes the story in English or Hindi, cross-checked against the rules. AI down: a labelled rule summary shows.</p></li>
           <li><span class="n">04</span><p class="font-semibold">Seal and verify</p><p class="text-sm text-muted">Signed server receipt, then verify the same file again: MATCH or TAMPERED, with the changed line.</p></li>
