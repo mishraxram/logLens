@@ -600,7 +600,7 @@ body::after { content: ""; position: fixed; z-index: -1; pointer-events: none; l
   border: 1px solid var(--color-line); background: color-mix(in srgb, var(--color-sheet) 80%, transparent); box-shadow: var(--shadow-sm); }
 .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--color-tag); box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-tag) 25%, transparent); }
 .shiny { color: var(--color-muted); background: linear-gradient(110deg, var(--color-muted) 35%, var(--color-ink) 50%, var(--color-muted) 65%) 0 0 / 250% 100%;
-  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: shiny 3.5s linear 2; }
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: shiny 3.5s linear 3s 2; }
 @keyframes shiny { from { background-position: 150% 0; } to { background-position: -100% 0; } }
 
 /* Primary action: amber with a shimmer sweep on hover (the one action colour) */
