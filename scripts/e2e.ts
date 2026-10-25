@@ -99,6 +99,8 @@ async function main() {
   await js(`(() => { const b = document.getElementById('log'); b.value = b.value.replace(/\\d/, (d) => String((+d + 1) % 10)); })()`);
   await js(`document.getElementById('verify').click()`);
   step(await waitFor(`/TAMPERED/.test(document.getElementById('verifyOut').textContent)`, 4000), 'one char changed -> TAMPERED');
+  // A failed check must not look like success anywhere: the progress strip shows it in red, not as a green tick
+  step(await waitFor(`[...document.querySelectorAll('#progress li.is-bad')].some((l) => /Tampered/.test(l.textContent)) && ![...document.querySelectorAll('#progress li.is-done')].some((l) => /Verified/.test(l.textContent))`, 3000), 'progress strip shows "Tampered" in red, not a green "Verified"');
   step(await js(`!!document.getElementById('report') && !document.getElementById('report').disabled`), 'report button ready');
 
   // PS1: upload a real log file -> its metadata (type, last modified) is shown on the evidence tag

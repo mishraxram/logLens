@@ -298,10 +298,13 @@ const samples = [
     const done = new Set(trail.slice(start).map((a) => a.action));
     const ol = $('progress'); ol.replaceChildren();
     let count = 0;
+    // The verify step shows the RESULT of the latest check: a failed check must never look like a green tick
+    const lastVerify = trail.slice(start).filter((a) => /^VERIFY_/.test(a.action)).pop()?.action;
     for (const [name, re] of STEPS) {
       const ok = [...done].some((a) => re.test(a));
       if (ok) count++;
-      ol.append(el('li', ok ? 'is-done' : '', `${ok ? '✓ ' : ''}${name}`));
+      if (name === 'Verified' && lastVerify === 'VERIFY_TAMPERED') ol.append(el('li', 'is-bad', '▲ Tampered'));
+      else ol.append(el('li', ok ? 'is-done' : '', `${ok ? '✓ ' : ''}${name}`));
     }
     ol.setAttribute('aria-label', `Case progress: ${count} of ${STEPS.length} steps done`);
   }
