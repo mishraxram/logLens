@@ -77,8 +77,8 @@ These logs have no security labels, so this shows that real files parse and what
 - **Model:** open-weight Llama 3.1 8B (Meta, Llama 3.1 Community Licence: open-weight, not an OSI open-source licence),
   `@cf/meta/llama-3.1-8b-instruct-fast` on Cloudflare Workers AI, JSON mode. Google Gemini flash-lite is an optional
   backup: it starts only if Llama fails or has no answer after 4 s, and is off without `GEMINI_API_KEY`.
-- **What is sent:** only parsed event lines (max 200, flagged first) and case notes, with account names and IPs masked
-  as USER_1 / IP_1 by default (system accounts like root stay readable). Raw files stay in the browser.
+- **What is sent:** only parsed event lines (max 200, flagged first) and case notes, with account names, IPs, auth.log host names and
+  e-mail addresses masked as USER_1 / IP_1 / HOST_1 / EMAIL_1 by default (system accounts like root stay readable). Raw files stay in the browser.
 - **Checks on the answer:** points citing events that do not exist are removed; wrong language is rejected; without a
   high-risk rule flag Llama may not say "incident", without any flag at most "unsure"; log text is fenced as untrusted
   data (prompt-injection test: eval case 17).

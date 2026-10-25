@@ -13,6 +13,7 @@ export type LogEvent = {
   ip: string;
   action: string;     // LOGIN, LOGIN_FAIL, UPDATE, DELETE, LOGOUT...
   target: string;
+  host?: string;      // machine name from auth.log (masked before AI)
   detail: string;
   raw: string;        // original line, kept as evidence
   flags: Flag[];
@@ -61,7 +62,7 @@ function parseAuthLine(line: string, year: number): Omit<LogEvent, 'n' | 'flags'
   if (!m || !MONTHS.includes(m[1])) return null;
   const time = new Date(year, MONTHS.indexOf(m[1]), +m[2], +m[3], +m[4], +m[5]);
   const msg = m[9].trim();
-  const base = { time, role: '', ip: '', target: m[6], detail: msg, raw: line };
+  const base = { time, role: '', ip: '', target: m[6], host: m[6], detail: msg, raw: line };
   const roleOf = (u: string) => (u === 'root' ? 'root' : 'user');
   let x;
   // Old style "sshd(pam_unix)": in these logs it is the only line per failed login, so it counts as LOGIN_FAIL

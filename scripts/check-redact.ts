@@ -16,7 +16,7 @@ for (const f of ['public/samples/erp-marks-tamper.csv', 'public/samples/ssh-brut
   // Same fields the page sends to /api/analyze
   const text = events.map((e) => [e.user, e.ip, e.target, e.detail, ...e.flags.map((x) => x.reason)].join(' ')).join('\n');
   const masked = m.mask(text);
-  const leaks = [...new Set(events.flatMap((e) => [e.user, e.ip]))]
+  const leaks = [...new Set(events.flatMap((e) => [e.user, e.ip, e.host ?? '']))]
     .filter((v) => v && !['root', 'admin'].includes(v) && masked.includes(v));
   console.log(`== ${f}: ${m.users} accounts, ${m.ips} IPs masked`);
   ok(leaks.length === 0, `no real name or IP left${leaks.length ? ': ' + leaks.join(', ') : ''}`);
@@ -25,5 +25,11 @@ for (const f of ['public/samples/erp-marks-tamper.csv', 'public/samples/ssh-brut
 const s = makeMasker([{ user: 'root', ip: '10.0.4.2' }, { user: 'prof.verma', ip: '10.0.4.21' }]);
 ok(s.mask('root from 10.0.4.21 and 10.0.4.2') === 'root from IP_2 and IP_1', 'root kept; longer IP not half-replaced');
 ok(s.mask('prof.vermax') === 'prof.vermax' && s.mask('by prof.verma.') === 'by USER_1.', 'whole account names only (a full stop after a name is fine)');
+// Host names (auth.log) and e-mail addresses are masked too; localhost stays
+const hm = makeMasker([{ user: 'alice', ip: '10.0.0.5', host: 'erp-db-01', detail: 'reset mail sent to alice.k@biet.ac.in' }, { host: 'localhost' }]);
+const hText = 'Failed password for alice on erp-db-01 from 10.0.0.5, mail alice.k@biet.ac.in, localhost ok';
+const hMasked = hm.mask(hText);
+ok(!/erp-db-01|alice|biet\.ac\.in/.test(hMasked) && /HOST_1/.test(hMasked) && /EMAIL_1/.test(hMasked) && /localhost/.test(hMasked), `host + e-mail masked: ${hMasked}`);
+ok(hm.unmask(hMasked) === hText, 'host + e-mail unmask back');
 console.log(fail ? `REDACT FAIL (${fail})` : 'REDACT PASS');
 process.exit(fail ? 1 : 0);
