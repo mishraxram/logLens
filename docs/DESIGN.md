@@ -6,9 +6,9 @@ Signature element: the evidence tag (amber card with a punched hole and string) 
 | Name | Hex | Meaning |
 |---|---|---|
 | ink | #1B1F24 | text, primary buttons |
-| paper | #E8EBE6 | page background |
-| sheet | #FBFBF8 | panels |
-| line | #CDD2CB | borders, timeline rail |
+| paper | #F1F3F5 | page background (cool neutral since the 25 Oct redesign) |
+| sheet | #FFFFFF | panels |
+| line | #DCE0E5 | borders, timeline rail |
 | tag | #E3A72F | evidence tag, hashes, medium risk |
 | flag | #B42318 | high risk, TAMPERED, chain broken |
 | match | #1F7A4D | MATCH, normal |
@@ -30,3 +30,11 @@ Same roles, method from Radix Colors (steps by role: background, panel, border, 
 | match | #1F7A4D | #4CC38A | 7.5:1 |
 | muted | #5D6670 | #9AA3AB | 6.5:1 |
 Logo: light mark on light panels, dark-variant mark on the app bar and on dark panels; still versions under reduced motion.
+
+## Desk layout (25 Oct redesign)
+Laptop and up, once a case is open: sticky app bar, sticky case bar (file, hash, section links, status, "Change case"),
+then a 300 px sticky case sidebar (Verify integrity first, report buttons, verify result, vertical progress stepper,
+evidence tag + receipt, audit trail) beside the investigation area (verdict + KPIs, attack chain, AI, changes, timeline).
+Before a case: a wide intake workspace (4 sample cards in a 2 x 2 grid | your own log) and the 01-04 how-it-works strip.
+Phone: findings first, intake behind "Change case", bottom tab bar. Cases page: evidence ledger table that stacks into
+labelled cards on phones.
