@@ -26,8 +26,21 @@ export function applyRules(events: LogEvent[]): LogEvent[] {
   const usersByIp = new Map<string, Set<string>>();  // users seen on each IP
   const burstIps = new Map<string, number>();         // ip -> time of last burst
   const attackIps = new Set<string>();                // IPs that sent attack-looking web requests
+  // Events are sorted by time, so each sliding window is a small queue per key: old entries drop off the front.
+  // This keeps the rules linear (20k lines in well under a second) with exactly the same flags as before.
+  const failsByIp = new Map<string, LogEvent[]>();    // recent LOGIN_FAIL events per IP (2-minute window)
+  const notFoundByIp = new Map<string, LogEvent[]>(); // recent "not found" web requests per IP (1-minute window)
+  const loginsByUser = new Map<string, { latest: LogEvent; other?: LogEvent }>(); // last login, and last one from another IP
+  const recent = (map: Map<string, LogEvent[]>, key: string, e: LogEvent, ms: number) => {
+    const q = map.get(key) ?? [];
+    q.push(e);
+    const t = e.time.getTime();
+    while (t - q[0].time.getTime() > ms) q.shift();
+    map.set(key, q);
+    return q;
+  };
 
-  events.forEach((e, i) => {
+  events.forEach((e) => {
     const t = e.time.getTime();
     const h = e.time.getHours();
 
@@ -37,9 +50,7 @@ export function applyRules(events: LogEvent[]): LogEvent[] {
 
     // 2. Burst of failed logins from the same IP
     if (e.action === 'LOGIN_FAIL' && e.ip) {
-      const window = events.slice(0, i + 1).filter(
-        (p) => p.action === 'LOGIN_FAIL' && p.ip === e.ip && t - p.time.getTime() <= BURST_WINDOW_MS,
-      );
+      const window = [...recent(failsByIp, e.ip, e, BURST_WINDOW_MS)];
       if (window.length >= BURST_COUNT) {
         window.forEach((p) => add(p, 'burst-fail', `${window.length} failed logins in 2 min from ${e.ip} (password guessing)`, 'high'));
         burstIps.set(e.ip, t);
@@ -85,10 +96,12 @@ export function applyRules(events: LogEvent[]): LogEvent[] {
 
     // 10. Same user logged in from two different IPs within 10 minutes (shared or stolen password)
     if (e.action === 'LOGIN') {
-      const prev = events.slice(0, i).reverse().find(
-        (p) => p.action === 'LOGIN' && p.user === e.user && p.ip && p.ip !== e.ip && t - p.time.getTime() <= 10 * 60_000,
-      );
+      // The most recent earlier login by this user from a different IP
+      const last = loginsByUser.get(e.user);
+      const cand = last && (last.latest.ip !== e.ip ? last.latest : last.other);
+      const prev = cand && t - cand.time.getTime() <= 10 * 60_000 ? cand : undefined;
       if (prev) add(e, 'impossible-travel', `${e.user} logged in from ${prev.ip} and ${e.ip} within ${Math.round((t - prev.time.getTime()) / 60_000)} min: shared or stolen password?`, 'medium');
+      if (e.ip) loginsByUser.set(e.user, !last ? { latest: e } : last.latest.ip === e.ip ? { latest: e, other: last.other } : { latest: e, other: last.latest });
     }
 
     // ---- Linux account rules (auth.log sudo / useradd / usermod) ----
@@ -103,6 +116,7 @@ export function applyRules(events: LogEvent[]): LogEvent[] {
 
     // ---- Web server (Apache/Nginx) rules ----
     if (e.action.startsWith('HTTP_')) {
+      const notFound = / 404/.test(e.detail) ? recent(notFoundByIp, e.ip, e, 60_000) : notFoundByIp.get(e.ip) ?? [];
       const status = Number(e.detail.match(/status (\d{3})/)?.[1] ?? 0);
 
       // 11. Attack pattern inside the URL
@@ -114,9 +128,7 @@ export function applyRules(events: LogEvent[]): LogEvent[] {
 
       // 12. Many "not found" replies to one IP in a minute = someone scanning for hidden pages
       if (status === 404) {
-        const window = events.slice(0, i + 1).filter(
-          (p) => p.ip === e.ip && p.action.startsWith('HTTP_') && / 404/.test(p.detail) && t - p.time.getTime() <= 60_000,
-        );
+        const window = notFound.filter((p) => t - p.time.getTime() <= 60_000);
         if (window.length >= 10) window.forEach((p) => add(p, 'scan-burst', `${window.length} not-found requests in 1 min from ${e.ip}: page scanning`, 'medium'));
       }
 
