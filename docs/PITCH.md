@@ -1,91 +1,99 @@
 # PITCH — LogLens · Hacktoberfest Hack Day 2026, University of Lucknow
 
-**Team:** SOLAR FLARES · **Rule:** exactly 4 members. `docs/TEAM.md` lists 2 today: **add the other 2 names before the PPT.**
+**Team:** SOLAR FLARES · **Rule:** exactly 4 members. `docs/TEAM.md` lists 2: **fill [Member 3] and [Member 4] in the deck and here.**
 **App:** https://loglens-v2.loglens.workers.dev · **Judging:** innovation, relevance, implementation, **use of open-source /
-open-weight AI**, overall quality. Older Avinya pitch: git history before the 25 Oct 2026 cleanup (commit 636c098).
-**Before recording the video:** the live site must run the new version (branch `lu-upgrade` is not deployed yet).
-Every number here comes from a command run on 25 Oct 2026 (docs/TESTSET.md, docs/UI_UPGRADE_REPORT.md, README). Do not round up.
+open-weight AI**, overall quality. Existing project: allowed only with meaningful improvements shown (deck slide 6, section 5).
+**Deck (8 slides: 6 to present + 2 backup for questions, speaker notes on every slide):**
+https://claude.ai/artifact/SLYE7tTQsHrZ8Hs9QAWtvK (private until shared from its Share menu; export to PPTX/PDF from there).
+Older deck (25 Oct morning): https://claude.ai/artifact/HChaFkKvi6pvRpkuAbwSrb.
+Every number here comes from a command or a source checked on 25 Oct 2026. Do not round up.
 
-## 0. Demo video (< 5 min) — the submission
-| Time | Show | Say (short sentences) |
+## How we chose this format (research, 25 Oct 2026)
+- Hackathon pitch guides agree: the demo takes about half the time, show it working before explaining how, say the hardest
+  technical decision out loud, end with one clear line, keep a backup video
+  ([Reskilll](https://blogs.reskilll.com/hackathon-demo-presentation-tips-pitch-3-minutes-win-2026/),
+  [AngelHack](https://angelhack.com/blog/10-tips-to-help-you-rock-your-next-hackathon-demo/),
+  [SlideModel](https://slidemodel.com/hackathon-presentation/)).
+- So: 6 slides, one idea each; slides 3-5 are also the fallback if the live demo fails (each shows the same screen).
+- Not AI-looking: the deck uses the app's own look (dark evidence room, amber = evidence, red = tamper, IBM Plex),
+  real screenshots of the app, "Exhibit 01-06" labels like a case file, no stock images, no icons-for-decoration,
+  no "revolutionise" words. Every number has a source in the speaker notes.
+- Left out on purpose: market size, user counts, testimonials, architecture on the main slides (it is in backup).
+
+## 1. Three-minute live script (matches the deck notes)
+| Time | Slide / screen | Say (short sentences) |
 |---|---|---|
-| 0:00-0:30 Problem | ERP sample row "marks 42 -> 92 at 02:09" | "Result week. A student's marks went from 42 to 92 at 2 AM. The professor says he never logged in. The IT cell has thousands of log lines. Who did it? And can we trust the logs?" |
-| 0:30-1:10 Solution + open-weight AI | empty state 01-04 steps, footer AI line | "LogLens works in the browser. Rules flag events. An open-weight model, Llama 3.1 8B by Meta, explains them. SHA-256 and a signed receipt protect the evidence. Open-weight means the model weights are public. Anyone can check it or run it themselves." |
-| 1:10-2:40 Live demo | click **ERP marks tampering** -> verdict card + 4-dot MITRE strip -> attack chain 1-2-3-4 -> filter **High** -> **Changes made** red card | "One click. 9 high-risk events. The chain: login from a new IP, password guessing, marks changed, audit log deleted. Each step has a MITRE ATT&CK ID. These are rules, not AI." |
-| 2:40-3:10 Real data | click **Real SSH server log** | "This one is not made up. It is a real server log from Loghub, a public research dataset. 300 lines, 308 events, 62 high-risk, a brute-force chain." |
-| 3:10-3:50 AI + guard | **Analyze with AI** -> label "AI: open-weight Llama 3.1 8B" -> cross-check box | "Llama writes the story and must cite event numbers. A small model can over-react, so the rules watch it: no high-risk flag, no 'incident'. Our test set: 16 of 17 right. The one miss: a normal log where it said 'unsure' instead of 'normal'." |
-| 3:50-4:20 Integrity | **Check server receipt** = VALID -> change 42 to 43 -> **Verify integrity** = TAMPERED | "The log got a fingerprint and a signed server receipt. I change one digit... TAMPERED, and it shows the line." |
-| 4:20-4:45 Limits + next | phone view (tab bar), dark mode | "Works on phones and in dark mode. Limits: 4 log formats, no login yet. Next: Windows logs, investigator login." |
-| 4:45-4:55 Link | QR in footer | "Try it with your own log: loglens-v2.loglens.workers.dev" |
+| 0:00-0:15 | 1 Cover: the log line | "This is a college ERP log. At 2 AM, a student's DBMS marks went from 42 to 92. The professor says he never logged in. Who did it, and can we trust this log?" |
+| 0:15-0:30 | 2 Problem | "In Uttar Pradesh alone, 10,117 cyber crime cases were registered in 2022. Small IT cells handle the first hour. Logs are long, logs can be edited, and the big tools need servers and training." |
+| 0:30-0:40 | 3 Solution | "LogLens. Rules find it, open-weight AI explains it, SHA-256 proves it. No install." |
+| 0:40-1:15 | **Live**: click **ERP marks tampering** (Start here) | Read the red headline: "From 49.36.112.7: failed-login burst, login after password guessing, marks changed, audit log deleted." Tracker: "Every block is one event. Red is the 2 AM burst." Chain: "Four MITRE stages. Built by rules, not AI." Changes card: "42 to 92, plus 50." |
+| 1:15-1:45 | **Live** (slide 4 = same screen) | **Check server receipt** → VALID. **Verify integrity** → MATCH. **Change case** → 42 to 43 → **Verify integrity**: "One digit. TAMPERED. All 64 characters of the fingerprint changed, and it shows the exact character." |
+| 1:45-2:15 | **Live** → **Analyze with AI** (slide 5) | "Llama 3.1 8B by Meta, weights are public. An 8B model can over-react, so the rules cap it, and every point cites an event. Names and IPs are masked first. 16 of 17 on our test cases; the miss: a normal log, it said unsure." |
+| 2:15-2:45 | 6 Built for Hack Day | "Existing project, so here is what is new." Read 2-3 lines. "The hard part was trust: a small open model, so rules check it; a fingerprint, so the log cannot be quietly edited." |
+| 2:45-3:00 | 6 (QR) | "Next: Windows event logs and investigator login. Rules find it. Open-weight AI explains it. SHA-256 proves it. Scan and try your own log. Thank you." Stop. |
 
-## 1. Three-minute live script (stage, if shortlisted for 30 Oct)
-- **0:00-0:15 Hook:** "Marks went from 42 to 92 at 2 AM. The professor says: not me. Who did it, and can we trust the logs?"
-- **0:15-0:35 Solution:** "LogLens: rules find, open-weight AI explains, SHA-256 proves. In a browser, no install."
-- **0:35-2:05 Demo** (clicks from docs/DEMO_SCRIPT.md, steps 2-5): ERP sample -> verdict + chain -> Changes -> Analyze with AI -> receipt VALID -> one digit -> TAMPERED.
-- **2:05-2:30 Tech + AI:** "Astro and TypeScript in the browser, one Cloudflare Worker, D1 SQLite ledger. AI: Llama 3.1 8B, open weights, on Cloudflare Workers AI. Gemini only as a backup."
-- **2:30-2:50 Impact + next:** "For a college IT cell's first hour of an incident. Next: mask names before AI, Windows event logs, login for investigators."
-- **2:50-3:00 Close:** "Rules find it. Open AI explains it. SHA-256 proves it. Scan and try your own log."
+## 1b. Sixty-second opening (if only one minute)
+- **0-10 s:** slide 1, the real line `...,UPDATE,marks/21CS045/DBMS,42->92` at 02:09. "This happened in a college ERP log." (sample data, say so if asked)
+- **10-20 s:** "Uttar Pradesh registered 10,117 cyber crime cases in 2022." Source (notes): NCRB data, PIB annexure
+  "State/UT-wise Cases Registered (CR) under Cyber Crimes during 2020-2022", row 26,
+  https://static.pib.gov.in/WriteReadData/specificdocs/documents/2025/mar/doc2025318522301.pdf (checked 25 Oct 2026).
+- **20-40 s:** live: ERP sample → red story headline → change 42 to 43 → TAMPERED; then "scan the QR and open your own log".
+- **40-50 s:** "On our 17 test cases the AI was right 16 times. The miss: a normal log, it said 'unsure', not 'normal'."
+- **50-60 s:** "Honest line: the model is small, so the rules cap it. Next: Windows logs and investigator login."
 
-## 1b. Sixty-second opening
-- **0-10 s:** the ERP log on screen, line `UPDATE marks/21CS045/DBMS 42->92` at 02:09. "This happened in a college ERP log."
-- **10-20 s:** "Uttar Pradesh registered **10,117** cyber crime cases in 2022." Source (notes, not spoken): NCRB data in the PIB annexure "State/UT-wise Cases Registered under Cyber Crimes during 2020-2022", https://static.pib.gov.in/WriteReadData/specificdocs/documents/2025/mar/doc2025318522301.pdf (read 25 Oct 2026).
-- **20-40 s:** live demo (ERP sample -> chain), then "scan the QR and open your own log".
-- **40-50 s:** "On our own 17 test cases the AI was right 16 times. The miss: a normal log, it said 'unsure', not 'normal'."
-- **50-60 s:** "Honest line: the model is small, so rules cap it. Next: masking names before AI."
-
-## 2. Slides (max 6, one idea each)
-**Deck (7 slides incl. cover, made 25 Oct):** https://claude.ai/artifact/HChaFkKvi6pvRpkuAbwSrb (private until shared from its
-Share menu; export to PPTX/PDF from there). Fill the four `[Member]` placeholders before submitting.
-**Backup demo video (81 s, silent, captioned, recorded on the live site 25 Oct):** kept outside the repo (lean repo);
-re-record with your voice using section 0 for the submission.
-1. **Problem:** the 2 AM marks case + who uses it (college IT / cyber cell). UP 10,117 cyber crime cases in 2022 (source in the notes).
-2. **Solution in 3 words:** Rules find · Open-weight AI explains · SHA-256 proves. The 01-04 flow.
-3. **Open-weight AI (judging line):** Llama 3.1 8B (Meta, Llama licence) on Workers AI; why open-weight; the rule guard (caps) and citation check; eval 16/17 with the miss named.
-4. **Live demo:** big QR + URL; screenshot of the laptop view (verdict + chain above the fold) and the phone view.
-5. **What is new since our last event (existing project, disclosed):** see the list in section 5. Real Loghub logs: Linux 0 -> 849 events, Apache error 0 -> 2,000 parsed.
-6. **Tech + limits + team (4 names):** architecture line, honest limits, who did what, AI disclosure line.
+## 2. Slides (6 to present, 2 backup)
+1. **Cover / hook:** the log line `42->92` at 02:09, "Who changed it? Can you prove it?", LogLens, team, event.
+2. **Problem:** "The IT cell has the log. It does not have the answer." 10,117 (UP, 2022, NCRB via PIB) + 3 pains.
+3. **Solution:** rules find · open-weight AI explains · SHA-256 proves, with a screenshot of the case screen.
+4. **Proof (the moment to remember):** tamper band screenshot; 1 character → 64 of 64 fingerprint characters; signed receipt.
+5. **Open-weight AI, kept honest:** AI panel screenshot; open weights, rules cap it, masking; 16/17 with the miss named.
+6. **Built for Hack Day:** what is new (6 lines), QR + URL, team (4 names).
+- Backup A: how it is built (browser / Worker / D1 / offline) + 57 ms, 308 events, 0 console errors.
+- Backup B: honest limits and next steps.
 
 ## 3. Likely judge questions (2-line answers)
 1. **Why open-weight, not GPT/Gemini?** The weights are public, so anyone can check or self-host the model; no lock-in. We say "open-weight", not "open-source": the Llama licence is not an OSI licence.
-2. **An 8B model, can we trust it?** Not blindly. Rules cap it (no HIGH flag -> no "incident"; no flag -> at most "unsure"), every point must cite a real event, and a cross-check shows where it disagrees with the rules.
+2. **An 8B model, can we trust it?** Not blindly. Rules cap it (no HIGH flag → no "incident"; no flag → at most "unsure"), every point must cite a real event, and a cross-check shows where it disagrees with the rules.
 3. **How accurate?** 16/17 on our own small test set (25 Oct). It is not a real-world accuracy number; real Loghub logs have no security labels.
-4. **Why not Splunk / ELK / Timesketch?** They need servers, setup and training. LogLens is a browser tool for the first hour; big cases still go to full tools.
-5. **Where does the data come from?** The investigator's own log file. Demo: 3 made-up samples (labelled) and 1 real public log from Loghub (cited).
-6. **What goes to the AI? Privacy?** Only parsed event lines (max 200), not the raw file. Account names and IPs are masked by default (USER_1 / IP_1) before the AI call and put back in the browser; system accounts like root stay readable (`scripts/check-redact.ts`).
-7. **What if the AI is wrong or down?** Wrong: caps, citations, cross-check. Down: Gemini backup, then a clearly labelled rules-only summary after 8 s.
+4. **Why not Splunk / ELK / Timesketch (an existing solution)?** They need servers, setup and training. LogLens is a browser tool for the first hour; big cases still go to full tools.
+5. **Where does the data come from?** The investigator's own log file. Demo: 3 made-up samples (labelled) and 1 real public log from Loghub (cited in the file).
+6. **What goes to the AI? Privacy?** Only parsed event lines (max 200), not the raw file. Account names, IPs, auth.log host names and e-mails are masked by default (USER_1, IP_1, HOST_1, EMAIL_1) and put back in the browser; system accounts like root stay readable (`scripts/check-redact.ts`).
+7. **What if the AI is wrong or down?** Wrong: caps, citations, cross-check. Down: Gemini backup after 4 s, then a clearly labelled rules-only summary.
 8. **Prompt injection from a log?** Log text is fenced as untrusted data. Test case 17 hides "ignore previous instructions"; the verdict stays incident.
 9. **Can someone fake the evidence?** The server signs each receipt (HMAC-SHA256) and chains it in D1; one changed digit shows TAMPERED. Limit: no login yet, anyone can add receipts.
-10. **Is the report legal evidence?** No. It records hash function and value, but it is an investigation aid, not a BSA s.63 certificate.
-11. **How will it scale?** Parsing runs in the browser (4,999-event case in about 30 ms here); the AI sees at most 200 events. Very large logs need a Web Worker (on our list).
-12. **What did AI tools do vs you?** Claude Code wrote most code under our direction; we chose the problem, rules, test cases and checks, and verified each change with build, eval and browser tests.
-13. **Is this an existing project?** Yes, disclosed: v1 at CHAKRAVYUH, v2 at Avinya. Section 5 lists what is new for Hack Day, with commits.
-14. **Business / impact model?** Free tool for college IT cells; cost is the free Cloudflare tier. A paid tier would only be needed for heavy AI use (Workers AI: 10,000 free neurons a day).
-15. **Why this stack, not Python/React?** No server to run, fast on cheap phones, one language end to end. Trade-off: no trained ML model, because we have no labelled college dataset to train one honestly.
+10. **Is the report legal evidence?** No. It records the hash function and value, but it is an investigation aid, not a BSA 2023 s.63 certificate.
+11. **How will it scale?** Parsing and rules run on the investigator's device: 20,000 lines in 57 ms in our speed check; the AI sees at most 200 events.
+12. **What did AI do versus what you did?** Claude Code wrote most code under our direction; we chose the problem, rules, test cases and checks, and verified each change with build, eval and browser tests. Inside the app, Llama writes the summary only.
+13. **Is this an existing project?** Yes, disclosed: v1 at CHAKRAVYUH, v2 at Avinya. Slide 6 and section 5 list what is new for Hack Day.
+14. **Business / impact model?** Free tool for college IT cells; cost is the free Cloudflare tier. A paid tier only for heavy AI use (Workers AI: 10,000 free neurons a day).
+15. **No internet at the venue?** `npm run start:offline`: samples, rules, chain, SHA-256 verify and reports still work; the AI shows the labelled rules summary.
 
 ## 4. Backup plan
 - Record the demo screen twice (90 s each, no editing) after a warm-up; keep it on the laptop and a phone.
-- Local run: `npm install` -> `cp .env.example .dev.vars` -> `npm start` -> http://localhost:8787.
-- Screenshots: take fresh ones of the live site on demo day (laptop, phone, dark); they are not kept in the repo.
-- AI quota gone: say "this is our offline mode" and show the labelled rules summary.
+- Local run: `npm install` → `cp .env.example .dev.vars` → `npm start` → http://localhost:8787.
+- No internet: `npm run start:offline` → http://127.0.0.1:4321 (run it once at home first, with internet, after `npm ci`).
+- Screenshots: slides 3, 4 and 5 are real screenshots of the app; if the live demo fails, talk over them.
+- AI quota gone: "this is our offline mode" → the labelled rules summary.
 
-## 5. What is new for Hack Day (25 Oct, branch `lu-upgrade`, commits in docs/MASTER_LOG.md)
+## 5. What is new for Hack Day (branch `lu-upgrade`, commits in git log)
 1. Open-weight Llama 3.1 8B is the primary AI (was Gemini); Gemini only a backup; caps on every Llama answer.
-2. Real-log parsing (Loghub): old-style sshd(pam_unix), su, Invalid user, POSSIBLE BREAK-IN, disconnects, message repeated, Apache error log.
-3. A real public SSH log as a sample (cited), next to the made-up ones.
-4. Logic fix: a blocked (DENIED) attempt is medium and not an "Impact" stage.
-5. UI: verdict and attack chain fit a 1366x768 laptop screen; phone layout with a tab bar; filter chips; dark mode; blinking-eye logo.
+2. Real-log parsing (Loghub): old-style sshd(pam_unix), su, Invalid user, message repeated, Apache error log; a real public SSH log as a sample.
+3. Masking before the AI call: account names, IPs, auth.log host names and e-mails.
+4. Integrity view: both SHA-256 fingerprints with the changed characters marked, and the changed log line.
+5. Verdict as a story from the rules' attack chain, event tracker, plain-word chain cards; rules about 40× faster (20,000 lines in 57 ms).
+6. Offline mode (`npm run start:offline`); New Year fix for auth.log; new dark console UI with light mode.
 
 ## 6. AI disclosure (same as README)
 "Built with Claude Code (code, UI, rules, tests and docs, written under our direction and checked by us). Inside the app, the open-weight Llama 3.1 8B model (Meta) on Cloudflare Workers AI writes the summary; Google Gemini is only a backup. Problem choice, scope, rules design, test cases and the demo are ours."
 
 ## 7. Hinglish cheat-sheet
-1. Hook: "Marks 42 se 92, raat 2 baje, professor bole maine nahi kiya."
-2. Teen shabd: "Rules dhoondhte hain, open AI samjhata hai, SHA-256 saboot deta hai."
-3. Open-weight: "Model ke weights public hain, koi bhi check kar sakta hai. Open-source nahi bolna, licence alag hai."
-4. Demo: "ERP sample dabao → verdict → 4 dots → chain 1-2-3-4 → High filter."
-5. Real data: "Real SSH log dabao: ye asli public log hai, Loghub se."
-6. AI: "Analyze dabao → Llama label → har point pe event number → cross-check."
-7. Guard: "Chhota model hai, isliye rules uski nigrani karte hain."
-8. Saboot: "Receipt VALID → ek digit badlo → TAMPERED."
-9. Imaandari: "17 me se 16 sahi; ek normal log pe 'unsure' bola, 'normal' nahi."
-10. Close: "Apna log khud try karo, QR scan karo."
+1. Hook: "Marks 42 se 92, raat 2 baje. Professor bole maine nahi kiya. Kisne kiya, aur log pe bharosa kaise?"
+2. Number: "UP mein 2022 mein 10,117 cyber crime cases, NCRB ka data."
+3. Teen shabd: "Rules dhoondhte hain, open-weight AI samjhata hai, SHA-256 saboot deta hai."
+4. Demo: "Start here wala card dabao → laal headline padho → tracker ka laal hissa dikhao → chain."
+5. Wow: "Receipt VALID → MATCH → 42 ko 43 → TAMPERED, 64 mein se 64 characters badle."
+6. AI: "Analyze dabao → Llama label → har point pe event number → naam pehle mask hote hain."
+7. Imaandari: "17 mein se 16 sahi; ek normal log pe 'unsure' bola, 'normal' nahi."
+8. Open-weight: "Weights public hain, koi bhi check kar sakta hai. Open-source mat bolna."
+9. Purana project: "Existing project hai, slide 6 pe likha hai kya naya hai."
+10. Close: "Rules find it. Open-weight AI explains it. SHA-256 proves it. QR scan karo. Thank you." Phir chup.
