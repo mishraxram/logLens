@@ -34,6 +34,10 @@ Every number here comes from a command run on 25 Oct 2026 (docs/TESTSET.md, docs
 - **50-60 s:** "Honest line: the model is small, so rules cap it. Next: masking names before AI."
 
 ## 2. Slides (max 6, one idea each)
+**Deck (7 slides incl. cover, made 25 Oct):** https://claude.ai/artifact/HChaFkKvi6pvRpkuAbwSrb (private until shared from its
+Share menu; export to PPTX/PDF from there). Fill the four `[Member]` placeholders before submitting.
+**Backup demo video (81 s, silent, captioned, recorded on the live site 25 Oct):** kept outside the repo (lean repo);
+re-record with your voice using section 0 for the submission.
 1. **Problem:** the 2 AM marks case + who uses it (college IT / cyber cell). UP 10,117 cyber crime cases in 2022 (source in the notes).
 2. **Solution in 3 words:** Rules find · Open-weight AI explains · SHA-256 proves. The 01-04 flow.
 3. **Open-weight AI (judging line):** Llama 3.1 8B (Meta, Llama licence) on Workers AI; why open-weight; the rule guard (caps) and citation check; eval 16/17 with the miss named.
