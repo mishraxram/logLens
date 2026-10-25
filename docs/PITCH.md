@@ -61,7 +61,7 @@ Every number here comes from a command run on 25 Oct 2026 (docs/TESTSET.md, docs
 ## 4. Backup plan
 - Record the demo screen twice (90 s each, no editing) after a warm-up; keep it on the laptop and a phone.
 - Local run: `npm install` -> `cp .env.example .dev.vars` -> `npm start` -> http://localhost:8787.
-- Screenshots: `docs/screenshots/app-*.jpg` (laptop, phone, dark).
+- Screenshots: take fresh ones of the live site on demo day (laptop, phone, dark); they are not kept in the repo.
 - AI quota gone: say "this is our offline mode" and show the labelled rules summary.
 
 ## 5. What is new for Hack Day (25 Oct, branch `lu-upgrade`, commits in docs/MASTER_LOG.md)
