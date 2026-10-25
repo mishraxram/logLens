@@ -119,6 +119,8 @@ const samples = [
       </section>
 
       <section id="result" class="hidden space-y-5">
+        <!-- Integrity result, full width at the top of the case (filled by showVerify): the demo's key moment -->
+        <div id="integrityBand" class="hidden" role="status"></div>
         <div id="notes"></div>
         <!-- Case summary: verdict, key numbers and a mini MITRE stage strip in one card -->
         <div class="case-sum">
@@ -239,6 +241,7 @@ const samples = [
   function resetCaseView() {
     lastVerify = null; lastAi = null;
     $('verifyOut').replaceChildren(); $('aiOut').replaceChildren(); $('aiMsg').textContent = '';
+    $('integrityBand').replaceChildren(); $('integrityBand').className = 'hidden';
     const all = document.querySelector<HTMLInputElement>('input[name=tlf][value=all]'); if (all) all.checked = true;
     setIntake(false);
   }
@@ -403,15 +406,57 @@ const samples = [
     if (f) showVerify(await verifyEvidence(await f.arrayBuffer()));
   });
 
+  // Characters of `a` and `b` side by side, the ones that differ wrapped in <mark>
+  function markDiff(text: string, other: string) {
+    const p = el('span', '');
+    for (let i = 0; i < text.length; i++) {
+      if (text[i] === other[i]) p.append(text[i]); else p.append(el('mark', '', text[i]));
+    }
+    return p;
+  }
+  // The integrity band at the top of the case: big on TAMPERED (both fingerprints + the changed line), small on MATCH
+  function showBand(r: NonNullable<Awaited<ReturnType<typeof verifyEvidence>>>) {
+    const band = $('integrityBand'); band.replaceChildren();
+    if (r.match) {
+      band.className = 'iband iband-ok';
+      band.append(el('p', 'iband-t', '✓ MATCH · SHA-256 unchanged since the evidence was sealed'));
+      return;
+    }
+    band.className = 'iband iband-bad';
+    const changedChars = [...r.current].filter((c, i) => c !== r.original[i]).length;
+    band.append(el('p', 'iband-k', 'Integrity check'), el('p', 'iband-h', '▲ TAMPERED: the evidence changed after it was sealed'));
+    const hashes = el('div', 'iband-hashes');
+    const row = (label: string, text: string, other: string) => {
+      const d = el('div', 'iband-row'); d.append(el('span', 'iband-l', label), el('code', '', '')); d.lastElementChild!.append(markDiff(text, other)); return d;
+    };
+    hashes.append(row('Sealed', r.original, r.current), row('Now', r.current, r.original));
+    band.append(hashes);
+    const original = getEvidence()?.kind === 'text' ? getOriginal() : null;
+    const diff = original !== null ? changedLines(original, logBox.value) : [];
+    band.append(el('p', 'iband-note', `${diff.length ? `${diff.length} line${diff.length === 1 ? '' : 's'} of the log changed` : 'The file changed'}, and ${changedChars} of 64 fingerprint characters changed with it.`));
+    if (diff[0]) {
+      const d = diff[0];
+      const box = el('div', 'iband-line');
+      box.append(el('span', 'iband-l', `Line ${d.line}`));
+      const b = el('code', 'iband-before', ''); b.append(markDiff(d.before, d.after));
+      const a = el('code', 'iband-after', ''); a.append(markDiff(d.after, d.before));
+      box.append(b, a);
+      band.append(box);
+    }
+    if (band.getBoundingClientRect().top < 0 || band.getBoundingClientRect().top > innerHeight * .6)
+      band.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  }
+
   function showVerify(r: Awaited<ReturnType<typeof verifyEvidence>>) {
     if (!r) return;
     lastVerify = r;
     void sealNow(r.match ? 'VERIFIED_MATCH' : 'VERIFIED_TAMPERED', r.current); // server log of who verified what
     const out = $('verifyOut'); out.replaceChildren();
+    showBand(r);
     if (r.match) {
-      out.append(el('p', 'p-3 rounded-lg bg-match text-white font-semibold', 'MATCH: evidence unchanged since it was locked.'));
+      out.append(el('p', 'vout vout-ok', '✓ MATCH: evidence unchanged since it was locked.'));
     } else {
-      out.append(el('p', 'p-3 rounded-lg bg-flag text-white font-semibold', 'TAMPERED: hash mismatch. The evidence changed after it was locked.'));
+      out.append(el('p', 'vout vout-bad', '▲ TAMPERED: hash mismatch. The evidence changed after it was locked.'));
       out.append(el('p', 'font-mono text-xs break-all mt-2', `Locked  ${r.original}`), el('p', 'font-mono text-xs break-all text-flag', `Now     ${r.current}`));
       // Retrieve: compare with the sealed copy saved at lock time, and offer to restore it
       const original = getEvidence()?.kind === 'text' ? getOriginal() : null;

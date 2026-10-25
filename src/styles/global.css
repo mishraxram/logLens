@@ -706,3 +706,25 @@ body::after { content: ""; position: fixed; z-index: -1; pointer-events: none; l
 .flag-chip { display: inline-flex; align-items: center; min-height: 18px; padding: 0 .35rem; border-radius: 5px; font-family: var(--font-sans); font-size: .68rem; font-weight: 600; vertical-align: 1px;
   color: var(--accent-text); background: color-mix(in srgb, var(--color-tag) 14%, transparent); border: 1px solid color-mix(in srgb, var(--color-tag) 35%, transparent); white-space: nowrap; }
 @container (min-width: 640px) { .ev-top { grid-template-columns: 2.2rem 13.4rem minmax(6.5rem, 1.3fr) minmax(4.5rem, .7fr) 8.2rem minmax(5rem, .9fr); } }
+
+/* Integrity band: the tamper moment, full width at the top of the case */
+.iband { border-radius: 12px; border: 1px solid; padding: .9rem 1.1rem; animation: rise .3s ease both; }
+.iband-ok { color: var(--color-match); background: color-mix(in srgb, var(--color-match) 9%, var(--color-sheet)); border-color: color-mix(in srgb, var(--color-match) 40%, transparent); padding: .6rem 1rem; }
+.iband-t { font-weight: 600; font-size: .95rem; }
+.iband-bad { color: var(--color-ink); background: color-mix(in srgb, var(--color-flag) 10%, var(--color-sheet)); border-color: color-mix(in srgb, var(--color-flag) 55%, transparent);
+  box-shadow: inset 4px 0 0 var(--color-flag), 0 0 50px -16px var(--glow-red); }
+.iband-k { font-family: var(--font-mono); font-size: .68rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--color-flag); }
+.iband-h { font-size: clamp(1.25rem, 2.2vw, 1.6rem); font-weight: 650; letter-spacing: -.02em; color: var(--color-flag); margin-top: .15rem; }
+.iband-hashes { display: grid; gap: .3rem; margin-top: .7rem; }
+.iband-row, .iband-line { display: grid; grid-template-columns: 4.2rem minmax(0, 1fr); gap: .15rem .6rem; align-items: baseline; }
+.iband-l { font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--color-muted); }
+.iband code { font-family: var(--font-mono); font-size: .82rem; overflow-wrap: anywhere; color: var(--color-muted); }
+.iband mark { background: color-mix(in srgb, var(--color-flag) 22%, transparent); color: var(--color-flag); border-radius: 2px; }
+.iband-note { margin-top: .6rem; font-size: .9rem; }
+.iband-line { margin-top: .6rem; padding-top: .6rem; border-top: 1px dashed color-mix(in srgb, var(--color-flag) 35%, transparent); }
+.iband-line code { grid-column: 2; }
+.iband-before mark { background: color-mix(in srgb, var(--color-muted) 25%, transparent); color: var(--color-ink); text-decoration: line-through; }
+.iband-after { color: var(--color-ink) !important; }
+.vout { padding: .65rem .8rem; border-radius: 10px; border: 1px solid; font-weight: 600; font-size: .9rem; }
+.vout-ok { color: var(--color-match); background: color-mix(in srgb, var(--color-match) 10%, transparent); border-color: color-mix(in srgb, var(--color-match) 40%, transparent); }
+.vout-bad { color: var(--color-flag); background: color-mix(in srgb, var(--color-flag) 10%, transparent); border-color: color-mix(in srgb, var(--color-flag) 45%, transparent); }
