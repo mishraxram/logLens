@@ -15,9 +15,13 @@ Every number here comes from a command or a source checked on 25 Oct 2026. Do no
   [AngelHack](https://angelhack.com/blog/10-tips-to-help-you-rock-your-next-hackathon-demo/),
   [SlideModel](https://slidemodel.com/hackathon-presentation/)).
 - So: 6 slides, one idea each; slides 3-5 are also the fallback if the live demo fails (each shows the same screen).
-- Not AI-looking: the deck uses the app's own look (dark evidence room, amber = evidence, red = tamper, IBM Plex),
-  real screenshots of the app, "Exhibit 01-06" labels like a case file, no stock images, no icons-for-decoration,
-  no "revolutionise" words. Every number has a source in the speaker notes.
+- Look (v2 of the deck): light and warm, with Claude's brand palette (dark #141413, light #FAF9F5, accent orange
+  #D97757, blue #6A9BCC, green #788C5D; from Anthropic's brand-guidelines skill). Only the tamper slide is dark, so
+  that moment stands out; the closing slide is orange. Type: Bricolage Grotesque (headings), Instrument Sans (text),
+  JetBrains Mono (log lines). LogLens and SOLAR FLARES are the biggest words on the cover and the closing slide.
+- Not AI-looking: real screenshots of the app in window frames, a tilted product shot that breaks the grid,
+  a bento grid for the problem, "Exhibit 01-06" labels like a case file, no stock images, no dates, no
+  "revolutionise" words. Every number has a source in the speaker notes.
 - Left out on purpose: market size, user counts, testimonials, architecture on the main slides (it is in backup).
 
 ## 1. Three-minute live script (matches the deck notes)
