@@ -174,8 +174,14 @@ label:has(input.sr-only:focus-visible) { outline: 3px solid var(--color-tag); ou
   .row.is-high { background: rgba(180,35,24,.07); border-left-color: var(--color-flag); }
   .row.is-med { background: rgba(227,167,47,.12); border-left-color: var(--color-tag); }
   .ev-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: .1rem .75rem; }
+  /* A long account name or path wraps inside its own cell instead of running into the next column */
+  .ev-top > * { min-width: 0; overflow-wrap: anywhere; }
+  .ev-top > :nth-child(2) { white-space: nowrap; } /* the timestamp stays on one line */
+  /* Folded extra reasons / flags: a small, clearly clickable summary */
+  .more > summary { cursor: pointer; display: inline-flex; align-items: center; min-height: 28px; font-size: .85rem; font-weight: 600; color: var(--color-muted); text-decoration: underline; text-underline-offset: 2px; }
+  .more[open] > summary { color: var(--color-ink); }
   @container (min-width: 640px) {
-    .ev-top { display: grid; grid-template-columns: 2.4rem 10rem minmax(4rem, 1fr) 5.5rem 8.5rem 8rem; gap: .5rem; align-items: baseline; }
+    .ev-top { display: grid; grid-template-columns: 2.2rem 10.6rem minmax(6.5rem, 1.3fr) minmax(4.5rem, .7fr) 8.2rem minmax(5rem, .9fr); gap: .5rem; align-items: baseline; }
   }
 
   .seg { display: inline-flex; padding: 3px; gap: 2px; background: rgba(27,31,36,.07); border-radius: 12px; }

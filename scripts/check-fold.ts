@@ -28,6 +28,8 @@ await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFac
 if (dark) await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: 'dark' }] });
 await send('Page.navigate', { url });
 for (let t = 0; t < 40 && !(await js(`document.readyState === 'complete' && !!document.querySelector('[data-sample]')`)); t++) await sleep(250);
+// Label the run as a test (like e2e), so the cases dashboard hides its receipt
+await js(`(() => { const i = document.getElementById('investigator'); i.value = 'TEST check-fold'; i.dispatchEvent(new Event('change')); })()`);
 await sleep(600); await js(`document.querySelector('[data-sample]').click()`);
 for (let t = 0; t < 40 && !(await js(`!document.getElementById('result').closest('.hidden') && document.querySelectorAll('#timeline > *').length > 5`)); t++) await sleep(250);
 await sleep(800);

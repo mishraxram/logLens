@@ -655,7 +655,14 @@ const samples = [
       li.append(el('p', 'mt-1', `${c.user}${c.role ? ` (${c.role})` : ''} from ${c.ip || 'unknown IP'}: ${c.action} ${c.target}`));
       if (c.before) li.append(el('p', 'font-mono text-sm mt-1', `Before ${c.before}  →  After ${c.after}`));
       else li.append(el('p', 'font-mono text-sm mt-1', c.after));
-      c.reasons.slice(0, 4).forEach((r) => li.append(el('p', 'text-sm text-ink/80 mt-0.5', r)));
+      // First 2 reasons in view; the rest fold behind "N more reasons" (still in the page, one click away)
+      c.reasons.slice(0, 2).forEach((r) => li.append(el('p', 'text-sm text-ink/80 mt-0.5', r)));
+      if (c.reasons.length > 2) {
+        const more = el('details', 'more mt-1');
+        more.append(el('summary', '', `${c.reasons.length - 2} more reason${c.reasons.length - 2 === 1 ? '' : 's'}`));
+        c.reasons.slice(2).forEach((r) => more.append(el('p', 'text-sm text-ink/80 mt-0.5', r)));
+        li.append(more);
+      }
       chList.append(li);
     }
 
@@ -680,7 +687,13 @@ const samples = [
         el('span', 'font-semibold', e.user || '-'), el('span', 'text-sm text-muted', e.role), el('span', 'font-mono text-sm', e.ip),
         el('span', 'font-mono text-sm font-semibold', e.action));
       li.append(top, el('p', 'font-mono text-xs text-ink/70 break-all mt-0.5', `${e.target} ${e.detail}`));
-      for (const f of e.flags) {
+      // High-risk flags always in view; with 3+ flags, the first medium one shows and the rest fold behind "+N more"
+      const order = [...e.flags.filter((f) => f.severity === 'high'), ...e.flags.filter((f) => f.severity !== 'high')];
+      const inView = order.length > 2 ? order.filter((f, i) => f.severity === 'high' || i === order.findIndex((g) => g.severity !== 'high')) : order;
+      const folded = order.filter((f) => !inView.includes(f));
+      const fold = folded.length ? el('details', 'more mt-1') : null;
+      if (fold) fold.append(el('summary', '', `+${folded.length} more flag${folded.length === 1 ? '' : 's'}: ${folded.map((f) => f.code).join(', ')}`));
+      for (const f of order) {
         const p = el('p', `mt-1 text-sm ${f.severity === 'high' ? 'text-flag font-semibold' : 'text-ink'}`, f.reason);
         p.prepend(el('span', 'pill-ico', f.severity === 'high' ? '▲ ' : '● '));
         p.firstElementChild!.setAttribute('aria-hidden', 'true');
@@ -690,8 +703,9 @@ const samples = [
           a.href = mitreUrl(t.id); a.target = '_blank'; a.rel = 'noopener'; a.title = `MITRE ATT&CK ${t.id}: ${t.name}`;
           p.append(' ', a);
         }
-        li.append(p);
+        (fold && folded.includes(f) ? fold : li).append(p);
       }
+      if (fold) li.append(fold);
       list.append(li);
     }
     if (parsed.unparsed.length) {
