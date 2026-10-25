@@ -61,7 +61,11 @@ const samples = [
           <div class="evtag">
             <p class="font-semibold">Evidence tag</p>
             <p id="evName" class="text-sm mt-1 whitespace-pre-line"></p>
-            <p class="text-xs font-semibold mt-2">SHA-256</p>
+            <div class="flex items-center gap-1.5 mt-2">
+              <p class="text-xs font-semibold">SHA-256</p>
+              <details class="tip"><summary aria-label="What is SHA-256?">?</summary><p>A fingerprint of the exact bytes of this evidence. Change one character and the fingerprint changes completely, so a match later means the file is unchanged.</p></details>
+              <button id="copyHash" type="button" class="copy-btn">Copy</button>
+            </div>
             <p id="evHash" class="font-mono text-xs break-all"></p>
           </div>
           <div id="receipt" class="mt-3 text-sm" aria-live="polite"></div>
@@ -121,7 +125,7 @@ const samples = [
 
         <!-- Attack chain: flagged events linked by shared IP / account, in MITRE ATT&CK tactic stages -->
         <div id="chainPanel" class="panel p-4 hidden">
-          <div class="panel-h !mb-2 !pb-2"><h2>Attack chain</h2><span class="kicker">MITRE ATT&amp;CK · built by rules, not AI</span></div>
+          <div class="panel-h !mb-2 !pb-2"><h2 class="!mr-0">Attack chain</h2><details class="tip"><summary aria-label="What is MITRE ATT&amp;CK?">?</summary><p>MITRE ATT&amp;CK is a public catalogue of attacker tactics (like Credential Access) and techniques (like T1110 password guessing). Each stage here links to its page.</p></details><span class="kicker ml-auto">MITRE ATT&amp;CK · built by rules, not AI</span></div>
           <p class="sr-only">Flagged events joined when they share an IP or an account, then put in MITRE ATT&CK tactic order of first appearance.</p>
           <div id="chains" class="space-y-3"></div>
         </div>
@@ -129,7 +133,8 @@ const samples = [
         <!-- AI investigation summary -->
         <div id="aiPanel" class="panel p-4 lg:p-5">
           <div class="panel-h">
-            <h2>What happened</h2>
+            <h2 class="!mr-0">What happened</h2>
+            <details class="tip mr-auto"><summary aria-label="What does open-weight AI mean here?">?</summary><p>The model is Llama 3.1 8B by Meta. Its weights are public (Llama licence), so anyone can check or run it. It is small, so the rules cap its verdict and every point must cite real events.</p></details>
             <div class="seg" role="radiogroup" aria-label="Summary language">
               <label><input type="radio" name="lang" value="en" checked /> English</label>
               <label><input type="radio" name="lang" value="hi" /> हिंदी</label>
@@ -188,6 +193,9 @@ const samples = [
       </section>
     </div>
   </div>
+
+  <!-- Short confirmations (report downloaded, hash copied); read out by screen readers -->
+  <div id="toasts" class="toasts" role="status" aria-live="polite"></div>
 
   <!-- Phone only, once a case is open: jump between the parts of the case (44 px targets) -->
   <nav class="casenav" aria-label="Case sections">
@@ -427,8 +435,10 @@ const samples = [
   // PDF: open the report in a new tab and open the print dialog ("Save as PDF")
   $('pdf').addEventListener('click', async () => {
     const w = window.open('', '_blank');
-    if (!w) { msg.textContent = 'Allow pop-ups to save the PDF, or use Download report (HTML).'; return; }
+    // Shown as a toast: the intake message line is hidden while a case is open
+    if (!w) { toast('Pop-up blocked: allow pop-ups to save the PDF, or use HTML report.', 'bad'); return; }
     await audit('PDF_REPORT', 'Report opened for Save as PDF');
+    toast('Report opened in a new tab: choose “Save as PDF” in the print dialog');
     w.document.write(buildReport({ evidence: getEvidence(), verify: lastVerify, events: last?.events ?? [], notes: last?.notes ?? [], ai: lastAi, audit: getAudit(), chainBrokenAt: await verifyAuditChain(), generatedAt: now() }));
     w.document.close();
     w.focus();
@@ -445,7 +455,24 @@ const samples = [
     a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
     a.download = `loglens-report-${getEvidence()?.hash.slice(0, 8) ?? 'case'}.html`;
     a.click();
+    toast(`Report downloaded: ${a.download}`);
     showLocker();
+  });
+
+  // Small confirmation that fades after a few seconds (the text stays readable for screen readers via aria-live)
+  function toast(text: string, kind: 'ok' | 'bad' = 'ok') {
+    const t = el('p', `toast ${kind === 'bad' ? 'is-bad' : ''}`, text);
+    $('toasts').append(t);
+    setTimeout(() => t.classList.add('is-out'), 3200);
+    setTimeout(() => t.remove(), 3600);
+  }
+
+  // Copy the full SHA-256 (the case bar shows it shortened)
+  $('copyHash').addEventListener('click', async () => {
+    const h = getEvidence()?.hash;
+    if (!h) return;
+    try { await navigator.clipboard.writeText(h); toast('SHA-256 copied'); }
+    catch { toast('Could not copy: select the hash and copy it by hand', 'bad'); }
   });
 
   // New case clears this browser's copy of the case (evidence tag, local audit trail): ask first.
@@ -475,7 +502,7 @@ const samples = [
     if (!last || !last.events.length) { $('aiMsg').textContent = 'Build a timeline first.'; return; }
     const lang = (document.querySelector('input[name=lang]:checked') as HTMLInputElement).value;
     const btn = $('ai') as HTMLButtonElement;
-    btn.disabled = true; $('aiMsg').textContent = 'Asking AI… (up to 8s)'; $('aiOut').replaceChildren();
+    btn.disabled = true; btn.setAttribute('aria-busy', 'true'); $('aiMsg').textContent = 'Asking AI… (up to 8s)'; $('aiOut').replaceChildren();
     // Send flagged events first so they survive the 200-event limit
     const sorted = [...last.events].sort((a, b) => Number(b.flags.length > 0) - Number(a.flags.length > 0)).slice(0, 200).sort((a, b) => a.n - b.n);
     // Masking (on by default): account names and IPs become USER_1 / IP_1 before sending, and come back here
@@ -503,7 +530,7 @@ const samples = [
       // Plain words first, the technical reason in brackets for whoever debugs it
       $('aiMsg').textContent = `The AI could not answer, so the rules summary below is shown instead (${(err as Error).message}).`;
     }
-    btn.disabled = false;
+    btn.disabled = false; btn.removeAttribute('aria-busy');
     lastAi = result;
     await audit(result.source === 'ai' ? 'AI_SUMMARY' : 'OFFLINE_SUMMARY', `${result.model ?? 'rules'} · confidence ${result.confidence} · ${lang}`);
     showLocker();
@@ -593,7 +620,15 @@ const samples = [
     if (open) history.pushState({ intake: true }, '', location.pathname + location.search + '#intake');
   });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && document.body.classList.contains('show-intake') && !$('result').classList.contains('hidden')) setIntake(false);
+    if (e.key !== 'Escape') return;
+    // Esc closes an open term explainer first, else returns from case selection to the case
+    const tip = document.querySelector<HTMLDetailsElement>('details.tip[open]');
+    if (tip) { tip.open = false; tip.querySelector('summary')?.focus(); return; }
+    if (document.body.classList.contains('show-intake') && !$('result').classList.contains('hidden')) setIntake(false);
+  });
+  // A click outside an open term explainer closes it
+  document.addEventListener('click', (e) => {
+    document.querySelectorAll<HTMLDetailsElement>('details.tip[open]').forEach((t) => { if (!t.contains(e.target as Node)) t.open = false; });
   });
   window.addEventListener('popstate', () => {
     // Back from case selection returns to the case (the case itself is kept)

@@ -335,6 +335,24 @@ body:has(#result:not(.hidden)) .page-head { display: none; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 .side-btn { padding-inline: .5rem; font-size: .875rem; white-space: nowrap; }
 
+/* Term explainers: a small "?" that opens a short note (native <details>: mouse, keyboard and screen readers) */
+.tip { position: relative; display: inline-block; }
+.tip > summary { list-style: none; display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; border: 1px solid var(--color-line); font-size: .8rem; font-weight: 700; color: var(--color-muted); cursor: pointer; background: var(--color-sheet); }
+.tip > summary::-webkit-details-marker { display: none; }
+.tip > summary:hover, .tip[open] > summary { color: var(--color-ink); border-color: var(--color-ink); }
+.tip > p { position: absolute; z-index: 25; top: calc(100% + 6px); left: -8px; width: min(320px, 80vw); padding: .7rem .85rem; border-radius: 10px; background: var(--color-night); color: #E9ECE8; font-size: .85rem; font-weight: 400; line-height: 1.45; text-transform: none; letter-spacing: 0; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+.evtag .tip > p { left: auto; right: -40px; }
+.copy-btn { margin-left: auto; min-height: 24px; padding: 0 .5rem; border-radius: 6px; font-size: .75rem; font-weight: 700; color: #1B1F24; border: 1px solid rgba(27,31,36,.35); background: rgba(255,255,255,.35); }
+.copy-btn:hover { background: rgba(255,255,255,.6); }
+
+/* Toasts: bottom-right on laptops, above the tab bar on phones; slide + fade, nothing moves under reduced motion */
+.toasts { position: fixed; right: 16px; bottom: 16px; z-index: 50; display: grid; gap: .5rem; justify-items: end; pointer-events: none; }
+@media (max-width: 1023px) { body:has(#result:not(.hidden)) .toasts { bottom: 72px; } }
+.toast { pointer-events: auto; max-width: min(420px, calc(100vw - 32px)); padding: .65rem .9rem; border-radius: 10px; background: var(--color-night); color: #E9ECE8; border-left: 4px solid var(--color-match); font-size: .9rem; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,.25); animation: toast-in .18s ease-out both; transition: opacity .3s ease, transform .3s ease; }
+.toast.is-bad { border-left-color: var(--color-flag); }
+.toast.is-out { opacity: 0; transform: translateY(6px); }
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
 /* Dark mode: the case bar gets an edge so it does not melt into the page */
 :root[data-theme="dark"] .strip { border: 1px solid rgba(255,255,255,.08); }
 
@@ -355,3 +373,9 @@ body:has(#result:not(.hidden)) .page-head { display: none; }
   .ledger td[colspan]::before { content: none; }
   .ledger .hash-cell { max-width: none; white-space: normal; overflow-wrap: anywhere; }
 }
+
+/* Busy button: a small spinner while the AI is answering (static ring under reduced motion) */
+.btn[aria-busy="true"]::after { content: ""; width: .9rem; height: .9rem; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+/* A result that has just arrived fades in once, so the change is noticed */
+#verifyOut > *, #aiOut > * { animation: rise .25s ease both; }
