@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 ---
-<Base current="cases" title="Cases dashboard · LogLens" description="Investigation dashboard: every evidence item sealed on the LogLens server, its status, investigator and a re-check of the signed, hash-chained ledger.">
+<Base wide current="cases" title="Cases dashboard · LogLens" description="Investigation dashboard: every evidence item sealed on the LogLens server, its status, investigator and a re-check of the signed, hash-chained ledger.">
   <header class="mb-5">
     <p class="kicker mb-2">PS6 · investigation dashboard</p>
     <h1 class="font-cond font-bold text-2xl sm:text-3xl leading-tight">Cases dashboard</h1>
@@ -25,9 +25,17 @@ import Base from '../layouts/Base.astro';
 
   <section class="mb-8">
     <div class="panel-h"><h2>Cases</h2><span class="kicker">one per evidence hash</span></div>
-    <!-- Room is reserved before the cards arrive and kept afterwards (shrinking it moved the audit trail up: CLS 0.255).
-         Phone: 60vh (cards stack); laptop: one row of cards -->
-    <div id="cases" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 min-h-[60vh] lg:min-h-[12rem] content-start"><p class="text-muted">Loading cases…</p></div>
+    <!-- Evidence ledger: a table on laptops, stacked cards on phones (same rows). Room is reserved before the rows
+         arrive and kept afterwards (shrinking it moved the audit trail up: CLS 0.255) -->
+    <!-- The reserved room sits on a transparent wrapper, so a short list does not leave a big empty white panel -->
+    <div class="min-h-[60vh] lg:min-h-[12rem]">
+    <div class="panel ledger-wrap">
+      <table class="ledger">
+        <thead><tr><th>Evidence</th><th>Status</th><th>Investigator</th><th>Sealed (UTC)</th><th>Actions</th><th>SHA-256</th></tr></thead>
+        <tbody id="cases"><tr><td colspan="6" class="text-muted">Loading cases…</td></tr></tbody>
+      </table>
+    </div>
+    </div>
   </section>
 
   <section>
@@ -104,18 +112,22 @@ import Base from '../layouts/Base.astro';
     kpi('Ledger entries checked', data.rows.length);
     kpi('Failed checks', bad, bad ? 'is-bad' : '');
     $('counts').textContent = `${byHash.size} case(s) · ${tampered} with tampering seen · ${data.rows.length} ledger entries checked${hiddenCount ? ` · ${hiddenCount} automated test rows hidden` : ''}`;
-    if (!byHash.size) cases.append(el('p', 'text-muted', 'No evidence sealed yet. Open a case on the main page to create the first receipt.'));
+    if (!byHash.size) { const tr = el('tr', ''); const td = el('td', 'text-muted', 'No evidence sealed yet. Open a case on the Desk to create the first receipt.'); td.setAttribute('colspan', '6'); tr.append(td); cases.append(tr); }
 
     for (const [hash, list] of byHash) {
       const latest = list[0], first = list[list.length - 1];
       const [label, cls] = STATUS[latest.action] ?? ['Unknown', 'bg-ink/10'];
-      const card = el('article', 'panel p-3');
-      card.append(el('p', 'font-semibold break-all', first.name),
-        el('p', `inline-block text-sm font-semibold rounded px-2 py-0.5 my-1 ${cls}`, label),
-        el('p', 'text-sm', `Investigator: ${[...new Set(list.map((r) => r.investigator))].join(', ')}`),
-        el('p', 'text-xs text-muted', `Sealed ${when(first.sealed_at)} · ${list.length} action(s) · last ${when(latest.sealed_at)}`),
-        el('p', 'font-mono text-xs break-all mt-1', `SHA-256 ${hash}`));
-      cases.append(card);
+      // One ledger row per evidence hash; data-label gives each cell its name when rows stack on a phone
+      const tr = el('tr', '');
+      const cell = (label: string, node: HTMLElement) => { const td = el('td', ''); td.dataset.label = label; td.append(node); tr.append(td); };
+      cell('Evidence', el('span', 'font-semibold break-all', first.name));
+      cell('Status', el('span', `inline-block text-xs font-semibold rounded px-2 py-0.5 whitespace-nowrap ${cls}`, label));
+      cell('Investigator', el('span', '', [...new Set(list.map((r) => r.investigator))].join(', ')));
+      cell('Sealed (UTC)', el('span', 'font-mono text-xs', `${when(first.sealed_at)} · last ${when(latest.sealed_at)}`));
+      cell('Actions', el('span', 'font-mono', String(list.length)));
+      const h = el('span', 'font-mono text-xs hash-cell', hash); h.title = hash;
+      cell('SHA-256', h);
+      cases.append(tr);
     }
 
 

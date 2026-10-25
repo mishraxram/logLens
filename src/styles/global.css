@@ -332,3 +332,24 @@ body:has(#result:not(.hidden)) .page-head { display: none; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 .side-btn { padding-inline: .5rem; font-size: .875rem; white-space: nowrap; }
+
+/* Dark mode: the case bar gets an edge so it does not melt into the page */
+:root[data-theme="dark"] .strip { border: 1px solid rgba(255,255,255,.08); }
+
+/* Cases: evidence ledger table (laptop) that stacks into labelled cards (phone) */
+.ledger-wrap { overflow: hidden; }
+.ledger { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.ledger thead th { text-align: left; font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--color-muted); padding: .65rem .9rem; background: rgba(127,127,127,.07); border-bottom: 1px solid var(--color-line); }
+.ledger td { padding: .7rem .9rem; border-bottom: 1px solid var(--color-line); vertical-align: top; }
+.ledger tbody tr:last-child td { border-bottom: 0; }
+.ledger tbody tr:hover td { background: rgba(127,127,127,.05); }
+.ledger .hash-cell { display: block; max-width: 22ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 767px) {
+  .ledger thead { display: none; }
+  .ledger, .ledger tbody, .ledger tr, .ledger td { display: block; width: 100%; }
+  .ledger tr { padding: .75rem .9rem; border-bottom: 1px solid var(--color-line); }
+  .ledger td { padding: .2rem 0; border: 0; display: grid; grid-template-columns: 7.5rem minmax(0, 1fr); gap: .5rem; }
+  .ledger td::before { content: attr(data-label); font-size: .75rem; font-weight: 600; color: var(--color-muted); }
+  .ledger td[colspan]::before { content: none; }
+  .ledger .hash-cell { max-width: none; white-space: normal; overflow-wrap: anywhere; }
+}
