@@ -135,6 +135,20 @@ export function parseLog(text: string, year = new Date().getFullYear()): ParseRe
   const notes: string[] = [];
   const unparsed: string[] = [];
   const rows: Omit<LogEvent, 'n' | 'flags' | 'timeText'>[] = [];
+  // auth.log lines carry no year. Logs are written in order, so when the month jumps back by more than
+  // half a year (Dec -> Jan) the log has crossed New Year: later lines belong to the next year.
+  let authYear = year, lastMonth = -1;
+  const auth = (line: string) => {
+    const ev = parseAuthLine(line, authYear);
+    if (!ev) return null;
+    if (lastMonth - ev.time.getMonth() > 6) {
+      authYear++;
+      ev.time.setFullYear(authYear);
+      notes.push(`auth.log has no year: lines from ${MONTHS[ev.time.getMonth()]} on were placed in ${authYear} (log crossed New Year)`);
+    }
+    lastMonth = ev.time.getMonth();
+    return ev;
+  };
 
   for (const rawLine of text.split(/\r?\n/)) {
     const line = rawLine.trim();
@@ -144,10 +158,10 @@ export function parseLog(text: string, year = new Date().getFullYear()): ParseRe
     // syslog "message repeated N times: [ ... ]" = the same line N times (capped at 50)
     const rep = line.match(/^(.*?: )message repeated (\d+) times: \[\s*(.*?)\s*\]$/);
     if (rep) {
-      const inner = parseAuthLine(rep[1] + rep[3], year);
+      const inner = auth(rep[1] + rep[3]);
       if (inner) { for (let i = 0; i < Math.min(+rep[2], 50); i++) rows.push({ ...inner, raw: line }); continue; }
     }
-    const ev = parseErpLine(line) ?? parseAuthLine(line, year) ?? parseAccessLine(line) ?? parseApacheErrorLine(line);
+    const ev = parseErpLine(line) ?? auth(line) ?? parseAccessLine(line) ?? parseApacheErrorLine(line);
     if (ev) rows.push(ev); else unparsed.push(line);
   }
 
