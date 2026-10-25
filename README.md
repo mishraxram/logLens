@@ -82,6 +82,9 @@ These logs have no security labels, so this shows that real files parse and what
 - **Checks on the answer:** points citing events that do not exist are removed; wrong language is rejected; without a
   high-risk rule flag Llama may not say "incident", without any flag at most "unsure"; log text is fenced as untrusted
   data (prompt-injection test: eval case 17).
+- **Browser storage:** a copy of the locked log text (up to 2 MB), its SHA-256 and the local audit trail are saved in
+  this browser's localStorage so a case survives a reload. **New case** clears them; anyone using the same browser
+  profile can read them, so use a private window on a shared computer.
 - **Server ledger:** stores evidence hash, file name, size, investigator name and server time.
 - **How it was built:** with Claude Code (code, UI, rules, tests and docs, written under our direction and checked by us).
   Problem choice, scope, rules design, test cases and the demo are ours. See [docs/TEAM.md](docs/TEAM.md).
