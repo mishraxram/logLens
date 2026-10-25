@@ -19,7 +19,7 @@ git tag pre-lu-upgrade && git checkout -b lu-upgrade
 # pack ki files repo root mein copy karo (same folder structure), phir:
 mkdir -p tests/loghub && for f in OpenSSH/OpenSSH_2k.log Linux/Linux_2k.log Apache/Apache_2k.log; do curl -sSfL "https://raw.githubusercontent.com/logpai/loghub/master/$f" -o "tests/loghub/$(basename $f)"; done
 node scripts/check-loghub.ts tests/loghub/*.log      # baseline numbers dekho
-claude "/loop Run ONE iteration of LOOP-MASTER.md, then schedule the next."
+claude "/loop Run ONE iteration of docs/ai-workflow/LOOP-MASTER.md, then schedule the next."
 ```
 
 ## Pehle ye 3 kaam (loop inke bina guess karega)

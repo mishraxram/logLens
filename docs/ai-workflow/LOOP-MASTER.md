@@ -13,7 +13,7 @@ missing feature, a broken demo, an ugly screen or an unanswered question.
 ## 0. How to run (Claude Code, project folder)
 ```bash
 # one iteration now, then it schedules itself
-claude "/loop Run ONE iteration of LOOP-MASTER.md, then schedule the next."
+claude "/loop Run ONE iteration of docs/ai-workflow/LOOP-MASTER.md, then schedule the next."
 # or just say inside a session:  loop chalao   |   status   |   stop the loop
 ```
 - One iteration = one unit of work, logged in `docs/MASTER_LOG.md` (template in section 13). `/clear` or a new

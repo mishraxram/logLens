@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Master command: one-time setup (key, Cloudflare login, team) + starts the LOOP.md upgrade loop.
-# Run from anywhere:  bash ~/Projects/logLens/win.sh
+# Run from anywhere:  bash ~/Projects/logLens/docs/ai-workflow/win.sh
 # Safe to run again: steps that are already done are skipped.
 set -uo pipefail
-cd "$(dirname "$0")" || exit 1
+cd "$(dirname "$0")/../.." || exit 1   # repo root (this file lives in docs/ai-workflow/)
 
 # Run inside tmux so the loop keeps going when the screen locks or VS Code is closed,
 # and block sleep / lid-close suspend only while it runs (nothing permanent changes).
@@ -67,4 +67,4 @@ fi
 # 5. Start the loop (deep research runs first as Phase R inside it)
 say "5/5 Starting the loop. Type 'status' any time, Esc or 'stop the loop' to stop."
 exec claude --permission-mode auto \
-  "/loop Run ONE iteration of LOOP.md, then schedule the next. Phase R uses the anthropic-skills:deep-research skill. Read docs/TEAM.md for team roles."
+  "/loop Run ONE iteration of docs/ai-workflow/LOOP.md, then schedule the next. Phase R uses the anthropic-skills:deep-research skill. Read docs/TEAM.md for team roles."

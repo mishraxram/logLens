@@ -1,72 +1,111 @@
-# LogLens · team SOLAR FLARES
+# LogLens
 
-**Team:** SOLAR FLARES | **Registration ID:** HK26-0014 | **Event:** अvinya '26 Hackathon 4.0, BIET Lucknow (problem ABCS-02).
-v1 was first built at CHAKRAVYUH 1.0; v2 is the upgrade for अvinya '26 (diff: `git log pre-upgrade-v1..avinya-final`).
+[![CI](https://github.com/mishraxram/logLens/actions/workflows/ci.yml/badge.svg)](https://github.com/mishraxram/logLens/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-> **Problem Statement ABCS-02: AI-Assisted Digital Forensics** (Domain 3: AI-Based Cybersecurity)
-> An AI-assisted platform that analyzes digital artifacts, correlates events, reconstructs incident timelines and maintains evidence integrity with SHA-256 hashing and auditable records. [Full statement](docs/PROBLEM.md)
+**Find who changed what. Prove the log was not touched.**
+LogLens turns a raw server or ERP log into a timeline with explainable red flags and a MITRE ATT&CK attack chain,
+asks an **open-weight AI (Llama 3.1 8B by Meta)** to explain it, and seals the evidence with SHA-256 and a signed
+server receipt. It runs in the browser: no install for the investigator.
 
-**Live (v2):** https://loglens-v2.loglens.workers.dev · **Cases dashboard:** https://loglens-v2.loglens.workers.dev/cases · **Backup (v1):** https://loglens-solarflares.pages.dev
+**Live:** https://loglens-v2.loglens.workers.dev · **Cases dashboard:** [/cases](https://loglens-v2.loglens.workers.dev/cases)
+· Team SOLAR FLARES · built for college IT and cyber-cell investigators.
 
-## Problem
-After an incident (example: college ERP marks changed at 2 AM), a college IT or cyber-cell investigator has thousands of log lines. They must find who did what and when, and show that the logs were not edited afterwards.
+| Laptop (1366x768: verdict and attack chain without scrolling) | Phone (360 px) | Dark mode |
+|---|---|---|
+| ![LogLens on a laptop](docs/ui-research/shots/loglens-after1-1366.jpg) | ![LogLens on a phone](docs/ui-research/shots/loglens-after3-mobile-360.jpg) | ![LogLens in dark mode](docs/ui-research/shots/loglens-after4-dark-1366.jpg) |
 
-## Solution: LogLens (what each PS point maps to)
-| PS | What LogLens does |
+## The problem
+After an incident (example: a student's ERP marks changed from 42 to 92 at 2 AM), a college IT or cyber-cell
+investigator has thousands of log lines. They must find who did what and when, and show that the logs were not edited
+afterwards. Full tools (Splunk, ELK, Timesketch) need servers, setup and training a small IT cell does not have.
+
+## What it does
+| Step | What LogLens does |
 |---|---|
-| PS1 evidence analysis | Parses ERP audit CSV, Linux `auth.log` (sshd, sudo, useradd, usermod, su; old and new syslog style), Apache/Nginx access logs, Apache error logs. Any other file (PDF, image) is hashed as raw bytes; name, size, type and last-modified time are kept |
-| PS2 pattern discovery | 16 explainable rules, each with a verified MITRE ATT&CK technique ID. **Attack chain**: flagged events linked by shared IP or account, in MITRE tactic stages. AI summary (open-weight Llama 3.1 8B on Workers AI, Gemini backup) with indicators that must cite real event numbers, plus "AI found beyond the rules" and an **AI vs rules cross-check** |
-| PS3 timeline | Every event sorted by time, flagged rows marked, change register (who changed what, before → after) |
-| PS4 integrity | SHA-256 in the browser (Web Crypto), MATCH / TAMPERED, changed-lines diff and restore. **Signed server receipt**: HMAC-SHA256, hash-chained, stored in Cloudflare D1 (SQLite) |
-| PS5 reports | HTML / PDF report: hash function + value, server receipt, findings with event numbers, MITRE IDs, attack chain, AI summary, audit trail, full raw timeline |
-| PS6 dashboard | `/cases`: every sealed evidence item, status, investigator, server audit trail with each row re-checked. Case progress strip and investigator name on the main page |
+| **Open** | ERP audit CSV, Linux `auth.log` (sshd, sudo, useradd, usermod, su; old and new syslog style), Apache/Nginx access log, Apache error log. Any other file (PDF, image) is hashed as raw bytes with its metadata. Lines it cannot read are counted and shown, never dropped |
+| **Rules flag** | 16 explainable rules, each with a plain reason, a severity and a verified MITRE ATT&CK technique ID. **Attack chain:** flagged events linked by shared IP or account, in MITRE tactic order. **Change register:** who changed what, before → after |
+| **Open-weight AI explains** | Llama 3.1 8B on Cloudflare Workers AI writes the story (English or Hindi). Every point must cite real event numbers; rules cap the verdict; a cross-check shows where AI and rules disagree. Account names and IPs are **masked before sending** and restored in the browser |
+| **Seal and verify** | SHA-256 in the browser, signed server receipt (HMAC-SHA256, hash-chained in Cloudflare D1), MATCH / TAMPERED with the changed line, HTML/PDF report, `/cases` dashboard with every ledger row re-checked |
 
-**Failure path:** if AI is slow (over 8 s) or down, the app shows an offline summary built from the rules, clearly labelled. If evidence is thin, it says "Not enough evidence" and what to collect next. Lines it cannot read are counted and shown, never dropped. If the server ledger is unreachable, the local hash still works and the app says so.
+If the AI is slow (over 8 s) or down, a clearly labelled rules-only summary appears. If the server ledger is
+unreachable, the local hash still works and the page says so.
 
-## How to run (3 commands, from a clean clone)
+## Quick start
 ```bash
 npm install
-cp .env.example .dev.vars        # put SEAL_SECRET (and optional GEMINI_API_KEY for the backup AI) in .dev.vars
-npm start                        # build + local D1 table + local Worker
+cp .env.example .dev.vars     # set SEAL_SECRET (openssl rand -hex 32); GEMINI_API_KEY is an optional backup
+npm start                     # build + local D1 table + local Worker on http://localhost:8787
 ```
-Open http://localhost:8787. Without keys everything works except the AI summary (offline rules summary instead) and server receipts (local hash only).
+Node 23.6 or newer. Workers AI always runs on Cloudflare, even in local dev, so the AI summary needs
+`npx wrangler login`; without it the page shows the offline rules summary. Deploy: `npx wrangler deploy`.
+
+## How it fits together
+```
+Browser (Astro + TypeScript)                         Cloudflare Worker (worker/index.ts)
+  parse.ts -> rules.ts -> chain.ts -> changes.ts       /api/analyze  Llama 3.1 8B (Workers AI), Gemini backup,
+  evidence.ts: SHA-256 (Web Crypto), local audit log                 8 s budget, citation check, verdict caps
+  redact.ts: USER_1 / IP_1 masking before the AI      /api/seal, /api/ledger  HMAC-SHA256 receipts, hash chain -> D1
+  report.ts: HTML / PDF report                         CSP + security headers, rate limit, size limits
+```
+Why each tool, and the trade-offs against the suggested Python / FastAPI / React stack: [docs/TECH_STACK.md](docs/TECH_STACK.md).
 
 ## Tests (run them yourself)
-- `npm run check`: build, strict typecheck, Worker bundle, and 5 check scripts (rules, hash, change register, attack chain, report content).
-- `node tests/eval.ts [api-url]`: 17 cases from [docs/TESTSET.md](docs/TESTSET.md) through the real parser, rules, hashing and the live AI API (default: v2), 4 s apart.
-  Results on 22 Oct night: 13 live runs from 13/17 to 17/17 (all listed in docs/TESTSET.md). After the fixes at 22:52, every failure was the AI taking over 8 s or a rate limit (offline summary shown), not a wrong rule. Case 17 is a prompt-injection log: the AI must not obey text inside the log.
-  It is a small set we wrote ourselves: it shows the demo path is stable, not accuracy on all real-world logs.
-- `node scripts/e2e.ts <url> 360`: headless Chrome walks the demo path (sample → timeline → MITRE + attack chain → server receipt → AI → cross-check → MATCH → TAMPERED → file upload → dashboard) and fails on any console error.
-- `node scripts/check-seal.ts <url>`: server receipts, bad input, and 6 parallel receipts keep one unbroken chain.
-- Lighthouse mobile on the live site (22 Oct): `/` 100/100/100/100, `/cases` 96-99/100/100/100 (several runs).
+| Command | What it checks | Last result (25 Oct 2026) |
+|---|---|---|
+| `npm run check` | build, strict typecheck, Worker bundle, rules / hash / change register / attack chain / report / masking checks | pass (also in CI on every push) |
+| `npm run loghub` | real Loghub logs parse (table below) | pass |
+| `node scripts/e2e.ts <url> 360` (and 1366, 1920) | headless Chrome walks the whole demo path, phone tab bar, timeline filters; fails on any console error | pass at 360, 1366, 1920 on the preview deployment |
+| `node scripts/check-fold.ts <url> 1366 768 out.jpg` | verdict and attack chain above the fold | chain at 458-712 px (fold 768) |
+| `node tests/eval.ts <url>/api/analyze` | 17 self-written cases through parser, rules, hashing and the live AI | **16/17**; the miss: a normal log where the AI said "unsure", not "normal" ([docs/TESTSET.md](docs/TESTSET.md)) |
+| `node scripts/check-seal.ts <url>` | receipts, bad input, 6 parallel receipts keep one chain | not re-run on 25 Oct (last run 22 Oct, docs/UPGRADE_LOG.md) |
+The eval set is small and written by us: it shows the demo path is stable, not accuracy on all real-world logs.
+Lighthouse on the preview deployment (mobile, 2 runs): performance 96 and 94, accessibility 100, best practices 100.
+UI details and what was not tested: [docs/UI_UPGRADE_REPORT.md](docs/UI_UPGRADE_REPORT.md).
 
-## Tested on real logs (Loghub, public research data)
-Source: https://github.com/logpai/loghub (free for research and academic use; cited as its licence asks). Run: `node scripts/check-loghub.ts tests/loghub/*.log` (25 Oct 2026, one laptop).
-| File (2,000 lines each) | Events | Not understood | Flags | Before the parser update |
-|---|---|---|---|---|
-| OpenSSH_2k.log | 2,008 (2 "message repeated" lines expanded) | 0 | burst-fail 502, shared-ip 73 | 2,000 events but 1,480 were a generic "SSHD" (now 275) |
-| Linux_2k.log | 849 (sshd + su lines) | 1,151 (other services: logrotate, ftpd, klogind...) | burst-fail 464, off-hours 387 | 0 events |
-| Apache_2k.log (error log) | 2,000 | 0 | none (server notices, no person acted) | 0 events |
+## Tested on real logs (Loghub)
+Source: https://github.com/logpai/loghub, a public research collection of real system logs (free for research and
+academic use; cited as its licence asks). The "Real SSH server log" sample in the app is the first 300 lines of
+OpenSSH_2k.log. Run `npm run loghub`.
+| File (2,000 lines each) | Events | Not understood | Flags |
+|---|---|---|---|
+| OpenSSH_2k.log | 2,008 (2 "message repeated" lines expanded) | 0 | burst-fail 502, shared-ip 73 |
+| Linux_2k.log | 849 (sshd + su lines) | 1,151 (other services: logrotate, ftpd, klogind...) | burst-fail 464, off-hours 387 |
+| Apache_2k.log (error log) | 2,000 | 0 | none (server notices, no person acted) |
 These logs have no security labels, so this shows that real files parse and what the rules flag, not accuracy.
 
-## AI usage and data
-- **AI: open-weight Llama 3.1 8B (Meta, Llama licence).** Primary model is `@cf/meta/llama-3.1-8b-instruct-fast`, run on Cloudflare Workers AI in JSON mode. Google Gemini flash-lite models are an optional backup: they start only if Llama fails or has no answer after 4 s, and are off when no `GEMINI_API_KEY` is set. Llama 3.1 is open-weight under the Llama 3.1 Community Licence (not an OSI open-source licence). Called only from the server (`functions/api/analyze.ts`); keys never reach the browser. Prompt in `src/lib/prompts.ts`.
-- **What is sent to the AI:** only parsed event lines (max 200, flagged first) and case notes. Raw files stay in the browser.
-- **Checks on AI output:** indicators citing events that do not exist are removed; wrong language is rejected; Llama 8B may not say "incident" without a high-risk rule flag (shown as "suspicious" with a note); log text is marked as untrusted data so instructions hidden in a log are not followed.
-- **Server ledger:** stores evidence hash, file name, size, investigator name and server time. It is a shared demo ledger with no login.
-- **Building it:** built with Claude Code (code, UI, rules, tests and docs, written under our direction and checked by us). Problem choice, scope, rules design, test cases and the demo are ours. See [docs/TEAM.md](docs/TEAM.md).
+## AI and data
+- **Model:** open-weight Llama 3.1 8B (Meta, Llama 3.1 Community Licence: open-weight, not an OSI open-source licence),
+  `@cf/meta/llama-3.1-8b-instruct-fast` on Cloudflare Workers AI, JSON mode. Google Gemini flash-lite is an optional
+  backup: it starts only if Llama fails or has no answer after 4 s, and is off without `GEMINI_API_KEY`.
+- **What is sent:** only parsed event lines (max 200, flagged first) and case notes, with account names and IPs masked
+  as USER_1 / IP_1 by default (system accounts like root stay readable). Raw files stay in the browser.
+- **Checks on the answer:** points citing events that do not exist are removed; wrong language is rejected; without a
+  high-risk rule flag Llama may not say "incident", without any flag at most "unsure"; log text is fenced as untrusted
+  data (prompt-injection test: eval case 17).
+- **Server ledger:** stores evidence hash, file name, size, investigator name and server time.
+- **How it was built:** with Claude Code (code, UI, rules, tests and docs, written under our direction and checked by us).
+  Problem choice, scope, rules design, test cases and the demo are ours. See [docs/TEAM.md](docs/TEAM.md).
 
 ## Limits (honest)
-- 4 log formats only (Windows event logs are not supported). Other formats show "Not a supported log"; lines we do not understand are kept and counted, never dropped.
-- No login: the dashboard is a shared demo ledger. A real deployment needs an access gate for authorised investigators.
-- The server receipt proves the hash was recorded at that server time by this server. The Cloudflare account owner could still change the database; the signature check would show it unless the secret also leaked.
-- AI depends on free tiers (Workers AI 10,000 neurons/day, Gemini backup). When both are slow the offline summary is shown.
-- Llama 3.1 8B is a small model: Hindi answers and verdicts are weaker than big models. Answers are checked (cited events, language, incident cap).
-- The report supports an investigation. It is not a legal certificate (for example under BSA 2023 s.63).
-- Three sample cases and the eval test logs are made-up sample data. The "Real SSH server log" sample and `tests/loghub/` are real public research data from Loghub.
+- 4 log formats; no Windows event logs yet.
+- No login: `/cases` is a shared demo ledger. A real deployment needs an access gate for authorised investigators.
+- A receipt proves our server recorded that hash at that time. The Cloudflare account owner could delete the newest rows.
+- AI runs on free tiers (Workers AI 10,000 neurons a day). Llama 8B is a small model: Hindi and verdicts are weaker than
+  big models, which is why the rules cap it.
+- The report supports an investigation; it is not a legal certificate (for example under BSA 2023 s.63).
+- Three sample cases and the eval logs are made-up sample data; the "Real SSH server log" sample and `tests/loghub/` are real.
 
-## Tech
-Astro 5 + Tailwind 4 + TypeScript (pages) · one Cloudflare Worker (static assets + API, CSP and security headers, rate limit) · Cloudflare D1 (SQLite) evidence ledger · Cloudflare Workers AI with open-weight Llama 3.1 8B (Meta) + Google Gemini API as backup · Web Crypto (SHA-256, HMAC-SHA256) · `qrcode` (QR made at build time). Why each was chosen: [docs/TECH_STACK.md](docs/TECH_STACK.md).
+## Project history
+v1 was built at CHAKRAVYUH 1.0 and v2 at अvinya '26 (BIET Lucknow, problem ABCS-02). The Hacktoberfest Hack Day 2026
+(University of Lucknow) release adds the open-weight AI switch, real-log parsing, masking before AI and the laptop /
+phone / dark UI; the list with commits is in [docs/MASTER_LOG.md](docs/MASTER_LOG.md). Older docs: `docs/PITCH-AVINYA.md`,
+`docs/UPGRADE_LOG.md`. The AI-assisted workflow files (loops, prompts) are in `docs/ai-workflow/`.
 
 ## Team
-SOLAR FLARES (HK26-0014): **Sagar Mishra** (builder, B.Tech CSE) and **Krishraj Shukla** ([@krishrajshukla-eng](https://github.com/krishrajshukla-eng), presenter). Roles, stage hand-off and the human vs AI-tool split: [docs/TEAM.md](docs/TEAM.md).
+SOLAR FLARES: **Sagar Mishra** (builder, B.Tech CSE) and **Krishraj Shukla**
+([@krishrajshukla-eng](https://github.com/krishrajshukla-eng), presenter). Roles and the human vs AI-tool split:
+[docs/TEAM.md](docs/TEAM.md). Contributions welcome: [CONTRIBUTING.md](CONTRIBUTING.md) · security: [SECURITY.md](SECURITY.md).
+
+## License
+[MIT](LICENSE). The bundled Loghub sample stays under Loghub's own terms (research and academic use, cite the repo).
