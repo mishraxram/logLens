@@ -21,6 +21,7 @@
     "typecheck": "tsc -p tsconfig.json",
     "check": "npm run build && npm run typecheck && npm run check:worker && node scripts/check-rules.ts && node scripts/check-hash.ts && node scripts/check-changes.ts && node scripts/check-chain.ts && node scripts/check-report.ts && node scripts/check-redact.ts && node scripts/check-csp.ts && node scripts/check-perf.ts && node scripts/check-parse.ts",
     "start": "astro build && wrangler d1 execute loglens-audit --local --file schema/audit.sql && wrangler dev",
+    "start:offline": "astro build && astro preview --host 127.0.0.1 --port 4321",
     "test:e2e": "node scripts/e2e.ts",
     "test:eval": "node tests/eval.ts",
     "loghub": "node scripts/fetch-loghub.ts && node scripts/check-loghub.ts tests/loghub/OpenSSH_2k.log tests/loghub/Linux_2k.log tests/loghub/Apache_2k.log"

@@ -70,4 +70,6 @@ Ye legal certificate nahi hai, investigation ki madad hai. LogLens: rules dhoond
 | AI 8 s se zyada ya quota khatam | "Ye hamara offline mode hai: rules wala labelled summary, AI ke bina bhi case khulta hai" → aage badho. |
 | Receipt "not available" | "Server ledger tak nahi pahunch paye, local SHA-256 phir bhi kaam karta hai" → Verify / TAMPERED dikhao |
 | v2 khule hi nahi | v1 backup URL kholo (receipt aur dashboard v1 mein nahi hain, ye bata do) |
-| Internet hi nahi | recorded video chalao |
+| Internet hi nahi | Laptop pe `npm run start:offline` → http://127.0.0.1:4321 kholo. Samples, rules, timeline, chain, SHA-256 Verify / TAMPERED aur report chalte hain; AI = labelled rules summary, receipt "not available", Cases ledger khali. Bolo: "Ye offline mode hai". Wo bhi na chale to recorded video. |
+
+**Offline mode, ek baar pehle se taiyaar karo (venue jaane se pehle, internet ke saath):** `npm ci` chala ke `npm run start:offline` ek baar test karo. Fonts Google se aate hain, offline mein system font dikhega (sirf look badlega, kaam nahi).

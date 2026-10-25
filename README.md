@@ -39,6 +39,10 @@ npm start                     # build + local D1 table + local Worker on http://
 Node 23.6 or newer. Workers AI always runs on Cloudflare, even in local dev, so the AI summary needs
 `npx wrangler login`; without it the page shows the offline rules summary. Deploy: `npx wrangler deploy`.
 
+No internet or no Cloudflare login: `npm run start:offline` serves the built pages on http://127.0.0.1:4321.
+Samples, rules, timeline, attack chain, SHA-256 verify and reports work; the AI panel shows the labelled rules summary
+and server receipts / the Cases ledger are unavailable.
+
 ## How it fits together
 ```
 Browser (Astro + TypeScript)                         Cloudflare Worker (worker/index.ts)
