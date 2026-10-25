@@ -11,7 +11,7 @@ server receipt. It runs in the browser: no install for the investigator.
 **Live:** https://loglens-v2.loglens.workers.dev · **Cases dashboard:** [/cases](https://loglens-v2.loglens.workers.dev/cases)
 · Team SOLAR FLARES · built for college IT and cyber-cell investigators.
 
-| Laptop (1366x768: verdict and attack chain without scrolling) | Phone (360 px) | Dark mode |
+| Laptop (1366x768: verdict and attack chain without scrolling) | Phone (360 px) | Dark mode (light / dark switch in the app bar) |
 |---|---|---|
 | ![LogLens on a laptop](docs/screenshots/app-laptop-1366.jpg) | ![LogLens on a phone](docs/screenshots/app-phone-360.jpg) | ![LogLens in dark mode](docs/screenshots/app-dark-1366.jpg) |
 

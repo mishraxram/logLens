@@ -46,6 +46,18 @@ async function main() {
   await send('Page.navigate', { url });
   step(await waitFor(`document.readyState === 'complete' && !!document.querySelector('[data-sample]')`, 10000), 'page loads with sample buttons');
 
+  // Light / dark button: flips the theme and the page colour, and the choice survives a reload
+  const theme = () => js(`document.documentElement.dataset.theme + ' ' + getComputedStyle(document.body).backgroundColor`);
+  const before = await theme();
+  await js(`document.getElementById('themeBtn').click()`);
+  const after = await theme();
+  step(!!before && !!after && before.split(' ')[0] !== after.split(' ')[0] && before.slice(5) !== after.slice(5), `theme button: ${before.split(' ')[0]} -> ${after.split(' ')[0]}`);
+  await send('Page.reload');
+  await waitFor(`document.readyState === 'complete' && !!document.querySelector('[data-sample]')`, 10000);
+  step((await theme()) === after, 'theme choice kept after reload');
+  await js(`document.getElementById('themeBtn').click()`); // back to the first theme for the rest of the run
+  step((await theme()) === before, 'theme button switches back');
+
   // Automated runs are labelled so the cases dashboard can hide them
   await js(`(() => { const i = document.getElementById('investigator'); i.value = 'TEST e2e'; i.dispatchEvent(new Event('change')); })()`);
   await js(`document.querySelector('[data-sample]').click()`);

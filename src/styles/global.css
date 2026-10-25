@@ -18,29 +18,41 @@
 
 body { background: var(--color-paper); color: var(--color-ink); font-size: 16px; line-height: 1.5; }
 
-/* Dark mode (follows the system setting). Same roles, darker sheet; every text pair measured >= 4.5:1
-   (ink 13.5, muted 6.5, flag 6.5, match 7.5 on the sheet; dark text 7.3 on red chips). Evidence tag stays amber. */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-ink: #E6E9E5; --color-paper: #111418; --color-sheet: #1A1F25; --color-line: #313840;
-    --color-flag: #FF7A6E; --color-match: #4CC38A; --color-muted: #9AA3AB; --color-night: #0B0D10;
-    color-scheme: dark;
-  }
-  .panel, .kpi { border-color: rgba(255,255,255,.07); box-shadow: none; }
-  .field, .btn-quiet, .seg { background: rgba(255,255,255,.07); }
-  .btn-quiet:hover { background: rgba(255,255,255,.12); }
-  .case-list .case-btn:hover, .row:hover { background: rgba(255,255,255,.04); }
-  .meter { background: rgba(255,255,255,.12); }
-  .row + .row { border-top-color: var(--color-line) !important; }
-  .verdict.is-high { background: #2A1715; } .verdict.is-med { background: #2A2414; } .verdict.is-ok { background: #13261C; }
-  .entity { background: var(--color-sheet); }
-  .evtag { color: #1B1F24; }
-  .evtag::before { background: var(--color-sheet); }
-  /* Red and green chips: dark text, white on the lighter dark-mode red would be 2.5:1 */
-  .bg-flag, .bg-match { color: #111418 !important; }
-  .seg label { color: #C9CFD4; }
-  .stage-strip .dots span { border-color: #6B747C; }
+/* Dark mode: on when <html data-theme="dark">. public/theme.js sets it before the first paint from the saved choice,
+   else from the system setting; the app-bar button switches it. Same roles, darker sheet; every text pair measured
+   >= 4.5:1 (ink 13.5, muted 6.5, flag 6.5, match 7.5 on the sheet; dark text 7.3 on red chips). Tag stays amber. */
+:root[data-theme="dark"] {
+  --color-ink: #E6E9E5; --color-paper: #111418; --color-sheet: #1A1F25; --color-line: #313840;
+  --color-flag: #FF7A6E; --color-match: #4CC38A; --color-muted: #9AA3AB; --color-night: #0B0D10;
+  color-scheme: dark;
 }
+:root[data-theme="dark"] .panel, :root[data-theme="dark"] .kpi { border-color: rgba(255,255,255,.07); box-shadow: none; }
+:root[data-theme="dark"] .field, :root[data-theme="dark"] .btn-quiet, :root[data-theme="dark"] .seg { background: rgba(255,255,255,.07); }
+:root[data-theme="dark"] .btn-quiet:hover { background: rgba(255,255,255,.12); }
+:root[data-theme="dark"] .case-list .case-btn:hover, :root[data-theme="dark"] .row:hover { background: rgba(255,255,255,.04); }
+:root[data-theme="dark"] .meter { background: rgba(255,255,255,.12); }
+:root[data-theme="dark"] .row + .row { border-top-color: var(--color-line) !important; }
+:root[data-theme="dark"] .verdict.is-high { background: #2A1715; } :root[data-theme="dark"] .verdict.is-med { background: #2A2414; } :root[data-theme="dark"] .verdict.is-ok { background: #13261C; }
+:root[data-theme="dark"] .entity { background: var(--color-sheet); }
+:root[data-theme="dark"] .evtag { color: #1B1F24; }
+:root[data-theme="dark"] .evtag::before { background: var(--color-sheet); }
+/* Red and green chips: dark text, white on the lighter dark-mode red would be 2.5:1 */
+:root[data-theme="dark"] .bg-flag, :root[data-theme="dark"] .bg-match { color: #111418 !important; }
+:root[data-theme="dark"] .seg label { color: #C9CFD4; }
+:root[data-theme="dark"] .stage-strip .dots span { border-color: #6B747C; }
+
+/* Logo variant follows the chosen theme, not only the system setting */
+.logo-dark { display: none; }
+:root[data-theme="dark"] .logo-dark { display: inline; }
+:root[data-theme="dark"] .logo-light { display: none; }
+
+/* Theme button in the app bar (44 px target) */
+.theme-btn { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 10px; color: #E9ECE8; background: rgba(255,255,255,.09); }
+.theme-btn:hover { background: rgba(255,255,255,.16); }
+.theme-btn svg { width: 20px; height: 20px; }
+.theme-btn .i-sun { display: none; }
+:root[data-theme="dark"] .theme-btn .i-sun { display: block; }
+:root[data-theme="dark"] .theme-btn .i-moon { display: none; }
 
 /* Touch targets at least 44px, clear keyboard focus */
 button, .btn-like { min-height: 44px; }

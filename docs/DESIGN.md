@@ -17,7 +17,7 @@ Signature element: the evidence tag (amber card with a punched hole and string) 
 Fonts: IBM Plex Sans Condensed (headline, verdicts), IBM Plex Sans (UI, Devanagari via Noto Sans Devanagari), IBM Plex Mono (log lines, hashes, timestamps only).
 Layout: desktop two columns (evidence in on the left, findings out on the right); phone one column, scrolls to the result after a case opens.
 
-## Dark mode (25 Oct, follows the system setting)
+## Light and dark (25 Oct): system setting on the first visit, then the app-bar switch (saved in this browser)
 Same roles, method from Radix Colors (steps by role: background, panel, border, text). Evidence tag stays amber with dark text.
 | Name | Light | Dark | Measured contrast (dark, on sheet #1A1F25) |
 |---|---|---|---|
