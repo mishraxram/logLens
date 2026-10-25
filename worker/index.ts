@@ -16,11 +16,12 @@ type Env = {
 };
 
 // Security headers on every response (page, files and API).
-// CSP: only our own scripts, plus the one inline font-loader handler in Base.astro (allowed by its hash).
-// If that onload text changes, recompute: printf "%s" "<handler>" | openssl dgst -sha256 -binary | base64
+// CSP: only our own scripts, plus two inline pieces in Base.astro allowed by their hash: the font-loader onload
+// handler and the light/dark theme script (src/lib/theme-inline.ts). scripts/check-csp.ts checks both hashes.
+// If the onload text changes, recompute: printf "%s" "<handler>" | openssl dgst -sha256 -binary | base64
 const CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-hashes' 'sha256-1jAmyYXcRq6zFldLe/GCgIDJBiOONdXjTLgEFMDnDSM='",
+  "script-src 'self' 'unsafe-hashes' 'sha256-1jAmyYXcRq6zFldLe/GCgIDJBiOONdXjTLgEFMDnDSM=' 'sha256-B9MK+uDUvLSw4Z6YwRVhsSH7I+f97JGZsYsojsmlmPI='",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src https://fonts.gstatic.com",
   "img-src 'self' data: blob:",

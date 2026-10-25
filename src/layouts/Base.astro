@@ -2,6 +2,7 @@
 // Shared page shell: title, meta description, fonts, footer
 import '../styles/global.css';
 import QRCode from 'qrcode';
+import { THEME_JS } from '../lib/theme-inline.ts';
 
 // QR code of the live URL, made at build time (no extra script in the browser)
 const LIVE_URL = 'https://loglens-v2.loglens.workers.dev';
@@ -13,8 +14,8 @@ const { title = 'LogLens', current = 'desk', description = 'AI-assisted digital 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <!-- Sets light / dark before the first paint (own file, so the CSP needs no inline-script hash) -->
-    <script is:inline src="/theme.js"></script>
+    <!-- Sets light / dark before the first paint. Inline (no extra request); the CSP allows it by its hash -->
+    <script is:inline set:html={THEME_JS}></script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
