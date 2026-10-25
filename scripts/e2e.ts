@@ -114,6 +114,12 @@ async function main() {
   step(await waitFor(`/Ledger intact|not reachable/.test(document.getElementById('chainState')?.textContent ?? '')`, 8000), 'cases dashboard loads');
   steps.push('     dashboard: ' + (await js(`document.getElementById('chainState').textContent + ' | ' + document.getElementById('counts').textContent`)));
   step(await js(`document.documentElement.scrollWidth <= window.innerWidth`), `dashboard: no horizontal scroll at ${width}px`);
+  // Long ledgers draw the newest 50 rows first; "Show all" draws the rest
+  if (await js(`!document.getElementById('allRows').classList.contains('hidden')`)) {
+    const firstDraw = await js(`document.querySelectorAll('#rows tr').length`);
+    await js(`document.getElementById('allRows').click()`);
+    step(firstDraw === 50 && await waitFor(`document.querySelectorAll('#rows tr').length > 50`, 6000), `dashboard: 50 rows first, "Show all" draws the rest`);
+  }
 
   ws.close();
 }

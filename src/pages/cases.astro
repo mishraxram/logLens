@@ -15,6 +15,7 @@ import Base from '../layouts/Base.astro';
       <button id="reload" type="button" class="btn btn-quiet">Re-check now</button>
       <label class="text-sm flex items-center gap-2 min-h-11 cursor-pointer"><input id="showTests" type="checkbox" class="w-5 h-5 accent-ink" /> Show automated test rows</label>
     </div>
+    <p class="text-xs text-muted mt-2">A valid ledger means the receipts were not edited or reordered. It does not by itself prove a file is unchanged: use "Verify integrity" on the Desk with the same file.</p>
     <p id="head" class="font-mono text-xs break-all mt-2"></p>
     <dl id="dkpis" class="kpis mt-3 min-h-[4.5rem]"></dl>
     <p id="counts" class="text-sm text-muted mt-2 min-h-5">Loading…</p>
@@ -36,6 +37,8 @@ import Base from '../layouts/Base.astro';
         <tbody id="rows"></tbody>
       </table>
     </div>
+    <!-- Only the newest rows are drawn at first (every row is still checked above); the rest one click away -->
+    <button id="allRows" type="button" class="btn btn-quiet mt-3 hidden"></button>
   </section>
 </Base>
 
@@ -48,11 +51,14 @@ import Base from '../layouts/Base.astro';
     const n = document.createElement(tag); n.className = cls; n.textContent = text; return n;
   }
   // Status of a case = its newest action (rows arrive newest first)
+  // Status = icon + word + colour (never colour alone)
   const STATUS: Record<string, [string, string]> = {
-    SEALED: ['Sealed, not verified yet', 'bg-ink/10'],
-    VERIFIED_MATCH: ['Verified: unchanged', 'bg-match text-white'],
-    VERIFIED_TAMPERED: ['TAMPERED: hash mismatch seen', 'bg-flag text-white'],
+    SEALED: ['● Sealed, not verified yet', 'bg-ink/10'],
+    VERIFIED_MATCH: ['✓ Verified: unchanged', 'bg-match text-white'],
+    VERIFIED_TAMPERED: ['▲ TAMPERED: hash mismatch seen', 'bg-flag text-white'],
   };
+  const FIRST_ROWS = 50;
+  let showAll = false;
 
   async function load() {
     $('chainState').textContent = 'Checking the ledger…';
@@ -64,12 +70,12 @@ import Base from '../layouts/Base.astro';
     const cases = $('cases'), rows = $('rows');
     cases.replaceChildren(); rows.replaceChildren();
     if (!data) {
-      $('chainState').textContent = 'Server ledger not reachable (offline or not configured). Local evidence checks on the main page still work.';
+      $('chainState').textContent = '▲ Server ledger not reachable (offline or not configured). Local evidence checks on the main page still work.';
       $('chainState').className = 'font-semibold text-flag';
       return;
     }
     const bad = data.rows.filter((r) => !r.valid || !r.linkOk).length;
-    $('chainState').textContent = data.intact ? `Ledger intact: all ${data.rows.length} rows signed and chained correctly.` : `LEDGER PROBLEM: ${bad} row(s) failed the signature or chain check.`;
+    $('chainState').textContent = data.intact ? `✓ Ledger intact: all ${data.rows.length} rows signed and chained correctly.` : `▲ LEDGER PROBLEM: ${bad} row(s) failed the signature or chain check.`;
     $('chainState').className = `font-semibold px-2 py-1 rounded ${data.intact ? 'bg-match text-white' : 'bg-flag text-white'}`;
 
     // Ledger head = newest entry hash. Write it down (case notes, screenshot): if newest rows are ever deleted,
@@ -112,18 +118,23 @@ import Base from '../layouts/Base.astro';
     // Room was reserved only while loading (avoids a jump); give it back now that the cards are in
     cases.classList.remove('min-h-[60vh]');
 
-    for (const r of shown) {
+    const drawn = showAll ? shown : shown.slice(0, FIRST_ROWS);
+    const more = $('allRows');
+    more.classList.toggle('hidden', shown.length <= FIRST_ROWS);
+    more.textContent = showAll ? `Show the newest ${FIRST_ROWS} only` : `Show all ${shown.length} rows`;
+    for (const r of drawn) {
       const tr = document.createElement('tr');
       tr.className = 'border-t border-line align-top';
       const ok = r.valid && r.linkOk;
       [String(r.id), r.sealed_at.replace('T', ' ').replace(/\.\d+Z$/, 'Z'), r.investigator, r.action, `${r.name} (${r.size} B)`].forEach((t, i) =>
         tr.append(el('td', `p-2 ${i === 1 || i === 3 ? 'font-mono text-xs' : ''}`, t)));
-      tr.append(el('td', `p-2 font-semibold ${ok ? 'text-match' : 'text-flag'}`, ok ? 'OK' : `${!r.valid ? 'bad signature ' : ''}${!r.linkOk ? 'broken link' : ''}`));
+      tr.append(el('td', `p-2 font-semibold ${ok ? 'text-match' : 'text-flag'}`, ok ? '✓ OK' : `▲ ${!r.valid ? 'bad signature ' : ''}${!r.linkOk ? 'broken link' : ''}`));
       rows.append(tr);
     }
   }
 
   $('reload').addEventListener('click', load);
   $('showTests').addEventListener('change', load);
+  $('allRows').addEventListener('click', () => { showAll = !showAll; load(); });
   load();
 </script>
