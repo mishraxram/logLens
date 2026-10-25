@@ -55,12 +55,12 @@ Why each tool, and the trade-offs against the suggested Python / FastAPI / React
 |---|---|---|
 | `npm run check` | build, strict typecheck, Worker bundle, rules / hash / change register / attack chain / report / masking checks | pass (also in CI on every push) |
 | `npm run loghub` | real Loghub logs parse (table below) | pass |
-| `node scripts/e2e.ts <url> 360` (and 1366, 1920) | headless Chrome walks the whole demo path, phone tab bar, timeline filters; fails on any console error | pass at 360, 1366, 1920 on the preview deployment |
+| `node scripts/e2e.ts <url> 360` (and 1366, 1920) | headless Chrome walks the whole demo path, phone tab bar, timeline filters; fails on any console error | pass at 360, 1366, 1920 on the live site |
 | `node scripts/check-fold.ts <url> 1366 768 out.jpg` | verdict and attack chain above the fold | chain at 458-712 px (fold 768) |
 | `node tests/eval.ts <url>/api/analyze` | 17 self-written cases through parser, rules, hashing and the live AI | **16/17**; the miss: a normal log where the AI said "unsure", not "normal" ([docs/TESTSET.md](docs/TESTSET.md)) |
 | `node scripts/check-seal.ts <url>` | receipts, bad input, 6 parallel receipts keep one chain | not re-run on 25 Oct (last run 22 Oct, docs/UPGRADE_LOG.md) |
 The eval set is small and written by us: it shows the demo path is stable, not accuracy on all real-world logs.
-Lighthouse on the preview deployment (mobile, 2 runs): performance 96 and 94, accessibility 100, best practices 100.
+Lighthouse on the live site (25 Oct): `/` mobile 97 / 100 / 100 / 100 (performance / accessibility / best practices / SEO, 2 runs), desktop 94 / 100 / 100 / 100; `/cases` mobile 85 / 100 / 100 / 100 (the demo ledger has grown to 200 rows).
 UI details and what was not tested: [docs/UI_UPGRADE_REPORT.md](docs/UI_UPGRADE_REPORT.md).
 
 ## Tested on real logs (Loghub)
