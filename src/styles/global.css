@@ -379,3 +379,7 @@ body:has(#result:not(.hidden)) .page-head { display: none; }
 @keyframes spin { to { transform: rotate(360deg); } }
 /* A result that has just arrived fades in once, so the change is noticed */
 #verifyOut > *, #aiOut > * { animation: rise .25s ease both; }
+/* Phones: a term explainer opens as a sheet above the tab bar, so it never runs off the right edge */
+@media (max-width: 640px) {
+  .tip > p, .evtag .tip > p { position: fixed; left: 16px; right: 16px; top: auto; bottom: 76px; width: auto; }
+}

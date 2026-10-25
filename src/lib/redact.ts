@@ -1,5 +1,6 @@
 // Masking before AI: account names and IP addresses become USER_1, IP_1 ... in the text sent to the AI,
-// and the browser puts the real values back into the AI's answer. The real values never leave the browser.
+// and the browser puts the real values back into the AI's answer. With masking on, the masked account names and IPs
+// are not sent to the AI (system accounts such as root are, on purpose); with masking off, everything is sent as-is.
 // Well-known system accounts stay readable, because the name itself is the signal (a root login is risky).
 
 const KEEP = new Set(['root', 'admin', 'administrator', 'guest', 'nobody', '-', '']);
