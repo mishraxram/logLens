@@ -291,7 +291,8 @@ body:has(#result:not(.hidden)):not(.show-intake) #intake { display: none; }
 @media (min-width: 560px) { .sample-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } } /* always 2 x 2, no orphan card */
 .sample-card { display: grid; align-content: start; gap: .2rem; text-align: left; padding: .9rem 1rem; min-height: 6.5rem; border: 1px solid var(--color-line); border-radius: 10px; background: var(--color-paper); cursor: pointer; transition: border-color .12s ease, transform .12s ease; }
 .sample-card:hover { border-color: var(--color-ink); transform: translateY(-1px); }
-.sample-n { font-family: var(--font-mono); font-size: .75rem; font-weight: 600; color: var(--color-tag); }
+.sample-n { font-family: var(--font-mono); font-size: .75rem; font-weight: 600; color: #8A5A00; } /* dark amber: 5.3:1 on the light card (the bright tag amber was 1.9:1) */
+:root[data-theme="dark"] .sample-n { color: var(--color-tag); }
 .sample-t { font-weight: 700; font-size: 1rem; color: var(--color-ink); }
 .sample-d { font-size: .875rem; color: var(--color-muted); }
 
