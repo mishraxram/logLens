@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
 
 // The 3 "Try sample" cases (files live in public/samples, all made-up sample data)
 const samples = [
@@ -28,7 +29,7 @@ const samples = [
     <span id="stripHash" class="hash"></span>
     <!-- Laptop and up: jump to a part of the case -->
     <nav class="secnav" aria-label="Sections of this case">
-      <a href="#result">Overview</a><a href="#chainPanel">Chain</a><a href="#aiPanel">AI</a><a href="#changesPanel">Changes</a><a href="#timelinePanel">Timeline</a>
+      <a href="#result"><Icon name="layout-dashboard" size={15} />Overview</a><a href="#chainPanel"><Icon name="workflow" size={15} />Chain</a><a href="#aiPanel"><Icon name="bot" size={15} />AI</a><a href="#changesPanel"><Icon name="file-diff" size={15} />Changes</a><a href="#timelinePanel"><Icon name="list" size={15} />Timeline</a>
     </nav>
     <span id="stripChip" class="chip ml-auto">Waiting for evidence</span>
     <!-- Once a case is open: bring the intake form back -->
@@ -42,12 +43,12 @@ const samples = [
       <section id="locker" class="hidden side-card">
         <div class="side-block">
           <div class="grid gap-2">
-            <button id="verify" type="button" class="btn btn-primary w-full">Verify integrity</button>
+            <button id="verify" type="button" class="btn btn-primary w-full"><Icon name="shield-check" />Verify integrity</button>
             <div class="grid grid-cols-2 gap-2">
-              <button id="pdf" type="button" class="btn btn-quiet side-btn">PDF report</button>
-              <button id="report" type="button" class="btn btn-quiet side-btn">HTML report</button>
+              <button id="pdf" type="button" class="btn btn-quiet side-btn"><Icon name="file-text" />PDF report</button>
+              <button id="report" type="button" class="btn btn-quiet side-btn"><Icon name="file-code" />HTML report</button>
             </div>
-            <button id="newCase" type="button" class="btn btn-ghost">New case</button>
+            <button id="newCase" type="button" class="btn btn-ghost"><Icon name="rotate-ccw" />New case</button>
           </div>
           <input id="verifyFile" type="file" class="sr-only" tabindex="-1" aria-label="Choose the same file again to verify" />
           <div id="verifyOut" class="mt-3" aria-live="polite"></div>
@@ -64,7 +65,7 @@ const samples = [
             <div class="flex items-center gap-1.5 mt-2">
               <p class="text-xs font-semibold">SHA-256</p>
               <details class="tip"><summary aria-label="What is SHA-256?">?</summary><p>A fingerprint of the exact bytes of this evidence. Change one character and the fingerprint changes completely, so a match later means the file is unchanged.</p></details>
-              <button id="copyHash" type="button" class="copy-btn">Copy</button>
+              <button id="copyHash" type="button" class="copy-btn"><Icon name="copy" size={13} />Copy</button>
             </div>
             <p id="evHash" class="font-mono text-xs break-all"></p>
           </div>
@@ -105,9 +106,9 @@ const samples = [
             class="field mt-1 font-mono text-sm"
             placeholder="Paste ERP audit CSV (time,user,role,ip,action,target,detail), Linux auth.log, an Apache/Nginx access log or an Apache error log. Lines starting with # are case notes."></textarea>
           <div class="flex flex-wrap gap-2 mt-3">
-            <button id="run" type="button" class="btn btn-primary">Build timeline</button>
+            <button id="run" type="button" class="btn btn-primary"><Icon name="list-filter" />Build timeline</button>
             <label class="btn btn-quiet btn-like">
-              Upload a file <input id="file" type="file" class="sr-only" />
+              <Icon name="upload" />Upload a file <input id="file" type="file" class="sr-only" />
             </label>
           </div>
           <p class="text-xs text-muted mt-2">Timelines: ERP audit CSV, Linux auth.log, Apache/Nginx access and Apache error logs. Any other file (PDF, image) is hashed as evidence.</p>
@@ -141,7 +142,7 @@ const samples = [
               <label><input type="radio" name="lang" value="en" checked /> English</label>
               <label><input type="radio" name="lang" value="hi" /> हिंदी</label>
             </div>
-            <button id="ai" type="button" class="btn btn-primary">Analyze with AI</button>
+            <button id="ai" type="button" class="btn btn-primary"><Icon name="scan-search" />Analyze with AI</button>
           </div>
           <label class="text-sm flex items-center gap-2 min-h-11 cursor-pointer mt-1"><input id="mask" type="checkbox" checked class="w-5 h-5 accent-ink" /> Mask account names, IPs, host names and e-mails before sending to the AI</label>
           <p class="text-xs text-muted mt-1">AI: open-weight Llama 3.1 8B (Meta, Llama licence), run on Cloudflare Workers AI; Google Gemini only as a backup if Llama fails. Only the parsed event lines (max 200) are sent, with names, IPs, host names and e-mails replaced by USER_1 / IP_1 / HOST_1 / EMAIL_1 when masking is on (system accounts like root stay readable). Raw files stay in your browser.</p>
@@ -201,10 +202,10 @@ const samples = [
 
   <!-- Phone only, once a case is open: jump between the parts of the case (44 px targets) -->
   <nav class="casenav" aria-label="Case sections">
-    <a href="#result">Story</a>
-    <a href="#changesPanel">Changes</a>
-    <a href="#timelinePanel">Timeline</a>
-    <a href="#locker">Evidence</a>
+    <a href="#result"><Icon name="layout-dashboard" size={18} />Story</a>
+    <a href="#changesPanel"><Icon name="file-diff" size={18} />Changes</a>
+    <a href="#timelinePanel"><Icon name="list" size={18} />Timeline</a>
+    <a href="#locker"><Icon name="shield" size={18} />Evidence</a>
   </nav>
 </Base>
 

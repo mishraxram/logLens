@@ -1,4 +1,5 @@
 ---
+import Icon from '../components/Icon.astro';
 // Shared page shell: title, meta description, fonts, footer
 import '../styles/global.css';
 import QRCode from 'qrcode';
@@ -50,8 +51,8 @@ const { title = 'LogLens', current = 'desk', description = 'AI-assisted digital 
         </a>
         <span class="hidden sm:inline text-sm text-[#9AA3AB] border-l border-white/20 pl-3">AI-assisted digital forensics console</span>
         <nav class="segnav ml-auto" aria-label="Main">
-          <a href="/" class="navlink" aria-current={current === 'desk' ? 'page' : undefined}>Desk</a>
-          <a href="/cases" class="navlink" aria-current={current === 'cases' ? 'page' : undefined}>Cases</a>
+          <a href="/" class="navlink" aria-current={current === 'desk' ? 'page' : undefined}><Icon name="layout-dashboard" size={15} />Desk</a>
+          <a href="/cases" class="navlink" aria-current={current === 'cases' ? 'page' : undefined}><Icon name="folder-open" size={15} />Cases</a>
         </nav>
         <!-- Light / dark switch: moon = go dark, sun = go light -->
         <button id="themeBtn" type="button" class="theme-btn" aria-label="Switch theme" title="Switch theme">

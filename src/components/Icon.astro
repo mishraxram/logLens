@@ -1,0 +1,8 @@
+---
+// Inline Lucide icon (see src/lib/icons.ts). Decorative: the button or link text says what it does.
+import { ICONS } from '../lib/icons.ts';
+interface Props { name: string; size?: number; class?: string }
+const { name, size = 16, class: cls = '' } = Astro.props;
+---
+<svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class={`ico ${cls}`} set:html={ICONS[name]} />

@@ -536,10 +536,18 @@ h1 { font-weight: 650; }
 
 /* Phone tab bar: light, hairline above */
 @media (max-width: 1023px) {
-  body:has(#result:not(.hidden)) .casenav { background: color-mix(in srgb, var(--color-sheet) 97%, transparent); border-top: 1px solid var(--color-line);
+  body:has(#result:not(.hidden)) .casenav { background: var(--color-sheet); border-top: 1px solid var(--color-line);
     backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
   .casenav a { color: var(--color-muted); font-weight: 550; }
   .casenav a:active, .casenav a:focus-visible { background: var(--soft); color: var(--color-ink); }
 }
 /* Footer: quiet, matches the page */
 footer.bg-night { background: var(--color-sheet) !important; color: var(--color-muted) !important; border-top: 1px solid var(--color-line); }
+/* Lucide icons inside buttons and nav links: same colour as the text, never shrink */
+.ico { flex: none; }
+.secnav a { gap: .4rem; }
+.secnav a .ico { opacity: .75; }
+.copy-btn { display: inline-flex; align-items: center; gap: .3rem; }
+.btn-like { gap: .5rem; }
+@media (max-width: 1023px) { .casenav a { flex-direction: column; gap: 2px; font-size: .72rem; } }
+.navlink { gap: .4rem; } @media (max-width: 359px) { .navlink .ico { display: none; } }
