@@ -83,7 +83,9 @@ async function main() {
     step(await js(`getComputedStyle(document.getElementById('intake')).display !== 'none'`), 'phone: "Change case" shows the intake form');
     await js(`document.getElementById('stripEdit').click()`);
     await js(`document.querySelector('.casenav a[href="#locker"]').click()`);
-    step(await waitFor(`Math.abs(document.getElementById('locker').getBoundingClientRect().top) < 120`, 3000), 'phone: "Evidence" tab jumps to the locker');
+    const jumped = await waitFor(`Math.abs(document.getElementById('locker').getBoundingClientRect().top) < 120`, 3000);
+    if (!jumped) steps.push('     debug: ' + (await js(`JSON.stringify({ top: Math.round(document.getElementById('locker').getBoundingClientRect().top), y: Math.round(scrollY), H: document.documentElement.scrollHeight, hash: location.hash, intake: getComputedStyle(document.getElementById('intake')).display })`)));
+    step(jumped, 'phone: "Evidence" tab jumps to the locker');
     await js(`window.scrollTo(0, 0)`);
   }
   step(await js(`!document.getElementById('chainPanel').classList.contains('hidden') && /TA00\\d\\d/.test(document.getElementById('chains').textContent)`), 'attack chain panel with MITRE tactics');
