@@ -55,3 +55,24 @@ match 7.48, tag 7.76 on the sheet; dark text on red chips 7.27 (white would be 2
 ## NOT tested (honest)
 Real phone, iOS Safari, Firefox, a screen reader (NVDA / TalkBack), Lighthouse on the live new UI, dark mode on
 `/cases` beyond one screenshot, Hindi labels at 360 px after these changes, slow real 3G.
+
+## UI/UX master loop (25 Oct 2026, 09:41-10:20, branch `lu-upgrade`)
+Method: `audit.ts` (headless Chrome) at 360, 390, 768, 1024, 1280, 1440 px, light and dark, Desk (ERP sample) and Cases:
+overflow, text under 12 px, targets under 24 px, verdict/chain position, plus screenshots and full-page walks.
+Sources read for this loop: Carbon status-indicator pattern (carbondesignsystem.com/patterns/status-indicator-pattern,
+"relying solely on color to convey status is insufficient"), WCAG 2.2 SC 2.5.8 Target Size Minimum (w3.org, 24x24 CSS px,
+inline exception).
+| Batch | Commit | Problem found (priority) | Fix |
+|---|---|---|---|
+| 1 | 28d6ee0 | P1: at 1024 px the 4 chain stages squeezed into narrow columns; MITRE chips 19-20 px tall | container query (stages go left to right only when the panel is >= 680 px wide); chips 24 px; step number 12 px. Small targets 37 -> 8 |
+| 2 | 9f41bad | P1: timeline account name ran into the role column; the same off-hours / session reasons repeated on every card | wider account column, timestamp on one line, values wrap in their own cell; change cards show 2 reasons + "N more"; rows keep high flags and fold extra medium flags |
+| 3 | e58f9d5 | P1: cases statuses colour-only; 200-row audit table slow (live TBT 400 ms) | icon + word + colour; note that a valid ledger is not proof a file is unchanged; newest 50 rows first + "Show all" (local TBT 0 ms) |
+| 4 | ebf1f70 | **P0: after a TAMPERED check the progress strip still showed a green "✓ Verified"** | strip shows the latest result: "▲ Tampered" in red; e2e step guards it |
+| 5 | 4d27692 | P1: the previous case's AI status line stayed after a new log; P2: "Failed to fetch" wording; unsupported message listed 3 formats | cleared on a new log; plain-words message; 4 formats |
+Measured after batch 5 (local): no overflow at any width or theme; Desk height 360 px 8,259 -> 7,959, 1024 px 4,774 -> 4,674;
+chain at 1366x768 458-716 (fold 768); Hindi AI answer at 360 px renders (301 Devanagari characters, no overflow).
+Checks: `npm run check` exit 0; e2e 360 / 1366 / 1920 PASS (one 360 run failed once on net::ERR_CONNECTION_CLOSED and
+passed on re-run; a third back-to-back run hit our own 429 rate limit).
+Remaining (not fixed): decorative status glyphs are under 12 px (aria-hidden, next to text); /cases CLS 0.116 in 1 of 2
+local Lighthouse runs (space reserved for cards shrinks after load); local Lighthouse /cases perf 76-77 (local server,
+FCP 3.7 s; live number needs a deploy); no real phone, iOS Safari, Firefox or screen-reader test.
