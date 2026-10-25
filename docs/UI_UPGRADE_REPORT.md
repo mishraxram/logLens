@@ -84,3 +84,18 @@ FCP 3.7 s; live number needs a deploy); no real phone, iOS Safari, Firefox or sc
 - /cases CLS (live 0.255): reserved room kept after load (52df1bc). Local Lighthouse 0.031 (3 runs). On the preview,
   Lighthouse still reports 0.206 while Chrome's PerformanceObserver (4x CPU, slow network, 412x823) measures 0.031 there too;
   the gap is **not explained yet**. The remaining measured shift is the web-font swap of the page header.
+
+## Desk redesign (25 Oct, 13:42-14:00): "the UI still looks the same"
+Feedback: the earlier loop kept the old look. This round changed the layout architecture, not only details.
+| Commit | Change |
+|---|---|
+| e415314 | Desktop investigation workspace: sticky case bar (file, hash, section links, status, Change case), sticky 300 px case sidebar (Verify first, reports, verify result, vertical progress stepper, evidence tag, receipt, audit trail), wide intake workspace (sample-case cards + own log), cooler neutral tokens, flatter panels, desk up to 1400 px |
+| b044b13 | Cases page as an evidence ledger table that stacks into labelled cards on phones |
+| 329c92e | Sample cases always 2 x 2 (a 3 + 1 orphan showed at 1440) |
+| a069c27 | Sample numbers 1.9:1 contrast (my mistake) -> 5.3:1 |
+Measured (local + preview 12795f19): no overflow at 360-1440 px light and dark; chain at 1366x768 470-688 px;
+empty page 1,458 -> 1,035 px tall at 1366; e2e 360 / 1366 / 1920 PASS incl. new laptop steps; preview Lighthouse
+home mobile 99 / 100 / 100 (perf / a11y / best practices), desktop 97 / 100 / 100.
+Not fixed: /cases Lighthouse CLS varies between runs (0.029 to 0.195 locally) while Chrome's PerformanceObserver measures
+0.02-0.03; cause not found. Research references from the brief (shadcn-admin, Tremor, TailAdmin) are React; none were
+installed (the app stays Astro + Tailwind); only layout patterns were taken (sidebar + sticky header + data table).
