@@ -1,10 +1,11 @@
 # UI upgrade report (25 Oct 2026, branch `lu-upgrade`)
 
+The third-party site screenshots were removed from the repo on 25 Oct (they are not ours to publish).
 Everything below was measured on a local build (`npx wrangler dev`, port 8799) with headless Chrome, unless it says
 "live". **Not deployed yet**: the live site still runs the old UI.
 
 ## What changed (one commit each)
-| Commit | Change | Pattern source (docs/ui-research/) |
+| Commit | Change | Pattern source (UI research notes and site screenshots: git history before the 25 Oct 2026 cleanup (commit 636c098)) |
 |---|---|---|
 | e1bfc71 | Compact case summary (verdict + risk meter + KPI row + mini MITRE stage strip), compact chain stepper with actor chips, status = colour + icon + word, page intro hides once a case opens, 01-04 empty-state steps | Elastic Attack Discovery (chain dot strip, tactic row, entity chips), Timesketch (status pill with icon), Stalkr (numbered steps, two-tone headline), DataFast (KPI row) |
 | 9d3d445 | Blinking-eye magnifier logo (app bar 38 px, empty state 96 px), still copy under reduced motion, new favicon | pack `brand/` files (read before use: no script, no links) |

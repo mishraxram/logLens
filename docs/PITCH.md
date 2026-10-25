@@ -2,7 +2,7 @@
 
 **Team:** SOLAR FLARES · **Rule:** exactly 4 members. `docs/TEAM.md` lists 2 today: **add the other 2 names before the PPT.**
 **App:** https://loglens-v2.loglens.workers.dev · **Judging:** innovation, relevance, implementation, **use of open-source /
-open-weight AI**, overall quality. Older Avinya pitch: `docs/PITCH-AVINYA.md`.
+open-weight AI**, overall quality. Older Avinya pitch: git history before the 25 Oct 2026 cleanup (commit 636c098).
 **Before recording the video:** the live site must run the new version (branch `lu-upgrade` is not deployed yet).
 Every number here comes from a command run on 25 Oct 2026 (docs/TESTSET.md, docs/UI_UPGRADE_REPORT.md, README). Do not round up.
 
@@ -61,7 +61,7 @@ Every number here comes from a command run on 25 Oct 2026 (docs/TESTSET.md, docs
 ## 4. Backup plan
 - Record the demo screen twice (90 s each, no editing) after a warm-up; keep it on the laptop and a phone.
 - Local run: `npm install` -> `cp .env.example .dev.vars` -> `npm start` -> http://localhost:8787.
-- Screenshots: `docs/ui-research/shots/loglens-after*.jpg` (laptop, phone, dark) and `docs/screenshots/v2/`.
+- Screenshots: `docs/screenshots/app-*.jpg` (laptop, phone, dark).
 - AI quota gone: say "this is our offline mode" and show the labelled rules summary.
 
 ## 5. What is new for Hack Day (25 Oct, branch `lu-upgrade`, commits in docs/MASTER_LOG.md)

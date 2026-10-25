@@ -13,7 +13,7 @@ server receipt. It runs in the browser: no install for the investigator.
 
 | Laptop (1366x768: verdict and attack chain without scrolling) | Phone (360 px) | Dark mode |
 |---|---|---|
-| ![LogLens on a laptop](docs/ui-research/shots/loglens-after1-1366.jpg) | ![LogLens on a phone](docs/ui-research/shots/loglens-after3-mobile-360.jpg) | ![LogLens in dark mode](docs/ui-research/shots/loglens-after4-dark-1366.jpg) |
+| ![LogLens on a laptop](docs/screenshots/app-laptop-1366.jpg) | ![LogLens on a phone](docs/screenshots/app-phone-360.jpg) | ![LogLens in dark mode](docs/screenshots/app-dark-1366.jpg) |
 
 ## The problem
 After an incident (example: a student's ERP marks changed from 42 to 92 at 2 AM), a college IT or cyber-cell
@@ -58,7 +58,7 @@ Why each tool, and the trade-offs against the suggested Python / FastAPI / React
 | `node scripts/e2e.ts <url> 360` (and 1366, 1920) | headless Chrome walks the whole demo path, phone tab bar, timeline filters; fails on any console error | pass at 360, 1366, 1920 on the live site |
 | `node scripts/check-fold.ts <url> 1366 768 out.jpg` | verdict and attack chain above the fold | chain at 458-712 px (fold 768) |
 | `node tests/eval.ts <url>/api/analyze` | 17 self-written cases through parser, rules, hashing and the live AI | **16/17**; the miss: a normal log where the AI said "unsure", not "normal" ([docs/TESTSET.md](docs/TESTSET.md)) |
-| `node scripts/check-seal.ts <url>` | receipts, bad input, 6 parallel receipts keep one chain | not re-run on 25 Oct (last run 22 Oct, docs/UPGRADE_LOG.md) |
+| `node scripts/check-seal.ts <url>` | receipts, bad input, 6 parallel receipts keep one chain | not re-run on 25 Oct (last run 22 Oct) |
 The eval set is small and written by us: it shows the demo path is stable, not accuracy on all real-world logs.
 Lighthouse on the live site (25 Oct): `/` mobile 97 / 100 / 100 / 100 (performance / accessibility / best practices / SEO, 2 runs), desktop 94 / 100 / 100 / 100; `/cases` mobile 85 / 100 / 100 / 100 (the demo ledger has grown to 200 rows).
 UI details and what was not tested: [docs/UI_UPGRADE_REPORT.md](docs/UI_UPGRADE_REPORT.md).
@@ -99,8 +99,8 @@ These logs have no security labels, so this shows that real files parse and what
 ## Project history
 v1 was built at CHAKRAVYUH 1.0 and v2 at अvinya '26 (BIET Lucknow, problem ABCS-02). The Hacktoberfest Hack Day 2026
 (University of Lucknow) release adds the open-weight AI switch, real-log parsing, masking before AI and the laptop /
-phone / dark UI; the list with commits is in [docs/MASTER_LOG.md](docs/MASTER_LOG.md). Older docs: `docs/PITCH-AVINYA.md`,
-`docs/UPGRADE_LOG.md`. The AI-assisted workflow files (loops, prompts) are in `docs/ai-workflow/`.
+phone / dark UI; the list with commits is in [docs/MASTER_LOG.md](docs/MASTER_LOG.md). Older event docs (Avinya pitch, upgrade logs, UI research notes) are in the
+git history before the 25 Oct 2026 cleanup (commit 636c098). The AI-assisted workflow loop is `docs/ai-workflow/LOOP-MASTER.md`.
 
 ## Team
 SOLAR FLARES: **Sagar Mishra** (builder, B.Tech CSE) and **Krishraj Shukla**

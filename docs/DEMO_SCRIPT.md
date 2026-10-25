@@ -67,7 +67,7 @@ Ye legal certificate nahi hai, investigation ki madad hai. LogLens: rules dhoond
 ## Agar kuch toote
 | Kya hua | Kya karo, kya bolo |
 |---|---|
-| AI 8 s se zyada ya quota khatam | "Ye hamara offline mode hai: rules wala labelled summary, AI ke bina bhi case khulta hai" → aage badho. docs/screenshots/v2/04b offline wala hai |
+| AI 8 s se zyada ya quota khatam | "Ye hamara offline mode hai: rules wala labelled summary, AI ke bina bhi case khulta hai" → aage badho. |
 | Receipt "not available" | "Server ledger tak nahi pahunch paye, local SHA-256 phir bhi kaam karta hai" → Verify / TAMPERED dikhao |
 | v2 khule hi nahi | v1 backup URL kholo (receipt aur dashboard v1 mein nahi hain, ye bata do) |
 | Internet hi nahi | recorded video chalao |

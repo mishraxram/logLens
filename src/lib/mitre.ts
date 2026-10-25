@@ -1,5 +1,5 @@
 // MITRE ATT&CK technique for each rule code. Every ID was checked on attack.mitre.org on 22 Oct 2026
-// (page titles in docs/RESEARCH-DEEP.md section 4). A flag is an indicator of the technique, not proof.
+// (page titles in docs/RESEARCH-DEEP.md section 4, git history before the 25 Oct 2026 cleanup (commit 636c098)). A flag is an indicator of the technique, not proof.
 export type Technique = { id: string; name: string };
 
 export const MITRE: Record<string, Technique[]> = {

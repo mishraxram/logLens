@@ -177,7 +177,7 @@ parser formats. **Not useful for:** accuracy numbers (no security labels) or Win
 | F4 | Mobile result layout: sticky verdict bar + tabs (Story / Changes / Timeline / Evidence); input collapses into a one-line case header | D7 | Prototype (usability) | M |
 | F5 | Attack story card on top (title, 2-line summary, actor chips, tactic strip); click any IP/user chip -> timeline filters | D10 | PS2, Prototype | M |
 | F6 | Visuals: events-per-minute strip (severity colours) + actor graph (IP <-> account) in plain SVG, no chart library | D10 | PS2/PS3, Prototype | M |
-| F7 | New brand: animated eye magnifier (`brand/`), dark mode tokens | D9, D11 | Presentation | S |
+| F7 | New brand: animated eye magnifier (`public/brand/`), dark mode tokens | D9, D11 | Presentation | S |
 | F8 | Redact before AI: IPs/users -> `IP_1`, `USER_2` tokens, mapped back in the browser; on by default | D12 | Domain (privacy), Stack | M |
 | F9 | Star + note on events -> into report and a `NOTE_ADDED` ledger action | Timesketch idea | PS5, PS6 | S |
 | F10 | Case bundle: one-click ZIP (original file, report HTML, receipt JSON, `SHA256SUMS`) + "verify yourself" copy button with the `sha256sum` command | Trust | PS4, PS5 | M |
@@ -214,10 +214,10 @@ decoration.
   changed line as a before/after diff with the red seal; (3) the logo eye blinks while the AI is thinking.
   All motion off under `prefers-reduced-motion`.
 - **Density:** one row per event, repeated reasons grouped ("off-hours ×11"), MITRE chips only on hover/tap on phone.
-- **Dark mode:** paper/ink tokens swap; the evidence tag stays amber; dark logo variant `brand/loglens-mark-dark.svg`.
+- **Dark mode:** paper/ink tokens swap; the evidence tag stays amber; dark logo variant `public/brand/loglens-mark-dark.svg`.
 - **Hindi:** Noto Sans Devanagari loaded; check every label in Hindi mode at 360 px.
-- **Logo:** `brand/loglens-mark.svg` (blinks every 5 s, iris drifts, reduced-motion safe) in the app bar at 32-40 px
-  and on the empty state at 96 px; `brand/favicon.svg` (static) replaces `public/favicon.svg`.
+- **Logo:** `public/brand/loglens-mark.svg` (blinks every 5 s, iris drifts, reduced-motion safe) in the app bar at 32-40 px
+  and on the empty state at 96 px; `public/favicon.svg` (static, done) `public/favicon.svg`.
 - If the user gives the UI reference site (NEEDS YOU 2): `competitor-scout` lists 5 patterns, `ui-critic` checks the
   result. Take patterns, never a brand look.
 

@@ -1,5 +1,7 @@
 # STATE
 
+> 25 Oct 2026 cleanup: PLAN-v2, RESEARCH, CHECK_KIT, UPGRADE_LOG, AUDIT, the Avinya brief PDFs, old screenshots and UI research notes were removed from the repo. They are in the git history before the 25 Oct 2026 cleanup (commit 636c098). Current state: docs/MASTER_LOG.md.
+
 ## v2 (branch loglens-v2) - updated 2026-10-16 01:10 IST
 Event: अvinya '26 Hackathon 4.0. **Round 1 idea submission due 18 Oct 12:00 IST.** Judging 23 Oct 09:30. Freeze 20 Oct 23:59.
 v2 URL: https://loglens-v2.loglens.workers.dev (Worker `loglens-v2`). v1 untouched (tag pre-v2-baseline).

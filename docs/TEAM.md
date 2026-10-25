@@ -14,7 +14,7 @@ Both must be able to explain the 8-step flow in docs/DEFENSE.md and say the hone
 ## Technical roles (Sagar)
 | Role | What it covers | Files to know |
 |---|---|---|
-| Problem + research | ABCS-02 needs, existing tools, Indian law (BSA s.63, CERT-In), MITRE mapping | docs/PROBLEM.md, docs/RESEARCH-DEEP.md |
+| Problem + research | ABCS-02 needs, existing tools, Indian law (BSA s.63, CERT-In), MITRE mapping | docs/PROBLEM.md, docs/RESEARCH-DEEP.md (in git history, before the 25 Oct 2026 cleanup) |
 | Detection rules | 16 rules, attack chain, change register | src/lib/rules.ts, src/lib/chain.ts, src/lib/changes.ts |
 | Evidence integrity | SHA-256, local hash chain, signed server receipts (D1) | src/lib/evidence.ts, functions/api/seal.ts |
 | AI | Prompt, open-weight Llama 3.1 8B (Workers AI) primary + Gemini backup, checks and verdict caps on the AI answer, injection guard | src/lib/prompts.ts, functions/api/analyze.ts |
