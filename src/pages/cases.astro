@@ -11,20 +11,23 @@ import Base from '../layouts/Base.astro';
 
   <section class="panel p-4 mb-6 min-h-[10rem] sm:min-h-[7rem]" aria-live="polite">
     <div class="flex flex-wrap items-center gap-3">
-      <p id="chainState" class="font-semibold px-2 py-1 rounded">Checking the ledger…</p>
+      <!-- min height = 2 lines on a phone, so the longer result text does not push the panel down (layout shift) -->
+      <p id="chainState" class="font-semibold px-2 py-1 rounded min-h-[3.5rem] sm:min-h-0">Checking the ledger…</p>
       <button id="reload" type="button" class="btn btn-quiet">Re-check now</button>
       <label class="text-sm flex items-center gap-2 min-h-11 cursor-pointer"><input id="showTests" type="checkbox" class="w-5 h-5 accent-ink" /> Show automated test rows</label>
     </div>
     <p class="text-xs text-muted mt-2">A valid ledger means the receipts were not edited or reordered. It does not by itself prove a file is unchanged: use "Verify integrity" on the Desk with the same file.</p>
     <p id="head" class="font-mono text-xs break-all mt-2"></p>
-    <dl id="dkpis" class="kpis mt-3 min-h-[4.5rem]"></dl>
+    <!-- 4 KPI cards: 2 rows on a phone, 1 row from 640 px; room is reserved before they arrive -->
+    <dl id="dkpis" class="kpis mt-3 min-h-[10.5rem] sm:min-h-[4.5rem]"></dl>
     <p id="counts" class="text-sm text-muted mt-2 min-h-5">Loading…</p>
   </section>
 
   <section class="mb-8">
     <div class="panel-h"><h2>Cases</h2><span class="kicker">one per evidence hash</span></div>
-    <!-- min height reserves room so the page does not jump when the cards arrive -->
-    <div id="cases" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 min-h-[60vh] content-start"><p class="text-muted">Loading cases…</p></div>
+    <!-- Room is reserved before the cards arrive and kept afterwards (shrinking it moved the audit trail up: CLS 0.255).
+         Phone: 60vh (cards stack); laptop: one row of cards -->
+    <div id="cases" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 min-h-[60vh] lg:min-h-[12rem] content-start"><p class="text-muted">Loading cases…</p></div>
   </section>
 
   <section>
@@ -71,12 +74,12 @@ import Base from '../layouts/Base.astro';
     cases.replaceChildren(); rows.replaceChildren();
     if (!data) {
       $('chainState').textContent = '▲ Server ledger not reachable (offline or not configured). Local evidence checks on the main page still work.';
-      $('chainState').className = 'font-semibold text-flag';
+      $('chainState').className = 'font-semibold text-flag min-h-[3.5rem] sm:min-h-0';
       return;
     }
     const bad = data.rows.filter((r) => !r.valid || !r.linkOk).length;
     $('chainState').textContent = data.intact ? `✓ Ledger intact: all ${data.rows.length} rows signed and chained correctly.` : `▲ LEDGER PROBLEM: ${bad} row(s) failed the signature or chain check.`;
-    $('chainState').className = `font-semibold px-2 py-1 rounded ${data.intact ? 'bg-match text-white' : 'bg-flag text-white'}`;
+    $('chainState').className = `font-semibold px-2 py-1 rounded min-h-[3.5rem] sm:min-h-0 ${data.intact ? 'bg-match text-white' : 'bg-flag text-white'}`;
 
     // Ledger head = newest entry hash. Write it down (case notes, screenshot): if newest rows are ever deleted,
     // the head written down earlier will no longer be in the ledger. Row links alone cannot show a cut-off end.
@@ -115,8 +118,6 @@ import Base from '../layouts/Base.astro';
       cases.append(card);
     }
 
-    // Room was reserved only while loading (avoids a jump); give it back now that the cards are in
-    cases.classList.remove('min-h-[60vh]');
 
     const drawn = showAll ? shown : shown.slice(0, FIRST_ROWS);
     const more = $('allRows');
