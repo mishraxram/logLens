@@ -132,13 +132,16 @@ label:has(input.sr-only:focus-visible) { outline: 3px solid var(--color-tag); ou
   .chain { list-style: none; padding: 0; display: grid; gap: .5rem; }
   .chain li { position: relative; padding: .5rem .75rem; border: 1px solid var(--color-line); border-left: 4px solid var(--color-flag); border-radius: 6px; background: var(--color-sheet); }
   .chain li + li::before { content: '↓'; position: absolute; top: -.85rem; left: 1rem; font-size: .8rem; color: var(--color-muted); }
-  /* Desktop: the chain reads left to right, like a sequence */
-  @media (min-width: 1024px) {
+  /* Wide panel: the chain reads left to right, like a sequence. Decided by the panel's own width (container query),
+     not the screen: on a 1024 px laptop the panel is narrow, so the stages stack instead of squeezing into 4 columns */
+  #chains { container-type: inline-size; }
+  @container (min-width: 680px) {
     .chain { grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 1.25rem; }
     .chain li + li::before { content: '→'; top: 50%; left: -1.05rem; transform: translateY(-50%); font-size: 1rem; }
   }
   /* MITRE ATT&CK chip on a flag: small mono label, links to attack.mitre.org */
-  .mitre-chip { display: inline-block; font-family: var(--font-mono, ui-monospace, monospace); font-size: .75rem; font-weight: 600; color: var(--color-ink); border: 1px solid var(--color-ink); border-radius: 4px; padding: 0 .35rem; margin-left: .15rem; text-decoration: none; white-space: nowrap; }
+  /* min-height 24px: WCAG 2.2 SC 2.5.8 target size for the stand-alone chips in the chain */
+  .mitre-chip { display: inline-flex; align-items: center; min-height: 24px; vertical-align: middle; font-family: var(--font-mono, ui-monospace, monospace); font-size: .75rem; font-weight: 600; color: var(--color-ink); border: 1px solid var(--color-ink); border-radius: 4px; padding: 0 .4rem; margin-left: .15rem; text-decoration: none; white-space: nowrap; }
   .mitre-chip:hover, .mitre-chip:focus-visible { background: var(--color-ink); color: var(--color-sheet); }
 
   /* The signature: a physical evidence tag with a punched hole and string */
@@ -209,7 +212,7 @@ label:has(input.sr-only:focus-visible) { outline: 3px solid var(--color-tag); ou
   .entity { display: inline-flex; align-items: center; min-height: 26px; padding: 0 .5rem; border: 1px solid var(--color-line); border-radius: 6px; background: #fff; font-size: .8rem; font-weight: 600; }
 
   /* Chain step number and one-line reason */
-  .step-n { display: inline-grid; place-items: center; width: 1.3rem; height: 1.3rem; border-radius: 50%; background: var(--color-ink); color: var(--color-sheet); font-size: .7rem; font-weight: 700; flex: none; }
+  .step-n { display: inline-grid; place-items: center; width: 1.3rem; height: 1.3rem; border-radius: 50%; background: var(--color-ink); color: var(--color-sheet); font-size: .75rem; font-weight: 700; flex: none; }
   .clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
   @media (max-width: 1023px) { .clamp-1 { -webkit-line-clamp: 3; } }
   .chain li { padding: .45rem .65rem; }
