@@ -551,3 +551,9 @@ footer.bg-night { background: var(--color-sheet) !important; color: var(--color-
 .btn-like { gap: .5rem; }
 @media (max-width: 1023px) { .casenav a { flex-direction: column; gap: 2px; font-size: .72rem; } }
 .navlink { gap: .4rem; } @media (max-width: 359px) { .navlink .ico { display: none; } }
+/* Desk <-> Cases: a short cross-fade between pages (CSS view transitions; browsers without it switch as before) */
+@view-transition { navigation: auto; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .18s; }
+@media (prefers-reduced-motion: reduce) { @view-transition { navigation: none; } }
+/* Key numbers keep their width while counting */
+.kpi dd { min-width: 2ch; }

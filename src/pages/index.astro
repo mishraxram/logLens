@@ -621,6 +621,21 @@ const samples = [
     // Closed by the button or Esc: drop the "#intake" entry so the next Back is not swallowed by it
     else if (location.hash === '#intake') history.replaceState(null, '', location.pathname + location.search);
   }
+  // Key numbers count up from 0 once, so the eye lands on them (like Magic UI's number ticker, no library).
+  // Ends exactly on the real value; screen readers get the final number at once; off under reduced motion.
+  function countUp(dd: HTMLElement, value: number) {
+    if (value < 2 || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    dd.setAttribute('aria-label', String(value));
+    const t0 = performance.now(), ms = 600;
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - t0) / ms);
+      dd.textContent = String(Math.round(value * (1 - Math.pow(1 - p, 3))));
+      if (p < 1) requestAnimationFrame(tick); else dd.removeAttribute('aria-label');
+    };
+    dd.textContent = '0';
+    requestAnimationFrame(tick);
+  }
+
   // Section links (desktop case bar, phone tab bar): jump in script, not by the browser's anchor jump.
   // scrollIntoView cancels a smooth scroll still running (opening a case scrolls to the result on phones),
   // and a second pass after layout settles keeps the section at the top. The hash is replaced, not pushed,
@@ -764,7 +779,9 @@ const samples = [
     // Key numbers at a glance (all computed above from this log)
     const kpis = $('kpis'); kpis.replaceChildren();
     const kpi = (label: string, value: number, tone = '') => {
-      const d = el('div', `kpi ${tone}`); d.append(el('dt', '', label), el('dd', '', String(value))); kpis.append(d);
+      const dd = el('dd', '', String(value));
+      const d = el('div', `kpi ${tone}`); d.append(el('dt', '', label), dd); kpis.append(d);
+      countUp(dd, value);
     };
     kpi('Events', events.length);
     kpi('High-risk events', v.high, v.high ? 'is-bad' : '');
