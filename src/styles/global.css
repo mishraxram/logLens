@@ -728,3 +728,17 @@ body::after { content: ""; position: fixed; z-index: -1; pointer-events: none; l
 .vout { padding: .65rem .8rem; border-radius: 10px; border: 1px solid; font-weight: 600; font-size: .9rem; }
 .vout-ok { color: var(--color-match); background: color-mix(in srgb, var(--color-match) 10%, transparent); border-color: color-mix(in srgb, var(--color-match) 40%, transparent); }
 .vout-bad { color: var(--color-flag); background: color-mix(in srgb, var(--color-flag) 10%, transparent); border-color: color-mix(in srgb, var(--color-flag) 45%, transparent); }
+
+/* Home: sample cards carry real counts; the first one is where a new visitor should start */
+.sample-top { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.start-tag { font-size: .68rem; font-weight: 600; padding: .05rem .45rem; border-radius: 999px; color: #1A1206; background: linear-gradient(180deg, #F7C25A, #E9A428); }
+.sample-card.is-start { border-color: color-mix(in srgb, var(--color-tag) 60%, var(--color-line)); box-shadow: var(--shadow-md), 0 0 0 3px color-mix(in srgb, var(--color-tag) 12%, transparent); }
+.sample-meta { margin-top: .35rem; font-family: var(--font-mono); font-size: .72rem; color: var(--color-muted); }
+.sample-meta.lvl-high::before { content: "▲ "; color: var(--color-flag); }
+.sample-meta.lvl-medium::before { content: "● "; color: var(--color-tag); }
+/* Fine print folded behind one line */
+.fine > summary { cursor: pointer; font-size: .8rem; font-weight: 600; color: var(--color-muted); min-height: 28px; display: inline-flex; align-items: center; }
+.fine > summary:hover { color: var(--color-ink); }
+.fine > p { font-size: .75rem; color: var(--color-muted); margin-top: .35rem; }
+#integrityBand { scroll-margin-top: 4.5rem; }
+@media (min-width: 1024px) { #integrityBand { scroll-margin-top: calc(var(--appbar-h) + 52px + 2rem); } }

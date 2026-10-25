@@ -1,6 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
+import { readFileSync } from 'node:fs';
+import { parseLog } from '../lib/parse.ts';
+import { applyRules, ruleVerdict } from '../lib/rules.ts';
 
 // The 3 "Try sample" cases (files live in public/samples, all made-up sample data)
 const samples = [
@@ -10,6 +13,13 @@ const samples = [
   // Real data, not made up: 300 lines from the public Loghub research collection (source cited inside the file)
   { file: '/samples/loghub-openssh-real.log', label: 'Real SSH server log', desc: 'Public research data (Loghub), not made up: 300 real lines' },
 ];
+// Counts on each sample card come from the real parser + rules, run at build time on the same files
+const counts = samples.map((s) => {
+  const { events } = parseLog(readFileSync(`public${s.file}`, 'utf8'), 2026);
+  applyRules(events);
+  const v = ruleVerdict(events);
+  return { events: events.length, high: v.high, level: v.level };
+});
 ---
 <Base wide>
   <!-- Page intro: only before a case is open -->
@@ -89,10 +99,11 @@ const samples = [
           <p class="text-sm text-muted mb-3">Pick a sample case (three made up for the demo, one real public log) or paste / upload your own log.</p>
           <div class="sample-grid">
             {samples.map((s, i) => (
-              <button type="button" data-sample={s.file} class="sample-btn sample-card">
-                <span class="sample-n">{String(i + 1).padStart(2, '0')}</span>
+              <button type="button" data-sample={s.file} class={`sample-btn sample-card ${i === 0 ? 'is-start' : ''}`}>
+                <span class="sample-top"><span class="sample-n">{String(i + 1).padStart(2, '0')}</span>{i === 0 && <span class="start-tag">Start here</span>}</span>
                 <span class="sample-t">{s.label}</span>
                 <span class="sample-d">{s.desc}</span>
+                <span class={`sample-meta lvl-${counts[i].level}`}>{counts[i].events} events · {counts[i].high ? `${counts[i].high} high-risk` : 'no high-risk'}</span>
               </button>
             ))}
           </div>
@@ -112,8 +123,11 @@ const samples = [
               <Icon name="upload" />Upload a file <input id="file" type="file" class="sr-only" />
             </label>
           </div>
-          <p class="text-xs text-muted mt-2">Timelines: ERP audit CSV, Linux auth.log, Apache/Nginx access and Apache error logs. Any other file (PDF, image) is hashed as evidence.</p>
-          <p class="text-xs text-muted mt-1">Saved in this browser only (localStorage): a copy of the locked log, its SHA-256 and the audit trail, so the case survives a reload. <strong>New case</strong> clears them.</p>
+          <details class="fine mt-3">
+            <summary>Formats, storage &amp; privacy</summary>
+            <p>Timelines: ERP audit CSV, Linux auth.log, Apache/Nginx access and Apache error logs. Any other file (PDF, image) is hashed as evidence.</p>
+            <p>Saved in this browser only (localStorage): a copy of the locked log, its SHA-256 and the audit trail, so the case survives a reload. <strong>New case</strong> clears them.</p>
+          </details>
           <p id="msg" class="text-sm mt-2" aria-live="polite"></p>
         </div>
       </section>
